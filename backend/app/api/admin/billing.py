@@ -1,0 +1,38 @@
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
+from app.api.deps import get_current_admin_or_operator
+from app.schemas.common import StandardResponse, PaginationMeta
+from app.schemas.billing import BillResponse, BillCreate, PaymentResponse, PaymentCreate
+from app.services.billing_service import BillingService
+
+router = APIRouter(prefix="/billing", tags=["Admin - Billing"], dependencies=[Depends(get_current_admin_or_operator)])
+service = BillingService()
+
+@router.post("/bills", response_model=StandardResponse[BillResponse])
+async def generate_bill(bill_in: BillCreate, db: AsyncSession = Depends(get_db)):
+    # In Admin, employee_id can be extracted from auth token eventually
+    bill = await service.generate_bill(db, bill_in.session_id)
+    return StandardResponse(success=True, message="Bill generated successfully", data=bill)
+
+@router.get("/bills", response_model=StandardResponse[list[BillResponse]])
+async def get_bills(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    payment_status: str = None,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    bills, total = await service.get_bills(db, page, page_size, payment_status)
+    meta = PaginationMeta(total=total, page=page, page_size=page_size)
+    return StandardResponse(success=True, message="Bills retrieved successfully", data=bills, meta=meta)
+
+@router.get("/bills/{bill_id}", response_model=StandardResponse[BillResponse])
+async def get_bill(bill_id: int, db: AsyncSession = Depends(get_db)):
+    bill = await service.get_bill(db, bill_id)
+    return StandardResponse(success=True, message="Bill retrieved successfully", data=bill)
+
+@router.post("/bills/{bill_id}/payments", response_model=StandardResponse[PaymentResponse])
+async def add_payment(bill_id: int, payment_in: PaymentCreate, db: AsyncSession = Depends(get_db)):
+    payment = await service.add_payment(db, bill_id, payment_in)
+    return StandardResponse(success=True, message="Payment added successfully", data=payment)

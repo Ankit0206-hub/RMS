@@ -1,0 +1,95 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.repositories.billing_repository import BillingRepository
+from app.repositories.ordering_repository import OrderingRepository
+from app.repositories.admin.menu_repository import MenuRepository
+from app.schemas.billing import BillCreate, PaymentCreate
+from app.core.exceptions import NotFoundException, BusinessRuleException
+import uuid
+
+class BillingService:
+    def __init__(self):
+        self.repository = BillingRepository()
+        self.ordering_repository = OrderingRepository()
+        self.menu_repository = MenuRepository()
+
+    async def generate_bill(self, db: AsyncSession, session_id: int, employee_id: int = None):
+        session = await self.ordering_repository.get_session_by_id(db, session_id)
+        if not session:
+            raise NotFoundException("Session not found")
+            
+        existing_bill = await self.repository.get_bill_by_session(db, session_id)
+        if existing_bill:
+            raise BusinessRuleException("Bill already generated for this session")
+            
+        subtotal = 0.0
+        items_data = []
+        
+        # Aggregate items across all orders in the session
+        for order in session.orders:
+            if order.status not in ["Cancelled"]: # Count everything that wasn't cancelled
+                for item in order.items:
+                    menu_item = await self.menu_repository.get_by_id(db, item.menu_item_id)
+                    item_total = float(item.quantity * item.price_at_order)
+                    subtotal += item_total
+                    items_data.append({
+                        "menu_item_id": item.menu_item_id,
+                        "item_name": menu_item.name if menu_item else "Unknown Item",
+                        "quantity": item.quantity,
+                        "price": float(item.price_at_order),
+                        "total": item_total
+                    })
+
+        # Calculate taxes and totals (hardcoded for simplicity right now, ideally loaded from config)
+        total_tax = subtotal * 0.10 # 10% tax
+        service_charge = subtotal * 0.05 # 5% service charge
+        total_discount = 0.0
+        grand_total = subtotal + total_tax + service_charge - total_discount
+
+        bill_data = {
+            "session_id": session_id,
+            "bill_number": f"BILL-{uuid.uuid4().hex[:8].upper()}",
+            "generated_by_employee_id": employee_id,
+            "subtotal": subtotal,
+            "total_tax": total_tax,
+            "total_discount": total_discount,
+            "service_charge": service_charge,
+            "grand_total": grand_total,
+            "payment_status": "Pending"
+        }
+
+        return await self.repository.create_bill(db, bill_data, items_data)
+
+    async def get_bills(self, db: AsyncSession, page: int, page_size: int, payment_status: str = None):
+        return await self.repository.get_bills(db, page, page_size, payment_status)
+
+    async def get_bill(self, db: AsyncSession, bill_id: int):
+        bill = await self.repository.get_bill_by_id(db, bill_id)
+        if not bill:
+            raise NotFoundException("Bill not found")
+        return bill
+        
+    async def add_payment(self, db: AsyncSession, bill_id: int, payment_in: PaymentCreate):
+        bill = await self.repository.get_bill_by_id(db, bill_id)
+        if not bill:
+            raise NotFoundException("Bill not found")
+            
+        if bill.payment_status == "Paid":
+            raise BusinessRuleException("Bill is already paid")
+            
+        payment_data = payment_in.model_dump()
+        payment_data["status"] = "Completed"
+        
+        payment = await self.repository.add_payment(db, bill_id, payment_data)
+        
+        # Check if total payments cover grand total
+        total_paid = sum(p.amount for p in bill.payments) + float(payment.amount)
+        if total_paid >= float(bill.grand_total):
+            await self.repository.update_bill_status(db, bill_id, "Paid")
+            
+            # Close the session
+            session = await self.ordering_repository.get_session_by_id(db, bill.session_id)
+            if session:
+                session.status = "Completed"
+                await db.commit()
+                
+        return payment
