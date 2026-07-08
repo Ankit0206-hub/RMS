@@ -31,6 +31,11 @@ class OrderResponse(OrderBase):
     waiter_id: Optional[int]
     status: str
     items: List[OrderItemResponse]
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    table_number: Optional[str] = None
+    order_type: Optional[str] = None
+    total_amount: Optional[float] = 0.0
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)

@@ -24,6 +24,7 @@ class Bill(TimestampMixin, Base):
 
     items: Mapped[List["BillItem"]] = relationship(back_populates="bill", cascade="all, delete-orphan")
     payments: Mapped[List["Payment"]] = relationship(back_populates="bill", cascade="all, delete-orphan")
+    session: Mapped["CustomerSession"] = relationship(back_populates="bills")
 
 class BillItem(TimestampMixin, Base):
     __tablename__ = "bill_items"

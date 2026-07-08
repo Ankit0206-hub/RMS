@@ -1,28 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api from '../../services/api';
 import { 
     Search, Eye, Filter, Download, 
     ClipboardList, CheckCircle2, Clock, XCircle, IndianRupee 
 } from 'lucide-react';
-import { DataTable } from '../../components/ui';
+import { DataTable, Pagination } from '../../components/ui';
 
 const Orders = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
-    // Mock data perfectly matching the user's mockup
-    const ordersData = [
-        { id: '#ORD1263', date: '20 May 2025', time: '12:45 PM', customerName: 'Suresh Yadav', customerPhone: '+91 98765 43210', table: 'T2 - Table 2', type: 'Dine In', amount: 812.95, status: 'Completed' },
-        { id: '#ORD1262', date: '20 May 2025', time: '12:40 PM', customerName: 'Rajesh Sharma', customerPhone: '+91 91234 56789', table: 'T4 - Table 4', type: 'Dine In', amount: 645.50, status: 'Preparing' },
-        { id: '#ORD1261', date: '20 May 2025', time: '12:35 PM', customerName: 'Walk-in Customer', customerPhone: '-', table: 'T1 - Table 1', type: 'Walk-in', amount: 320.00, status: 'Confirmed' },
-        { id: '#ORD1260', date: '20 May 2025', time: '12:30 PM', customerName: 'Amit Verma', customerPhone: '+91 99876 54321', table: 'T3 - Table 3', type: 'Dine In', amount: 1250.00, status: 'Preparing' },
-        { id: '#ORD1259', date: '20 May 2025', time: '12:25 PM', customerName: 'Priya Singh', customerPhone: '+91 90011 22334', table: 'T5 - Table 5', type: 'Take Away', amount: 280.00, status: 'Completed' },
-        { id: '#ORD1258', date: '20 May 2025', time: '12:20 PM', customerName: 'Neha Joshi', customerPhone: '+91 88776 66554', table: 'T6 - Table 6', type: 'Dine In', amount: 560.75, status: 'Cancelled' },
-        { id: '#ORD1257', date: '20 May 2025', time: '12:15 PM', customerName: 'Walk-in Customer', customerPhone: '-', table: 'T2 - Table 2', type: 'Walk-in', amount: 175.00, status: 'Confirmed' },
-        { id: '#ORD1256', date: '20 May 2025', time: '12:10 PM', customerName: 'Vikram Singh', customerPhone: '+91 77665 44322', table: 'T7 - Table 7', type: 'Take Away', amount: 450.00, status: 'Completed' },
-        { id: '#ORD1255', date: '20 May 2025', time: '12:05 PM', customerName: 'Ramesh Kumar', customerPhone: '+91 66554 33211', table: 'T8 - Table 8', type: 'Dine In', amount: 690.30, status: 'Preparing' },
-        { id: '#ORD1254', date: '20 May 2025', time: '12:00 PM', customerName: 'Pooja Sharma', customerPhone: '+91 55443 22110', table: 'T9 - Table 9', type: 'Dine In', amount: 910.60, status: 'Confirmed' },
-    ];
+    const { data: ordersResponse, isLoading } = useQuery({
+        queryKey: ['orders'],
+        queryFn: async () => {
+            const response = await api.get('/admin/ordering/orders', {
+                params: { page: 1, page_size: 1000 }
+            });
+            return response.data;
+        }
+    });
+
+    const ordersData = useMemo(() => {
+        if (!ordersResponse?.data) return [];
+        return ordersResponse.data.map(order => {
+            const dateObj = new Date(order.created_at);
+            return {
+                id: `#ORD${order.id}`,
+                rawId: order.id,
+                date: dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+                time: dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                customerName: order.customer_name || 'Walk-in Customer',
+                customerPhone: order.customer_phone || '-',
+                table: order.table_number || '-',
+                type: order.order_type || 'Take Away',
+                amount: order.total_amount || 0.00,
+                status: order.status
+            };
+        });
+    }, [ordersResponse]);
 
     const getOrderTypePill = (type) => {
         switch(type) {
@@ -89,7 +108,7 @@ const Orders = () => {
             cell: (row) => (
                 <div className="flex items-center justify-center">
                     <button 
-                        onClick={() => navigate(`/admin/orders/${row.id.replace('#', '')}`)}
+                        onClick={() => navigate(`/admin/orders/${row.rawId}`)}
                         className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                     >
                         <Eye className="h-4 w-4" />
@@ -99,8 +118,21 @@ const Orders = () => {
         }
     ];
 
+    // Calculate KPIs
+    const totalOrders = ordersData.length;
+    const completedOrders = ordersData.filter(o => o.status === 'Completed').length;
+    const preparingOrders = ordersData.filter(o => o.status === 'Preparing').length;
+    const cancelledOrders = ordersData.filter(o => o.status === 'Cancelled').length;
+    const totalRevenue = ordersData.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + o.amount, 0);
+
+    const filteredData = ordersData.filter(o => 
+        o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        o.table.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="space-y-6 pb-10 font-inter">
+        <div className="space-y-2 pb-10 font-inter">
             {/* KPI Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
@@ -110,11 +142,8 @@ const Orders = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Total Orders</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">142</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">{totalOrders}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 15.8% <span className="text-gray-400 font-medium ml-1">vs yesterday</span>
                     </div>
                 </div>
 
@@ -125,11 +154,8 @@ const Orders = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Completed</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">48</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">{completedOrders}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 12.1% <span className="text-gray-400 font-medium ml-1">vs yesterday</span>
                     </div>
                 </div>
 
@@ -140,11 +166,8 @@ const Orders = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Preparing</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">35</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">{preparingOrders}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-red-500 mt-4">
-                        ↓ 4.3% <span className="text-gray-400 font-medium ml-1">vs yesterday</span>
                     </div>
                 </div>
 
@@ -155,11 +178,8 @@ const Orders = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Cancelled</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">9</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">{cancelledOrders}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-red-500 mt-4">
-                        ↑ 2.2% <span className="text-gray-400 font-medium ml-1">vs yesterday</span>
                     </div>
                 </div>
 
@@ -170,11 +190,8 @@ const Orders = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Total Revenue</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ 1,45,680</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ {totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 18.6% <span className="text-gray-400 font-medium ml-1">vs yesterday</span>
                     </div>
                 </div>
             </div>
@@ -210,11 +227,6 @@ const Orders = () => {
                             <option>Walk-in</option>
                             <option>Take Away</option>
                         </select>
-
-                        <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                            <Filter className="w-3.5 h-3.5 mr-1.5" />
-                            Filters
-                        </button>
                         
                         <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
                             <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -226,32 +238,24 @@ const Orders = () => {
                 <div className="flex-1">
                     <DataTable 
                         columns={columns} 
-                        data={ordersData} 
-                        isLoading={false} 
+                        data={filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)} 
+                        isLoading={isLoading} 
                         emptyMessage="No orders found." 
+                        onRowClick={(row) => navigate(`/admin/orders/${row.rawId}`)}
                     />
                 </div>
 
-                <div className="p-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
-                    <div>Showing 1 to 10 of 142 orders</div>
-                    <div className="flex items-center space-x-2">
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50">&lt;</button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md bg-[#5e5ce6] text-white font-bold shadow">1</button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">2</button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">3</button>
-                        <span className="px-1 text-gray-400">...</span>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">15</button>
-                        <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50">&gt;</button>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <span>Rows per page:</span>
-                        <select className="border border-gray-200 rounded-md px-2 py-1 outline-none font-semibold">
-                            <option>10</option>
-                            <option>20</option>
-                            <option>50</option>
-                        </select>
-                    </div>
-                </div>
+                <Pagination 
+                    currentPage={currentPage}
+                    totalItems={filteredData.length}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={(val) => {
+                        setItemsPerPage(val);
+                        setCurrentPage(1);
+                    }}
+                    itemName="orders"
+                />
             </div>
 
             <style>{`

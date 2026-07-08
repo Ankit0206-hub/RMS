@@ -18,7 +18,7 @@ async def generate_bill(bill_in: BillCreate, db: AsyncSession = Depends(get_db))
 @router.get("/bills", response_model=StandardResponse[list[BillResponse]])
 async def get_bills(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1, le=10000),
     payment_status: str = None,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_admin_or_operator)

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Search, Eye, Filter, Download, 
@@ -6,33 +6,97 @@ import {
     LayoutGrid, CreditCard, RefreshCcw, Settings, FileBox, Calculator, BarChart3, Receipt
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { DataTable } from '../../components/ui';
+import { DataTable, Pagination } from '../../components/ui';
+import api from '../../services/api';
+import InvoiceModal from './InvoiceModal';
 
 const Bills = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('All Invoices');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [selectedBill, setSelectedBill] = useState(null);
+
+    const [bills, setBills] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [totalItems, setTotalItems] = useState(0);
+    const [stats, setStats] = useState({
+        totalSales: 0,
+        totalInvoices: 0,
+        paidAmount: 0,
+        pendingAmount: 0,
+        refundedAmount: 0
+    });
 
     const tabs = ['All Invoices', 'Paid', 'Pending', 'Partially Paid', 'Overdue', 'Cancelled'];
 
-    // Mock data matching the mockup exactly
-    const invoicesData = [
-        { id: '#INV1263', date: '20 May 2025', time: '12:45 PM', customerName: 'Suresh Yadav', customerPhone: '+91 98765 43210', orderId: '#ORD1263', totalAmount: 812.95, paidAmount: 812.95, status: 'Paid', method: 'UPI' },
-        { id: '#INV1262', date: '20 May 2025', time: '12:40 PM', customerName: 'Rajesh Sharma', customerPhone: '+91 91234 56789', orderId: '#ORD1262', totalAmount: 645.50, paidAmount: 300.00, status: 'Partially Paid', method: 'Card' },
-        { id: '#INV1261', date: '20 May 2025', time: '12:35 PM', customerName: 'Walk-in Customer', customerPhone: '-', orderId: '#ORD1261', totalAmount: 320.00, paidAmount: 0.00, status: 'Pending', method: '-' },
-        { id: '#INV1260', date: '20 May 2025', time: '12:30 PM', customerName: 'Amit Verma', customerPhone: '+91 99876 54321', orderId: '#ORD1260', totalAmount: 1250.00, paidAmount: 1250.00, status: 'Paid', method: 'Cash' },
-        { id: '#INV1259', date: '20 May 2025', time: '12:25 PM', customerName: 'Priya Singh', customerPhone: '+91 90011 22334', orderId: '#ORD1259', totalAmount: 280.00, paidAmount: 0.00, status: 'Pending', method: '-' },
-        { id: '#INV1258', date: '20 May 2025', time: '12:20 PM', customerName: 'Neha Joshi', customerPhone: '+91 88776 66554', orderId: '#ORD1258', totalAmount: 560.75, paidAmount: 560.75, status: 'Paid', method: 'UPI' },
-        { id: '#INV1257', date: '20 May 2025', time: '12:15 PM', customerName: 'Walk-in Customer', customerPhone: '-', orderId: '#ORD1257', totalAmount: 175.00, paidAmount: 175.00, status: 'Paid', method: 'Card' },
-        { id: '#INV1256', date: '20 May 2025', time: '12:10 PM', customerName: 'Vikram Singh', customerPhone: '+91 77665 44322', orderId: '#ORD1256', totalAmount: 450.00, paidAmount: 0.00, status: 'Overdue', method: '-' },
-        { id: '#INV1255', date: '20 May 2025', time: '12:05 PM', customerName: 'Ramesh Kumar', customerPhone: '+91 66554 33211', orderId: '#ORD1255', totalAmount: 690.30, paidAmount: 690.30, status: 'Paid', method: 'Net Banking' },
-        { id: '#INV1254', date: '20 May 2025', time: '12:00 PM', customerName: 'Pooja Sharma', customerPhone: '+91 55443 22110', orderId: '#ORD1254', totalAmount: 910.60, paidAmount: 400.00, status: 'Partially Paid', method: 'UPI' },
-    ];
+    useEffect(() => {
+        fetchBills();
+    }, [currentPage, itemsPerPage, activeTab]);
+
+    const fetchBills = async () => {
+        setIsLoading(true);
+        try {
+            let statusQuery = '';
+            if (activeTab !== 'All Invoices') {
+                statusQuery = `&payment_status=${activeTab}`;
+            }
+            
+            const response = await api.get(`/admin/billing/bills?page=${currentPage}&page_size=${itemsPerPage}${statusQuery}`);
+            if (response.data.success) {
+                setBills(response.data.data);
+                setTotalItems(response.data.meta?.total || 0);
+            }
+
+            // Fetch all bills for calculating stats (temporary solution for demo)
+            const statsResponse = await api.get(`/admin/billing/bills?page=1&page_size=10000`);
+            if (statsResponse.data.success) {
+                const allBills = statsResponse.data.data;
+                let totalSales = 0;
+                let paidAmt = 0;
+                let pendingAmt = 0;
+                let refundedAmt = 0;
+                
+                allBills.forEach(bill => {
+                    const paid = bill.payments?.reduce((s, p) => s + p.amount, 0) || 0;
+                    totalSales += bill.grand_total || 0;
+                    paidAmt += paid;
+                    pendingAmt += Math.max(0, (bill.grand_total || 0) - paid);
+                    if (bill.payment_status === 'Refunded') {
+                        refundedAmt += paid;
+                    }
+                });
+
+                setStats({
+                    totalSales,
+                    totalInvoices: allBills.length,
+                    paidAmount: paidAmt,
+                    pendingAmount: pendingAmt,
+                    refundedAmount: refundedAmt
+                });
+            }
+
+        } catch (error) {
+            console.error("Error fetching bills:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+    // Handle page changes
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     const statsData = [
-        { name: 'Paid', value: 128430, color: '#22c55e' },
-        { name: 'Pending', value: 17250, color: '#f97316' },
-        { name: 'Refunded', value: 1250, color: '#3b82f6' },
+        { name: 'Paid', value: stats.paidAmount, color: '#22c55e' },
+        { name: 'Pending', value: stats.pendingAmount, color: '#f97316' },
+        { name: 'Refunded', value: stats.refundedAmount, color: '#3b82f6' },
     ];
 
     const getStatusPill = (status) => {
@@ -49,45 +113,47 @@ const Bills = () => {
     const columns = [
         { 
             header: "Invoice No.", 
-            cell: (row) => <span className="font-bold text-blue-600 text-xs">{row.id}</span> 
+            cell: (row) => <span className="font-bold text-blue-600 text-xs">{row.bill_number}</span> 
         },
         { 
             header: "Date & Time", 
-            cell: (row) => (
-                <div>
-                    <div className="font-semibold text-gray-900 text-[11px]">{row.date}</div>
-                    <div className="text-[11px] text-gray-500 font-medium">{row.time}</div>
-                </div>
-            )
+            cell: (row) => {
+                const dateObj = new Date(row.generated_at);
+                const date = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                return (
+                    <div>
+                        <div className="font-semibold text-gray-900 text-[11px]">{date}</div>
+                        <div className="text-[11px] text-gray-500 font-medium">{time}</div>
+                    </div>
+                );
+            }
         },
         { 
             header: "Customer", 
-            cell: (row) => (
-                <div>
-                    <div className="font-semibold text-gray-900 text-[11px]">{row.customerName}</div>
-                    <div className="text-[11px] text-gray-500 font-medium">{row.customerPhone}</div>
-                </div>
-            )
+            cell: (row) => <span className="font-semibold text-gray-900 text-[11px]">{row.session?.customer_name || 'Walk-in Customer'}</span>
+        },
+        { 
+            header: "Contact Number", 
+            cell: (row) => <span className="text-[11px] text-gray-500 font-medium">{row.session?.customer_phone || '-'}</span>
         },
         { 
             header: "Order ID", 
-            cell: (row) => <span className="font-bold text-gray-600 text-[11px]">{row.orderId}</span> 
-        },
-        { 
-            header: "Total Amount", 
-            cell: (row) => <span className="font-bold text-gray-800 text-[11px]">₹ {row.totalAmount.toFixed(2)}</span> 
+            cell: (row) => <span className="font-bold text-gray-600 text-[11px]">#ORD{row.session_id}</span> 
         },
         { 
             header: "Paid Amount", 
-            cell: (row) => <span className="font-bold text-gray-800 text-[11px]">₹ {row.paidAmount.toFixed(2)}</span> 
-        },
-        { 
-            header: "Status", 
-            cell: (row) => <span className={`px-2.5 py-1 rounded text-[10px] font-bold ${getStatusPill(row.status)}`}>{row.status}</span> 
+            cell: (row) => {
+                const paid = row.payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+                return <span className="font-bold text-gray-800 text-[11px]">₹ {paid.toFixed(2)}</span>;
+            }
         },
         { 
             header: "Payment Method", 
-            cell: (row) => <span className="font-semibold text-gray-600 text-[11px]">{row.method}</span> 
+            cell: (row) => {
+                const method = row.payments?.length > 0 ? row.payments[row.payments.length - 1].payment_method : '-';
+                return <span className="font-semibold text-gray-600 text-[11px]">{method}</span>;
+            }
         },
         { 
             header: "Actions", 
@@ -95,9 +161,17 @@ const Bills = () => {
             cellClassName: "text-center",
             cell: (row) => (
                 <div className="flex items-center justify-center space-x-2">
-                    <button className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"><Eye className="h-4 w-4" /></button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                    <button 
+                        onClick={() => setSelectedBill(row)}
+                        className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                        <Eye className="h-4 w-4" />
+                    </button>
+                    <button 
+                        onClick={() => setSelectedBill(row)}
+                        className="p-1.5 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                    >
+                        <Download className="h-4 w-4" />
                     </button>
                 </div>
             )
@@ -115,11 +189,8 @@ const Bills = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Total Sales (This Month)</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ 1,45,680</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ {stats.totalSales.toLocaleString('en-IN')}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 15.8% <span className="text-gray-400 font-medium ml-1">vs last month</span>
                     </div>
                 </div>
 
@@ -130,11 +201,8 @@ const Bills = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Total Invoices</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">142</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">{stats.totalInvoices.toLocaleString('en-IN')}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 12.4% <span className="text-gray-400 font-medium ml-1">vs last month</span>
                     </div>
                 </div>
 
@@ -145,11 +213,8 @@ const Bills = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Paid Amount</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ 1,28,430</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ {stats.paidAmount.toLocaleString('en-IN')}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-green-500 mt-4">
-                        ↑ 16.3% <span className="text-gray-400 font-medium ml-1">vs last month</span>
                     </div>
                 </div>
 
@@ -160,11 +225,8 @@ const Bills = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Pending Amount</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ 17,250</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ {stats.pendingAmount.toLocaleString('en-IN')}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-red-500 mt-4">
-                        ↓ 8.7% <span className="text-gray-400 font-medium ml-1">vs last month</span>
                     </div>
                 </div>
 
@@ -175,36 +237,19 @@ const Bills = () => {
                         </div>
                         <div>
                             <p className="text-[11px] font-bold text-gray-500 mb-0.5">Refunded Amount</p>
-                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ 1,250</p>
+                            <p className="text-2xl font-black text-gray-900 leading-tight">₹ {stats.refundedAmount.toLocaleString('en-IN')}</p>
                         </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-red-500 mt-4">
-                        ↑ 2.1% <span className="text-gray-400 font-medium ml-1">vs last month</span>
                     </div>
                 </div>
             </div>
 
-            {/* Main Grid Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content */}
+            <div className="grid grid-cols-1 gap-6">
                 
-                {/* Left Side: Data Table (span 2) */}
-                <div className="lg:col-span-2 bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden flex flex-col">
+                {/* Left Side: Data Table */}
+                <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden flex flex-col">
                     
-                    {/* Tab Navigation */}
-                    <div className="flex space-x-8 px-6 border-b border-gray-100 bg-white">
-                        {tabs.map((tab) => (
-                            <button 
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`py-4 text-xs font-bold transition-all relative ${activeTab === tab ? 'text-[#5e5ce6]' : 'text-gray-500 hover:text-gray-900'}`}
-                            >
-                                {tab}
-                                {activeTab === tab && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5e5ce6] rounded-t-full"></div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+
 
                     {/* Toolbar */}
                     <div className="p-4 border-b border-gray-100 flex flex-wrap gap-4 justify-between items-center bg-white">
@@ -235,10 +280,7 @@ const Bills = () => {
                                 <option>Net Banking</option>
                             </select>
 
-                            <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                                <Filter className="w-3.5 h-3.5 mr-1.5" />
-                                Filters
-                            </button>
+
                             
                             <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
                                 <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -250,221 +292,22 @@ const Bills = () => {
                     <div className="flex-1">
                         <DataTable 
                             columns={columns} 
-                            data={invoicesData} 
-                            isLoading={false} 
+                            data={bills} 
+                            isLoading={isLoading} 
                             emptyMessage="No invoices found." 
                         />
                     </div>
 
-                    <div className="p-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
-                        <div>Showing 1 to 10 of 142 invoices</div>
-                        <div className="flex items-center space-x-2">
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50">&lt;</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md bg-[#5e5ce6] text-white font-bold shadow">1</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">2</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">3</button>
-                            <span className="px-1 text-gray-400">...</span>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">15</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50">&gt;</button>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <span>Rows per page:</span>
-                            <select className="border border-gray-200 rounded-md px-2 py-1 outline-none font-semibold">
-                                <option>10</option>
-                                <option>20</option>
-                                <option>50</option>
-                            </select>
-                        </div>
-                    </div>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={handlePageChange}
+                        onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+                        itemName="invoices"
+                    />
                 </div>
 
-                {/* Right Side: Payment Summary & Actions (span 1) */}
-                <div className="lg:col-span-1 space-y-6">
-                    
-                    {/* Payment Summary */}
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-5">
-                        <h3 className="font-bold text-gray-900 text-sm mb-4">Payment Summary <span className="text-gray-400 font-medium">(This Month)</span></h3>
-                        
-                        <div className="flex items-center justify-between">
-                            <div className="w-28 h-28 relative">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={statsData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={32}
-                                            outerRadius={45}
-                                            paddingAngle={2}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {statsData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="font-black text-sm text-gray-900 leading-none mb-0.5">₹ 1,45,680</span>
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wide">Total Sales</span>
-                                </div>
-                            </div>
-
-                            <div className="flex-1 ml-4 space-y-3">
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <div className="flex items-center text-gray-700 font-semibold"><div className="w-2 h-2 rounded bg-green-500 mr-2"></div>Paid</div>
-                                    <div className="font-bold">₹ 1,28,430 <span className="text-gray-400 ml-1 font-medium">(88.2%)</span></div>
-                                </div>
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <div className="flex items-center text-gray-700 font-semibold"><div className="w-2 h-2 rounded bg-orange-500 mr-2"></div>Pending</div>
-                                    <div className="font-bold">₹ 17,250 <span className="text-gray-400 ml-1 font-medium">(11.8%)</span></div>
-                                </div>
-                                <div className="flex items-center justify-between text-[11px]">
-                                    <div className="flex items-center text-gray-700 font-semibold"><div className="w-2 h-2 rounded bg-blue-500 mr-2"></div>Refunded</div>
-                                    <div className="font-bold">₹ 1,250 <span className="text-gray-400 ml-1 font-medium">(1%)</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-                            <button className="text-indigo-600 font-bold text-xs hover:text-indigo-700 transition-colors">
-                                View Detailed Report →
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Recent Payments */}
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-5">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-gray-900 text-sm">Recent Payments</h3>
-                            <button className="text-indigo-600 font-bold text-[10px] hover:text-indigo-700">View All</button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Payment Item 1 */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded bg-gray-50 flex items-center justify-center text-green-600 font-bold text-[10px] italic">
-                                        UPI
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs font-bold text-gray-900">Suresh Yadav</span>
-                                            <span className="text-[10px] font-semibold text-gray-400">#INV1263</span>
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 font-medium mt-0.5">UPI • 20 May 2025, 12:45 PM</div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-black text-gray-900">₹ 812.95</div>
-                                    <div className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">Success</div>
-                                </div>
-                            </div>
-
-                            {/* Payment Item 2 */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center text-blue-700 font-black text-[10px] italic tracking-tighter">
-                                        VISA
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs font-bold text-gray-900">Rajesh Sharma</span>
-                                            <span className="text-[10px] font-semibold text-gray-400">#INV1262</span>
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 font-medium mt-0.5">Card • 20 May 2025, 12:41 PM</div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-black text-gray-900">₹ 300.00</div>
-                                    <div className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">Success</div>
-                                </div>
-                            </div>
-
-                            {/* Payment Item 3 */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center text-indigo-600">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs font-bold text-gray-900">Neha Joshi</span>
-                                            <span className="text-[10px] font-semibold text-gray-400">#INV1258</span>
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 font-medium mt-0.5">Net Banking • 20 May 2025, 12:20 PM</div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-black text-gray-900">₹ 560.75</div>
-                                    <div className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">Success</div>
-                                </div>
-                            </div>
-
-                            {/* Payment Item 4 */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center text-green-600">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs font-bold text-gray-900">Amit Verma</span>
-                                            <span className="text-[10px] font-semibold text-gray-400">#INV1260</span>
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 font-medium mt-0.5">Cash • 20 May 2025, 12:30 PM</div>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-black text-gray-900">₹ 1,250.00</div>
-                                    <div className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">Success</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Quick Actions Grid */}
-                    <div>
-                        <h3 className="font-bold text-gray-900 text-[14px] mb-3">Quick Actions</h3>
-                        <div className="grid grid-cols-4 gap-2.5">
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-1.5 group-hover:bg-blue-100"><FileText className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Create<br/>Invoice</span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center mb-1.5 group-hover:bg-green-100"><CheckSquare className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Record<br/>Payment</span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mb-1.5 group-hover:bg-red-100"><RotateCcw className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Create<br/>Refund</span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 group-hover:bg-indigo-100"><FileBox className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Manage<br/>Invoices</span>
-                            </button>
-                            
-                            <button onClick={() => navigate('/admin/billing/methods')} className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-1.5 group-hover:bg-purple-100"><CreditCard className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Payment<br/>Methods</span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mb-1.5 group-hover:bg-orange-100"><Calculator className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Expense<br/>Entry</span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-1.5 group-hover:bg-pink-100"><BarChart3 className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Reports<br/></span>
-                            </button>
-                            <button className="bg-white border border-gray-100 py-3 rounded-xl shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col items-center justify-center group">
-                                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 group-hover:bg-teal-100"><Settings className="w-4 h-4" /></div>
-                                <span className="font-bold text-gray-700 text-[8px] uppercase tracking-tight text-center leading-tight w-full px-1">Tax<br/>Settings</span>
-                            </button>
-                        </div>
-                    </div>
-
-                </div>
             </div>
 
             <style>{`
@@ -491,6 +334,12 @@ const Bills = () => {
                     background-color: #fcfcfd !important;
                 }
             `}</style>
+            
+            <InvoiceModal 
+                isOpen={!!selectedBill} 
+                onClose={() => setSelectedBill(null)} 
+                bill={selectedBill} 
+            />
         </div>
     );
 };

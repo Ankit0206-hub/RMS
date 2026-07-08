@@ -15,7 +15,7 @@ import AddItem from './pages/admin/AddItem';
 import Orders from './pages/admin/Orders';
 import Bills from './pages/admin/Bills';
 import Dashboard from './pages/admin/Dashboard';
-import Logs from './pages/admin/Logs';
+
 import OperatorLayout from './layouts/OperatorLayout';
 import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
@@ -35,10 +35,6 @@ import Refunds from './pages/admin/Refunds';
 import PaymentMethods from './pages/admin/PaymentMethods';
 import Customers from './pages/admin/Customers';
 import AnalyticsOverview from './pages/admin/AnalyticsOverview';
-import AnalyticsPerformance from './pages/admin/AnalyticsPerformance';
-import AnalyticsFood from './pages/admin/AnalyticsFood';
-import AnalyticsSales from './pages/admin/AnalyticsSales';
-import AnalyticsCustomer from './pages/admin/AnalyticsCustomer';
 import Notifications from './pages/admin/Notifications';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from 'react-hot-toast';
@@ -104,12 +100,8 @@ const App = () => {
                             <Route path="billing/methods" element={<PaymentMethods />} />
                             <Route path="customers" element={<Customers />} />
                             <Route path="analytics" element={<AnalyticsOverview />} />
-                            <Route path="analytics/performance" element={<AnalyticsPerformance />} />
-                            <Route path="analytics/menu" element={<AnalyticsFood />} />
-                            <Route path="analytics/sales" element={<AnalyticsSales />} />
-                            <Route path="analytics/customer" element={<AnalyticsCustomer />} />
                             <Route path="notifications" element={<Notifications />} />
-                            <Route path="logs" element={<Logs />} />
+
                             <Route path="settings" element={<Settings />} />
                             <Route path="tables" element={<Tables />} />
                             <Route path="tables/add" element={<AddTable />} />

@@ -7,7 +7,7 @@ import {
     Plus, Search, Edit2, Trash2, Users, UserCheck, 
     Briefcase, UserX, UserPlus, ChevronRight, Download, Filter, Eye, MoreVertical
 } from 'lucide-react';
-import { Button, DataTable } from '../../components/ui';
+import { Button, DataTable, Pagination } from '../../components/ui';
 
 const Employees = () => {
     const navigate = useNavigate();
@@ -351,49 +351,17 @@ const Employees = () => {
                             />
 
                             {/* Footer Pagination */}
-                            <div className="p-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
-                                <div>
-                                    Showing {filteredEmployees.length === 0 ? 0 : ((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button 
-                                        disabled={currentPage === 1}
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-50"
-                                    >&lt;</button>
-                                    
-                                    {Array.from({length: totalPages}, (_, i) => i + 1).map(page => (
-                                        <button 
-                                            key={page}
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`w-6 h-6 flex items-center justify-center rounded ${currentPage === page ? 'bg-[#5e5ce6] text-white font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
-                                        >
-                                            {page}
-                                        </button>
-                                    ))}
-
-                                    <button 
-                                        disabled={currentPage === totalPages}
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        className="w-6 h-6 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                                    >&gt;</button>
-                                </div>
-                                <div className="flex items-center">
-                                    <span className="mr-2">Rows per page:</span>
-                                    <select 
-                                        value={rowsPerPage}
-                                        onChange={(e) => {
-                                            setRowsPerPage(parseInt(e.target.value));
-                                            setCurrentPage(1);
-                                        }}
-                                        className="border border-gray-200 rounded px-2 py-1 outline-none"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                    </select>
-                                </div>
-                            </div>
+                            <Pagination 
+                                currentPage={currentPage}
+                                totalItems={filteredEmployees.length}
+                                itemsPerPage={rowsPerPage}
+                                onPageChange={setCurrentPage}
+                                onItemsPerPageChange={(val) => {
+                                    setRowsPerPage(val);
+                                    setCurrentPage(1);
+                                }}
+                                itemName="employees"
+                            />
                         </>
                     );
                 })()}

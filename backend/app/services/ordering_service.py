@@ -84,7 +84,23 @@ class OrderingService:
         return order
 
     async def get_orders(self, db: AsyncSession, page: int, page_size: int, status: str = None):
-        return await self.repository.get_orders(db, page, page_size, status)
+        orders, total = await self.repository.get_orders(db, page, page_size, status)
+        
+        # Map related fields for frontend
+        for order in orders:
+            if order.session:
+                order.customer_name = order.session.customer_name or "Walk-in Customer"
+                order.customer_phone = order.session.customer_phone or "-"
+                if order.session.table:
+                    order.table_number = f"{order.session.table.table_number} - {order.session.table.name}" if order.session.table.name else order.session.table.table_number
+                    order.order_type = "Dine In"
+                else:
+                    order.order_type = "Take Away" # We could also add logic for "Walk-in"
+            
+            # Calculate total amount
+            order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
+            
+        return orders, total
         
     async def get_order(self, db: AsyncSession, order_id: int):
         order = await self.repository.get_order_by_id(db, order_id)

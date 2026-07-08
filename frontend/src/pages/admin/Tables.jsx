@@ -6,7 +6,7 @@ import {
     Search, Edit2, MoreVertical, LayoutGrid, Calendar, Settings, Filter, Plus
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { DataTable } from '../../components/ui';
+import { DataTable, Pagination } from '../../components/ui';
 import EditTableModal from './EditTableModal';
 
 const Tables = () => {
@@ -230,31 +230,23 @@ const Tables = () => {
                     <div className="flex-1">
                         <DataTable 
                             columns={columns} 
-                            data={tablesData} 
+                            data={tablesData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)} 
                             isLoading={false} 
                             emptyMessage="No tables found." 
                         />
                     </div>
 
-                    <div className="p-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500 font-medium">
-                        <div>Showing 1 to 10 of 40 tables</div>
-                        <div className="flex items-center space-x-2">
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50">&lt;</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md bg-[#6366f1] text-white font-bold shadow">1</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">2</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">3</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md text-gray-600 hover:bg-gray-50">4</button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50">&gt;</button>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <span>Rows per page:</span>
-                            <select className="border border-gray-200 rounded-md px-2 py-1 outline-none font-semibold">
-                                <option>10</option>
-                                <option>20</option>
-                                <option>50</option>
-                            </select>
-                        </div>
-                    </div>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalItems={tablesData.length}
+                        itemsPerPage={rowsPerPage}
+                        onPageChange={setCurrentPage}
+                        onItemsPerPageChange={(val) => {
+                            setRowsPerPage(val);
+                            setCurrentPage(1);
+                        }}
+                        itemName="tables"
+                    />
                 </div>
 
 

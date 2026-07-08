@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { 
     LayoutDashboard, Users, Settings, LogOut, 
@@ -11,15 +13,32 @@ const AdminLayout = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const queryClient = useQueryClient();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [expandedMenus, setExpandedMenus] = useState({'Menu Management': false});
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-    const [notifications, setNotifications] = useState([
-        { id: 1, text: "New Order #1264", subtext: "Table A5 - 2 mins ago" },
-        { id: 2, text: "Payment Received", subtext: "Bill #655 paid via UPI - 5 mins ago" }
-    ]);
+    
+    const { data: notificationsData } = useQuery({
+        queryKey: ['notifications'],
+        queryFn: async () => {
+            const res = await api.get('/admin/notifications');
+            return res.data.data;
+        },
+        refetchInterval: 30000 // Poll every 30s
+    });
+    const notifications = notificationsData || [];
+    const unreadCount = notifications.filter(n => !n.is_read).length;
+
+    const markAllReadMutation = useMutation({
+        mutationFn: async () => {
+            await api.post('/admin/notifications/read-all');
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['notifications']);
+        }
+    });
 
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
@@ -69,50 +88,28 @@ const AdminLayout = () => {
             name: 'Orders', 
             path: '/admin/orders', 
             icon: ClipboardList, 
-            hasDropdown: true,
-            children: [
-                { name: 'All Orders', path: '/admin/orders' },
-                { name: 'Order Details', path: '/admin/orders/details' },
-                { name: 'Order Returns', path: '/admin/orders/returns' }
-            ]
+            hasDropdown: false
         },
         { 
             name: 'Billing & Payments', 
             path: '/admin/billing', 
             icon: Receipt, 
-            hasDropdown: true,
-            children: [
-                { name: 'Billing Overview', path: '/admin/billing' },
-                { name: 'Invoices', path: '/admin/billing/invoices' },
-                { name: 'Payments', path: '/admin/billing/payments' },
-                { name: 'Refunds', path: '/admin/billing/refunds' },
-                { name: 'Payment Methods', path: '/admin/billing/methods' },
-            ]
+            hasDropdown: false
         },
         { 
             name: 'Customers', 
             path: '/admin/customers', 
             icon: Users,
-            hasDropdown: true,
-            children: [
-                { name: 'All Customers', path: '/admin/customers' }
-            ]
+            hasDropdown: false
         },
         { 
             name: 'Reports & Analytics', 
             path: '/admin/analytics', 
             icon: PieChart, 
-            hasDropdown: true,
-            children: [
-                { name: 'Overview', path: '/admin/analytics' },
-                { name: 'Waiter Performance', path: '/admin/analytics/performance' },
-                { name: 'Menu Analytics', path: '/admin/analytics/menu' },
-                { name: 'Sales Analytics', path: '/admin/analytics/sales' },
-                { name: 'Customer Analytics', path: '/admin/analytics/customer' },
-            ]
+            hasDropdown: false
         },
-        { name: 'Notifications', path: '/admin/notifications', icon: BellRing, badge: 15 },
-        { name: 'Audit Logs', path: '/admin/logs', icon: FileText },
+        { name: 'Notifications', path: '/admin/notifications', icon: BellRing, badge: unreadCount > 0 ? unreadCount : null },
+
         { name: 'Settings', path: '/admin/settings', icon: Settings }
     ];
 
@@ -172,29 +169,29 @@ const AdminLayout = () => {
             );
         }
         if (location.pathname.startsWith('/admin/orders')) {
-            let childItem = navItems.find(i => i.name === 'Orders')?.children.find(c => c.path === location.pathname);
-            if (!childItem && location.pathname.match(/\/admin\/orders\/\d+/)) {
-                 childItem = { name: 'Order Details' };
-            }
-            if (childItem && childItem.name !== 'All Orders') {
+            if (location.pathname === '/admin/orders') {
+                return <span className="text-gray-900">Orders</span>;
+            } else if (location.pathname.includes('/returns')) {
                 return (
                     <>
                         <span className="hover:text-blue-600 cursor-pointer" onClick={() => navigate('/admin/orders')}>Orders</span>
                         <ChevronRight className="w-3 h-3 mx-1" />
-                        <span className="text-gray-900">{childItem.name}</span>
+                        <span className="text-gray-900">Order Returns</span>
+                    </>
+                );
+            } else {
+                return (
+                    <>
+                        <span className="hover:text-blue-600 cursor-pointer" onClick={() => navigate('/admin/orders')}>Orders</span>
+                        <ChevronRight className="w-3 h-3 mx-1" />
+                        <span className="text-gray-900">Order Details</span>
                     </>
                 );
             }
-            return (
-                <>
-                    <span className="hover:text-blue-600 cursor-pointer">Orders</span>
-                    <ChevronRight className="w-3 h-3 mx-1" />
-                    <span className="text-gray-900">All Orders</span>
-                </>
-            );
         }
         if (location.pathname.startsWith('/admin/billing')) {
-            const childItem = navItems.find(i => i.name === 'Billing & Payments')?.children.find(c => c.path === location.pathname);
+            const billingItem = navItems.find(i => i.name === 'Billing & Payments');
+            const childItem = billingItem?.children?.find(c => c.path === location.pathname);
             if (childItem && childItem.name !== 'Billing Overview') {
                 return (
                     <>
@@ -214,31 +211,11 @@ const AdminLayout = () => {
         }
         if (location.pathname.startsWith('/admin/customers')) {
             return (
-                <>
-                    <span className="hover:text-blue-600 cursor-pointer">Customers</span>
-                    <ChevronRight className="w-3 h-3 mx-1" />
-                    <span className="text-gray-900">All Customers</span>
-                </>
+                <span className="text-gray-900">Customers</span>
             );
         }
         if (location.pathname.startsWith('/admin/analytics')) {
-            const childItem = navItems.find(i => i.name === 'Reports & Analytics')?.children.find(c => c.path === location.pathname);
-            if (childItem && childItem.name !== 'Overview') {
-                return (
-                    <>
-                        <span className="hover:text-blue-600 cursor-pointer" onClick={() => navigate('/admin/analytics')}>Reports & Analytics</span>
-                        <ChevronRight className="w-3 h-3 mx-1" />
-                        <span className="text-gray-900">{childItem.name}</span>
-                    </>
-                );
-            }
-            return (
-                <>
-                    <span className="hover:text-blue-600 cursor-pointer">Reports & Analytics</span>
-                    <ChevronRight className="w-3 h-3 mx-1" />
-                    <span className="text-gray-900">Reports & Analytics</span>
-                </>
-            );
+            return <span className="text-gray-900">Reports & Analytics</span>;
         }
         if (location.pathname.startsWith('/admin/notifications')) {
             return (
@@ -249,15 +226,7 @@ const AdminLayout = () => {
                 </>
             );
         }
-        if (location.pathname.startsWith('/admin/logs')) {
-            return (
-                <>
-                    <span className="hover:text-blue-600 cursor-pointer">Audit Logs</span>
-                    <ChevronRight className="w-3 h-3 mx-1" />
-                    <span className="text-gray-900">Audit Logs</span>
-                </>
-            );
-        }
+
         return <span className="text-gray-900">{getPageTitle()}</span>;
     };
 
@@ -424,8 +393,8 @@ const AdminLayout = () => {
                                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                                 >
                                     <Bell className="w-6 h-6" />
-                                    {notifications.length > 0 && (
-                                        <span className="absolute -top-1 -right-1 bg-[#ff4b4b] border-2 border-white text-white text-[10px] font-bold px-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full">{notifications.length}</span>
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-[#ff4b4b] border-2 border-white text-white text-[10px] font-bold px-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full">{unreadCount}</span>
                                     )}
                                 </button>
                                 {isNotificationsOpen && (
@@ -434,13 +403,13 @@ const AdminLayout = () => {
                                         <div className="absolute right-0 top-10 mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-lg py-2 z-50">
                                             <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
                                                 <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
-                                                <button onClick={() => setNotifications([])} className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline focus:outline-none">Mark all read</button>
+                                                <button onClick={() => markAllReadMutation.mutate()} className="text-xs text-blue-600 font-semibold cursor-pointer hover:underline focus:outline-none">Mark all read</button>
                                             </div>
                                             <div className="max-h-64 overflow-y-auto">
-                                                {notifications.length > 0 ? notifications.map(notif => (
-                                                    <div key={notif.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer">
-                                                        <p className="text-sm text-gray-800 font-medium">{notif.text}</p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">{notif.subtext}</p>
+                                                {notifications.length > 0 ? notifications.slice(0, 5).map(notif => (
+                                                    <div key={notif.id} onClick={() => { if(!notif.is_read) api.post(`/admin/notifications/${notif.id}/read`).then(() => queryClient.invalidateQueries(['notifications'])) }} className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer ${notif.is_read ? 'opacity-60' : ''}`}>
+                                                        <p className="text-sm text-gray-800 font-medium">{notif.title}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">{notif.message}</p>
                                                     </div>
                                                 )) : (
                                                     <div className="px-4 py-6 text-center text-gray-500 text-sm">No new notifications</div>

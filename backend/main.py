@@ -12,6 +12,7 @@ from app.api.admin import ordering as admin_ordering
 from app.api.admin import billing as admin_billing
 from app.api.admin import analytics as admin_analytics
 from app.api.admin import reservations as admin_reservations
+from app.api.admin import notifications as admin_notifications
 from app.api.operator import operator_router
 from app.api.waiter import waiter_router
 from app.api import websocket_router
@@ -55,6 +56,7 @@ app.include_router(admin_ordering.router, prefix="/api/v1/admin", tags=["Admin O
 app.include_router(admin_billing.router, prefix="/api/v1/admin", tags=["Admin Billing"])
 app.include_router(admin_analytics.router, prefix="/api/v1/admin", tags=["Admin Analytics"])
 app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations", tags=["Admin Reservations"])
+app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(operator_router.router, prefix="/api/v1", tags=["Operator"])
 app.include_router(waiter_router.router, prefix="/api/v1", tags=["Waiter"])
 app.include_router(websocket_router.router, tags=["WebSockets"])

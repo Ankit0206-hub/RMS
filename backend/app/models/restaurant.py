@@ -25,7 +25,7 @@ class RestaurantTable(TimestampMixin, Base):
     
     assignments: Mapped[List["TableAssignment"]] = relationship(back_populates="table")
     reservations: Mapped[List["TableReservation"]] = relationship(back_populates="table")
-    # Sessions relationship to be added later
+    sessions: Mapped[List["CustomerSession"]] = relationship(back_populates="table")
 
 class TableAssignment(TimestampMixin, Base):
     __tablename__ = "table_assignments"

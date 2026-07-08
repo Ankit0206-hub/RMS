@@ -20,7 +20,7 @@ const AddCategoryWithItems = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
 
     const { data: categories } = useQuery({
-        queryKey: ['categories'],
+        queryKey: ['categoriesList'],
         queryFn: async () => {
             const response = await api.get('/admin/categories/');
             return response.data.data;

@@ -15,8 +15,9 @@ class CustomerSession(TimestampMixin, Base):
     number_of_people: Mapped[Optional[int]] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20), default="Active", index=True) # Active, Completed
     
+    table: Mapped["RestaurantTable"] = relationship(back_populates="sessions")
     orders: Mapped[List["Order"]] = relationship(back_populates="session")
-    # bills relationship to be added later
+    bills: Mapped[List["Bill"]] = relationship(back_populates="session")
 
 class Order(TimestampMixin, Base):
     __tablename__ = "orders"
@@ -24,6 +25,7 @@ class Order(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     session_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("customer_sessions.id", ondelete="RESTRICT"), index=True)
     waiter_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="SET NULL"), index=True)
+    order_type: Mapped[str] = mapped_column(String(50), default="Dine-in", index=True) # Dine-in, Takeaway, Delivery
     status: Mapped[str] = mapped_column(String(20), default="Pending", index=True) # Pending, Confirmed, Cooked, Served, Completed, Cancelled
     special_instructions: Mapped[Optional[str]] = mapped_column(Text)
     

@@ -42,6 +42,12 @@ class BillCreate(BaseModel):
     # Typically, bills are generated automatically based on orders in the session.
     # The actual calculation will happen in the service.
 
+class BillSessionResponse(BaseModel):
+    id: int
+    customer_name: Optional[str]
+    customer_phone: Optional[str]
+    model_config = ConfigDict(from_attributes=True)
+
 class BillResponse(BillBase):
     id: int
     bill_number: str
@@ -50,4 +56,5 @@ class BillResponse(BillBase):
     payment_status: str
     items: List[BillItemResponse] = []
     payments: List[PaymentResponse] = []
+    session: Optional[BillSessionResponse] = None
     model_config = ConfigDict(from_attributes=True)

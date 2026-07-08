@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { DataTable, Pagination } from '../../components/ui';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { 
@@ -8,7 +9,6 @@ import {
     Coffee, Pizza, Utensils, IceCream, CupSoda, Sandwich, Soup, Salad,
     AlertCircle, PauseCircle, CheckCircle2, ChevronRight, Upload
 } from 'lucide-react';
-import { DataTable } from '../../components/ui';
 import EditItemModal from './EditItemModal';
 
 const MenuItems = () => {
@@ -29,17 +29,17 @@ const MenuItems = () => {
     });
 
     const { data: menuItemsData, isLoading: isMenuLoading } = useQuery({
-        queryKey: ['menuItems'],
+        queryKey: ['menuItemsList'],
         queryFn: async () => {
-            const response = await api.get('/admin/menu');
+            const response = await api.get('/admin/menu/');
             return response.data.data;
         }
     });
 
     const { data: categoriesData } = useQuery({
-        queryKey: ['categories'],
+        queryKey: ['categoriesList'],
         queryFn: async () => {
-            const response = await api.get('/admin/categories');
+            const response = await api.get('/admin/categories/');
             return response.data.data;
         }
     });
@@ -257,37 +257,17 @@ const MenuItems = () => {
                                     />
                                 </div>
 
-                                <div className="p-4 flex justify-between items-center text-xs text-gray-500 font-medium">
-                                    <div>Showing {filteredItems.length === 0 ? 0 : ((currentPage - 1) * rowsPerPage) + 1} to {Math.min(currentPage * rowsPerPage, filteredItems.length)} of {filteredItems.length} items</div>
-                                    <div className="flex items-center space-x-2">
-                                        <button 
-                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                            disabled={currentPage === 1}
-                                            className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:bg-gray-50 disabled:opacity-50"
-                                        >&lt;</button>
-                                        <button className="w-7 h-7 flex items-center justify-center rounded-md bg-[#6366f1] text-white font-bold shadow">{currentPage}</button>
-                                        <button 
-                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                            disabled={currentPage === totalPages}
-                                            className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                                        >&gt;</button>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <span>Rows per page:</span>
-                                        <select 
-                                            value={rowsPerPage}
-                                            onChange={(e) => {
-                                                setRowsPerPage(Number(e.target.value));
-                                                setCurrentPage(1);
-                                            }}
-                                            className="border border-gray-200 rounded-md px-2 py-1 outline-none font-semibold"
-                                        >
-                                            <option value={8}>8</option>
-                                            <option value={20}>20</option>
-                                            <option value={50}>50</option>
-                                        </select>
-                                    </div>
-                                </div>
+                                <Pagination 
+                                    currentPage={currentPage}
+                                    totalItems={filteredItems.length}
+                                    itemsPerPage={rowsPerPage}
+                                    onPageChange={setCurrentPage}
+                                    onItemsPerPageChange={(val) => {
+                                        setRowsPerPage(val);
+                                        setCurrentPage(1);
+                                    }}
+                                    itemName="items"
+                                />
                             </>
                         );
                     })()}

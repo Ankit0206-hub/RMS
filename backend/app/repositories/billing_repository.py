@@ -23,7 +23,7 @@ class BillingRepository:
         return result.scalars().first()
 
     async def get_bills(self, db: AsyncSession, page: int, page_size: int, payment_status: Optional[str] = None) -> Tuple[List[Bill], int]:
-        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments))
+        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments), selectinload(Bill.session))
         count_stmt = select(func.count(Bill.id))
         
         if payment_status:
@@ -37,12 +37,12 @@ class BillingRepository:
         return result.scalars().all(), total
 
     async def get_bill_by_id(self, db: AsyncSession, bill_id: int) -> Optional[Bill]:
-        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments)).where(Bill.id == bill_id)
+        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments), selectinload(Bill.session)).where(Bill.id == bill_id)
         result = await db.execute(stmt)
         return result.scalars().first()
 
     async def get_bill_by_session(self, db: AsyncSession, session_id: int) -> Optional[Bill]:
-        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments)).where(Bill.session_id == session_id)
+        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments), selectinload(Bill.session)).where(Bill.session_id == session_id)
         result = await db.execute(stmt)
         return result.scalars().first()
         
@@ -54,7 +54,7 @@ class BillingRepository:
         return db_payment
         
     async def update_bill_status(self, db: AsyncSession, bill_id: int, payment_status: str) -> Optional[Bill]:
-        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments)).where(Bill.id == bill_id)
+        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments), selectinload(Bill.session)).where(Bill.id == bill_id)
         result = await db.execute(stmt)
         bill = result.scalars().first()
         if bill:
