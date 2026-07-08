@@ -1,13 +1,14 @@
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.db.database import AsyncSessionLocal
+from app.db.database import AsyncSessionLocal, engine
 from app.models.security import Employee, Role
 from app.core.security import get_password_hash
 
 async def seed_employees():
     async with AsyncSessionLocal() as db:
         # Get roles
+        admin_role = (await db.execute(select(Role).filter(Role.name == "Admin"))).scalar_one_or_none()
         operator_role = (await db.execute(select(Role).filter(Role.name == "Operator"))).scalar_one_or_none()
         waiter_role = (await db.execute(select(Role).filter(Role.name == "Waiter"))).scalar_one_or_none()
 
@@ -49,6 +50,7 @@ async def seed_employees():
 
         await db.commit()
         print("Done.")
+    await engine.dispose()
 
 if __name__ == "__main__":
     asyncio.run(seed_employees())

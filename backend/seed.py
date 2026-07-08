@@ -1,6 +1,6 @@
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.database import AsyncSessionLocal
+from app.db.database import AsyncSessionLocal, engine
 from app.repositories.admin.admin_repository import admin_repo
 from app.models.security import Role
 
@@ -19,6 +19,7 @@ async def seed_admin():
             print("Admin and roles created.")
         else:
             print("Admin already exists.")
+    await engine.dispose()
 
 if __name__ == "__main__":
     asyncio.run(seed_admin())
