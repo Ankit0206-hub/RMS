@@ -75,7 +75,6 @@ const Settings = () => {
     const tabs = [
         { id: 'general', label: 'General Details', icon: <Store className="w-4 h-4" /> },
         { id: 'billing', label: 'Billing & Taxes', icon: <Receipt className="w-4 h-4" /> },
-        { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4" /> },
         { id: 'security', label: 'Security', icon: <Shield className="w-4 h-4" /> }
     ];
 
@@ -301,17 +300,15 @@ const Settings = () => {
                             </div>
                         )}
 
-                        {/* Tab Content: Notifications & Security (Placeholders) */}
-                        {(activeTab === 'notifications' || activeTab === 'security') && (
+                        {/* Tab Content: Security (Placeholder) */}
+                        {activeTab === 'security' && (
                             <div className="p-12 flex flex-col items-center justify-center text-center">
                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                    {activeTab === 'notifications' ? <Bell className="w-8 h-8 text-gray-400" /> : <Shield className="w-8 h-8 text-gray-400" />}
+                                    <Shield className="w-8 h-8 text-gray-400" />
                                 </div>
                                 <h3 className="text-sm font-bold text-gray-900 mb-2">Coming Soon</h3>
                                 <p className="text-[11px] font-medium text-gray-500 max-w-sm">
-                                    {activeTab === 'notifications' 
-                                        ? 'Detailed notification preferences (email, push, SMS) are currently being developed and will be available in a future update.'
-                                        : 'Advanced security controls, two-factor authentication, and IP whitelisting will be available in a future update.'}
+                                    Advanced security controls, two-factor authentication, and IP whitelisting will be available in a future update.
                                 </p>
                             </div>
                         )}
