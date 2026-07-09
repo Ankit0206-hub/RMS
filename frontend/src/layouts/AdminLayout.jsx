@@ -234,9 +234,12 @@ const AdminLayout = () => {
         <div className="flex h-screen bg-[#f3f4f9] text-gray-900 font-inter">
             {/* Sidebar */}
             <div className={`${isSidebarOpen ? 'w-[260px]' : 'w-20'} shrink-0 bg-[#293275] text-white flex flex-col transition-all duration-300 relative`}>
-                <div className={`h-20 flex items-center ${isSidebarOpen ? 'px-6' : 'justify-center px-0'}`}>
-                    <div className="flex items-center space-x-3">
-                        <div className="bg-white p-2 rounded-lg">
+                <div className={`h-24 flex items-center ${isSidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
+                    <div 
+                        className={`flex items-center space-x-3 ${!isSidebarOpen ? 'cursor-pointer' : ''}`}
+                        onClick={() => !isSidebarOpen && setIsSidebarOpen(true)}
+                    >
+                        <div className="bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                             <UtensilsCrossed className="w-6 h-6 text-[#6366f1]" />
                         </div>
                         {isSidebarOpen && (
@@ -246,6 +249,14 @@ const AdminLayout = () => {
                             </div>
                         )}
                     </div>
+                    {isSidebarOpen && (
+                        <button 
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="text-indigo-200 hover:text-white transition-colors focus:outline-none"
+                        >
+                            <Menu className="h-6 w-6" />
+                        </button>
+                    )}
                 </div>
                 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
@@ -349,12 +360,6 @@ const AdminLayout = () => {
                 {/* Top Header matching the mockup */}
                 <header className="h-24 bg-white flex items-center justify-between px-8 shrink-0 relative z-10 border-b border-gray-100">
                     <div className="flex items-center">
-                        <button 
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="text-gray-500 hover:text-gray-900 transition-colors mr-6"
-                        >
-                            <Menu className="h-6 w-6" />
-                        </button>
                         <div>
                             {location.pathname === '/admin/dashboard' || location.pathname === '/admin' ? (
                                 <>
