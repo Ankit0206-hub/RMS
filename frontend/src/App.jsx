@@ -1,4 +1,5 @@
 import React from 'react';
+import AppRoutes from './routes/AppRoutes';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -74,7 +75,7 @@ const App = () => {
                         <Routes>
                             <Route path="/" element={<Navigate to="/login" />} />
                             <Route path="/login" element={<Login />} />
-                            <Route path="/customer/menu" element={<CustomerMenu />} />
+                            <Route path="/customer/*" element={<AppRoutes />} />
                         
                         {/* Admin Routes */}
                         <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
