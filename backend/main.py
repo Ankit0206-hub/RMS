@@ -59,7 +59,7 @@ app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations
 app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(operator_router.router, prefix="/api/v1", tags=["Operator"])
 app.include_router(waiter_router.router, prefix="/api/v1", tags=["Waiter"])
-app.include_router(websocket_router.router, tags=["WebSockets"])
+app.include_router(websocket_router.router, prefix="/api/v1", tags=["WebSockets"])
 
 @app.get("/")
 async def root():

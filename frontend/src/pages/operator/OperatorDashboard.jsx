@@ -15,18 +15,19 @@ const OperatorDashboard = () => {
         }
     });
 
-    const { data: tables } = useQuery({
+    const { data: tablesResponse } = useQuery({
         queryKey: ['tables'],
         queryFn: async () => {
-            const res = await api.get('/admin/tables/');
-            return res.data.data;
+            const res = await api.get('/admin/tables');
+            return res.data;
         }
     });
+    const tables = tablesResponse?.data || [];
 
     const { data: sessions } = useQuery({
         queryKey: ['sessions'],
         queryFn: async () => {
-            const res = await api.get('/admin/sessions/');
+            const res = await api.get('/admin/ordering/sessions');
             return res.data.data;
         },
         refetchInterval: 10000 // Polling every 10s for live tracking
@@ -35,7 +36,7 @@ const OperatorDashboard = () => {
     const { data: bills } = useQuery({
         queryKey: ['bills'],
         queryFn: async () => {
-            const res = await api.get('/admin/bills/');
+            const res = await api.get('/admin/billing/bills');
             return res.data.data;
         }
     });
