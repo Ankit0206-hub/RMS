@@ -37,7 +37,7 @@ const CustomerMenu = () => {
     // 2. Connect Customer WebSocket when session is ready
     useEffect(() => {
         if (sessionId) {
-            const socket = new WebSocket(`ws://localhost:8000/api/v1/ws/customer?session_id=${sessionId}`);
+            const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/customer?session_id=${sessionId}`);
             socket.onopen = () => console.log("Customer WebSocket Connected");
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);

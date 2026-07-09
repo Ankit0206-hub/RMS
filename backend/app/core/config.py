@@ -1,16 +1,17 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Restaurant ERP API"
-    SECRET_KEY: str = "your_secret_key_here"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    PROJECT_NAME: str
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
     
-    MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str = ""
-    MYSQL_HOST: str = "localhost"
-    MYSQL_PORT: str = "3306"
-    MYSQL_DB: str = "dineops"
+    MYSQL_USER: str
+    MYSQL_PASSWORD: str
+    MYSQL_HOST: str
+    MYSQL_PORT: str
+    MYSQL_DB: str
+    CORS_ORIGINS: str
 
     @property
     def DATABASE_URL(self) -> str:
