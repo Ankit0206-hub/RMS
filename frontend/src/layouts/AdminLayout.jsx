@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
@@ -14,11 +14,31 @@ const AdminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const queryClient = useQueryClient();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
     const [expandedMenus, setExpandedMenus] = useState({'Menu Management': false});
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    
+    // Auto-close sidebar on mobile when navigating
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+        }
+    }, [location.pathname]);
+
+    // Handle window resize to auto-open/close sidebar
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setIsSidebarOpen(true);
+            } else {
+                setIsSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     
     const { data: notificationsData } = useQuery({
         queryKey: ['notifications'],
@@ -231,9 +251,17 @@ const AdminLayout = () => {
     };
 
     return (
-        <div className="flex h-screen bg-[#f3f4f9] text-gray-900 font-inter">
+        <div className="flex h-screen bg-[#f3f4f9] text-gray-900 font-inter overflow-hidden">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <div className={`${isSidebarOpen ? 'w-[260px]' : 'w-20'} shrink-0 bg-[#293275] text-white flex flex-col transition-all duration-300 relative`}>
+            <div className={`fixed inset-y-0 left-0 z-50 transform md:relative md:translate-x-0 shrink-0 bg-[#293275] text-white flex flex-col transition-all duration-300 ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full w-[260px] md:w-20'}`}>
                 <div className={`h-24 flex items-center ${isSidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
                     <div 
                         className={`flex items-center space-x-3 ${!isSidebarOpen ? 'cursor-pointer' : ''}`}
@@ -356,24 +384,30 @@ const AdminLayout = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
                 {/* Top Header matching the mockup */}
-                <header className="h-24 bg-white flex items-center justify-between px-8 shrink-0 relative z-10 border-b border-gray-100">
+                <header className="h-auto min-h-24 bg-white flex items-center justify-between px-4 md:px-8 py-3 md:py-0 shrink-0 relative z-10 border-b border-gray-100">
                     <div className="flex items-center">
+                        <button 
+                            className="md:hidden text-gray-500 hover:text-gray-900 mr-3"
+                            onClick={() => setIsSidebarOpen(true)}
+                        >
+                            <Menu className="w-6 h-6" />
+                        </button>
                         <div>
                             {location.pathname === '/admin/dashboard' || location.pathname === '/admin' ? (
                                 <>
-                                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                                        Welcome back, Admin! <span className="ml-2 text-2xl">👋</span>
+                                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center">
+                                        Welcome back, Admin! <span className="ml-2 text-xl md:text-2xl">👋</span>
                                     </h1>
-                                    <p className="text-sm text-gray-500 mt-1">Here's what's happening in your restaurant today.</p>
+                                    <p className="text-xs md:text-sm text-gray-500 mt-1">Here's what's happening in your restaurant today.</p>
                                 </>
                             ) : (
                                 <>
-                                    <h2 className="text-2xl font-bold text-gray-900">
+                                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">
                                         {getPageTitle()}
                                     </h2>
-                                    <div className="flex items-center text-xs text-gray-500 mt-1.5 font-medium">
+                                    <div className="flex items-center text-[10px] md:text-xs text-gray-500 mt-1.5 font-medium flex-wrap">
                                         <span className="hover:text-blue-600 cursor-pointer">Dashboard</span>
                                         <ChevronRight className="w-3 h-3 mx-1" />
                                         {getBreadcrumbs()}
@@ -383,9 +417,9 @@ const AdminLayout = () => {
                         </div>
                     </div>
                     
-                    <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-3 md:space-x-6">
                         {/* Date Picker Button */}
-                        <button className="flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <button className="hidden lg:flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -444,9 +478,15 @@ const AdminLayout = () => {
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)}></div>
                                     <div className="absolute right-0 top-12 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50">
-                                        <div className="px-4 py-2 border-b border-gray-50">
-                                            <p className="text-sm font-bold text-gray-900">Admin Owner</p>
-                                            <p className="text-[10px] text-gray-500 font-medium">Super Admin</p>
+                                        <div className="px-4 py-2 border-b border-gray-50 flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <User className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+                                            </div>
+                                            <div className="text-left hidden md:block">
+                                                <p className="text-sm font-bold text-gray-900">Admin User</p>
+                                                <p className="text-xs text-gray-500">Super Admin</p>
+                                            </div>
+                                            <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
                                         </div>
                                         <button 
                                             onClick={handleLogout}
