@@ -1,14 +1,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-inter: "Inter", sans-serif;
 }
 
-body {
-  font-family: var(--font-inter);
+/* --- Base Resets --- */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: white;
+  color: #1f2937;
+  /* We will use Inter as the default to not break the Admin dashboard */
+  font-family: var(--font-inter); 
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* --- Admin Utilities --- */
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
       display: none;
@@ -38,3 +65,22 @@ body {
   }
 }
 
+/* --- Customer UI Animations --- */
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.animate-progress {
+  width: 100%;
+  animation: progress 2.5s linear forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.25s ease-out;
+}
