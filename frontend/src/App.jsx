@@ -20,6 +20,7 @@ import Dashboard from './pages/admin/Dashboard';
 import OperatorLayout from './layouts/OperatorLayout';
 import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
+import DeliveryExecutive from './pages/operator/DeliveryExecutive';
 import WaiterDashboard from './pages/waiter/WaiterDashboard';
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
@@ -62,6 +63,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     
     return children;
 };
+
+const OperatorPlaceholder = ({ title }) => (
+    <div className="p-8 bg-white rounded-2xl border border-gray-150 shadow-sm max-w-xl">
+        <h2 className="text-xl font-bold text-slate-800 mb-2">{title}</h2>
+        <p className="text-sm text-slate-500 font-medium">This section is currently under development or will be integrated soon.</p>
+    </div>
+);
 
 const App = () => {
     return (
@@ -119,6 +127,16 @@ const App = () => {
                             <Route path="food-items" element={<FoodItems />} />
                             <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
                             <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
+                            
+                            {/* Newly added working routes matching the mockup sidebar */}
+                            <Route path="delivery" element={<DeliveryExecutive />} />
+                            <Route path="reservations" element={<OperatorPlaceholder title="Table Reservations Monitor" />} />
+                            <Route path="customers" element={<Customers />} />
+                            <Route path="invoices" element={<Invoices />} />
+                            <Route path="testimonials" element={<OperatorPlaceholder title="Customer Testimonials & Feedback" />} />
+                            <Route path="users" element={<OperatorPlaceholder title="User & Staff Directory" />} />
+                            <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
+                            <Route path="settings" element={<OperatorPlaceholder title="Operator Preferences & Settings" />} />
                         </Route>
 
                         {/* Waiter Routes */}

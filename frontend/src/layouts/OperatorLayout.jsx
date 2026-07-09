@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Utensils, LayoutDashboard, Grid, LogOut, Bell, ClipboardList, Menu } from 'lucide-react';
+import { 
+    LayoutDashboard, 
+    ShoppingBag, 
+    Grid, 
+    Calendar, 
+    Truck, 
+    CreditCard, 
+    User, 
+    FileText, 
+    MessageSquare, 
+    Users, 
+    BarChart2, 
+    Settings, 
+    ArrowLeft,
+    Bell,
+    Menu,
+    Sun,
+    Search,
+    Utensils
+} from 'lucide-react';
 
 const OperatorLayout = () => {
     const { logout } = useAuth();
@@ -16,49 +35,115 @@ const OperatorLayout = () => {
 
     const navItems = [
         { path: '/operator/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/operator/tables', label: 'Table Management', icon: Grid },
-        { path: '/operator/orders', label: 'Order Monitor', icon: ClipboardList },
-        { path: '/operator/billing', label: 'Billing & Payments', icon: Utensils },
-        { path: '/operator/food-items', label: 'Food Items', icon: Utensils },
+        { path: '/operator/orders', label: 'Pos', icon: ShoppingBag },
+        { path: '/operator/tables', label: 'Table', icon: Grid },
+        { path: '/operator/reservations', label: 'Reservations', icon: Calendar },
+        
+        { type: 'header', label: 'Offering' },
+        { path: '/operator/delivery', label: 'Delivery Executive', icon: Truck },
+        { path: '/operator/billing', label: 'Payments', icon: CreditCard, badge: 'New' },
+        { path: '/operator/customers', label: 'Customer', icon: User },
+        { path: '/operator/invoices', label: 'Invoice', icon: FileText },
+        
+        { type: 'header', label: 'Back Office' },
+        { path: '/operator/testimonials', label: 'Testimonial', icon: MessageSquare },
+        { path: '/operator/users', label: 'User', icon: Users },
+        { path: '/operator/reports', label: 'Reports', icon: BarChart2 },
+        { path: '/operator/settings', label: 'Setting', icon: Settings },
     ];
 
     return (
         <div className="flex h-screen bg-gray-50 text-gray-900 font-inter overflow-hidden">
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} shrink-0 bg-white border-r border-gray-200 flex flex-col shadow-sm transition-all duration-300`}>
-                <div className={`h-16 flex items-center border-b border-gray-200 ${isSidebarOpen ? 'px-6' : 'justify-center px-0'}`}>
-                    <Utensils className={`h-6 w-6 shrink-0 text-cyan-600 ${isSidebarOpen ? 'mr-2' : ''}`} />
-                    {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap">DineOps <span className="text-cyan-500">Operator</span></span>}
+            <aside className={`${isSidebarOpen ? 'w-[260px]' : 'w-20'} shrink-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300`}>
+                {/* Logo Area */}
+                <div className={`h-16 flex items-center ${isSidebarOpen ? 'px-6' : 'justify-center px-0'} border-b border-gray-50/50`}>
+                    <div className="flex items-center">
+                        <Utensils className={`h-6 w-6 shrink-0 text-cyan-600 ${isSidebarOpen ? 'mr-2' : ''}`} />
+                        {isSidebarOpen && (
+                            <span className="text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap">
+                                DineOps <span className="text-cyan-500">Operator</span>
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            title={!isSidebarOpen ? item.label : undefined}
-                            className={({ isActive }) =>
-                                `flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                                    isActive 
-                                    ? 'bg-cyan-50 text-cyan-600' 
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                                } ${!isSidebarOpen && 'justify-center'}`
-                            }
-                        >
-                            <item.icon className={`h-5 w-5 shrink-0 ${isSidebarOpen ? 'mr-3' : ''} ${window.location.pathname.startsWith(item.path) ? 'text-cyan-600' : 'text-gray-400'}`} />
-                            {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
-                        </NavLink>
-                    ))}
+                {/* Profile Card */}
+                {isSidebarOpen ? (
+                    <div className="flex items-center px-6 py-5 border-b border-gray-50/80">
+                        <img 
+                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150" 
+                            alt="Saiful Talukdar" 
+                            className="w-10 h-10 rounded-full object-cover border border-slate-100 shrink-0"
+                        />
+                        <div className="ml-3 min-w-0">
+                            <h4 className="text-sm font-bold text-slate-850 truncate leading-tight">Saiful Talukdar</h4>
+                            <p className="text-[11px] font-semibold text-slate-400 truncate mt-1">Product Designer</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex justify-center py-4 border-b border-gray-50/80">
+                        <img 
+                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150" 
+                            alt="Saiful Talukdar" 
+                            className="w-9 h-9 rounded-full object-cover border border-slate-100"
+                        />
+                    </div>
+                )}
+
+                {/* Navigation Links */}
+                <nav className="flex-1 py-4 px-4 space-y-0.5 overflow-y-auto scrollbar-hide">
+                    {navItems.map((item, index) => {
+                        if (item.type === 'header') {
+                            return (
+                                <div 
+                                    key={index} 
+                                    className={`text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3.5 mt-5 mb-1.5 ${!isSidebarOpen && 'hidden'}`}
+                                >
+                                    {item.label}
+                                </div>
+                            );
+                        }
+
+                        const Icon = item.icon;
+
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                title={!isSidebarOpen ? item.label : undefined}
+                            >
+                                {({ isActive }) => (
+                                    <div className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer ${
+                                        isActive 
+                                        ? 'bg-gray-100/80 text-gray-900 font-bold' 
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                    } ${!isSidebarOpen ? 'justify-center' : ''}`}>
+                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isSidebarOpen ? 'mr-3.5' : ''} ${
+                                            isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
+                                        }`} />
+                                        {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
+                                        {isSidebarOpen && item.badge && (
+                                            <span className="bg-slate-900 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ml-auto uppercase tracking-wider">
+                                                {item.badge}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200">
+                {/* Footer Sign out / Login */}
+                <div className="p-4 border-t border-gray-50/80">
                     <button 
                         onClick={handleLogout}
                         title={!isSidebarOpen ? 'Sign out' : undefined}
-                        className={`flex items-center px-3 py-2 text-sm font-semibold text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors ${!isSidebarOpen ? 'justify-center w-full' : 'w-full'}`}
+                        className={`flex items-center px-3.5 py-2.5 text-[13px] font-semibold text-gray-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors ${!isSidebarOpen ? 'justify-center w-full' : 'w-full'}`}
                     >
-                        <LogOut className={`h-5 w-5 shrink-0 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                        {isSidebarOpen && <span className="whitespace-nowrap">Sign out</span>}
+                        <ArrowLeft className={`h-[18px] w-[18px] shrink-0 ${isSidebarOpen ? 'mr-3.5' : ''} text-gray-400 group-hover:text-red-500`} />
+                        {isSidebarOpen && <span className="whitespace-nowrap">Login</span>}
                     </button>
                 </div>
             </aside>
@@ -66,27 +151,44 @@ const OperatorLayout = () => {
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Topbar */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm shrink-0">
+                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0">
                     <div className="flex items-center space-x-4">
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="text-gray-500 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
+                            className="text-gray-500 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-50"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
-                        <h1 className="text-lg font-bold text-gray-900">Operator Portal</h1>
+                        
+                        {/* Search Bar */}
+                        <div className="relative w-64 hidden sm:block">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input 
+                                type="text" 
+                                placeholder="Search (Ctrl+/)" 
+                                className="w-full pl-9 pr-4 py-1.5 bg-gray-50/50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                            />
+                        </div>
                     </div>
+                    
                     <div className="flex items-center space-x-4">
-                        <button className="text-gray-400 hover:text-cyan-600 transition-colors relative">
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-cyan-500 ring-2 ring-white"></span>
+                        {/* Sun/Light-dark Toggle */}
+                        <button className="p-2 text-gray-400 hover:text-orange-500 hover:bg-gray-50 rounded-lg transition-colors">
+                            <Sun className="h-5 w-5" />
                         </button>
+                        
+                        {/* Profile Dropdown */}
                         <div className="relative">
                             <button 
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="h-8 w-8 rounded-full bg-cyan-100 flex items-center justify-center text-sm font-bold text-cyan-700 hover:bg-cyan-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
+                                className="flex items-center focus:outline-none relative"
                             >
-                                OP
+                                <img 
+                                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150" 
+                                    alt="Profile" 
+                                    className="w-8 h-8 rounded-full object-cover border border-slate-200 hover:border-orange-500 transition-colors" 
+                                />
+                                <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 ring-2 ring-white"></span>
                             </button>
                             
                             {isProfileOpen && (
@@ -97,14 +199,14 @@ const OperatorLayout = () => {
                                     ></div>
                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                                         <div className="px-4 py-2 border-b border-gray-100">
-                                            <p className="text-sm font-medium text-gray-900">Operator</p>
-                                            <p className="text-xs text-gray-500 truncate">operator@dineops.com</p>
+                                            <p className="text-sm font-medium text-gray-900">Saiful Talukdar</p>
+                                            <p className="text-xs text-gray-500 truncate">saiful@restrobit.com</p>
                                         </div>
                                         <button
                                             onClick={handleLogout}
-                                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                            className="flex items-center w-full px-4 py-2.5 text-sm text-red-655 hover:bg-red-50 transition-colors"
                                         >
-                                            <LogOut className="h-4 w-4 mr-2" />
+                                            <ArrowLeft className="h-4 w-4 mr-2" />
                                             Sign Out
                                         </button>
                                     </div>
@@ -114,6 +216,7 @@ const OperatorLayout = () => {
                     </div>
                 </header>
 
+                {/* Sub-view rendering */}
                 <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
                     <Outlet />
                 </div>
