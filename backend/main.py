@@ -38,9 +38,21 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
+import json
+    
+def parse_cors(origins_str):
+    if not origins_str:
+        return ["*"]
+    if origins_str.startswith("["):
+        try:
+            return json.loads(origins_str)
+        except Exception:
+            pass
+    return [origin.strip() for origin in origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in settings.CORS_ORIGINS.split(",")] if settings.CORS_ORIGINS else ["*"],
+    allow_origins=parse_cors(settings.CORS_ORIGINS),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

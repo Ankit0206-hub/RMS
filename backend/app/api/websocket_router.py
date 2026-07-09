@@ -21,6 +21,8 @@ async def verify_token(websocket: WebSocket, token: str) -> str:
 @router.websocket("/ws/admin")
 async def websocket_admin(websocket: WebSocket, token: str = Query(...)):
     role = await verify_token(websocket, token)
+    if role is None:
+        return
     if role != "admin":
         await websocket.close(code=1008)
         return
@@ -36,6 +38,8 @@ async def websocket_admin(websocket: WebSocket, token: str = Query(...)):
 @router.websocket("/ws/operator")
 async def websocket_operator(websocket: WebSocket, token: str = Query(...)):
     role = await verify_token(websocket, token)
+    if role is None:
+        return
     # Allow admins to connect as operators for testing flexibility
     if role not in ["operator", "admin", "employee"]: 
         await websocket.close(code=1008)
@@ -51,6 +55,8 @@ async def websocket_operator(websocket: WebSocket, token: str = Query(...)):
 @router.websocket("/ws/waiter")
 async def websocket_waiter(websocket: WebSocket, token: str = Query(...)):
     role = await verify_token(websocket, token)
+    if role is None:
+        return
     if role not in ["waiter", "admin", "employee"]:
         await websocket.close(code=1008)
         return
