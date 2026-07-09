@@ -113,7 +113,7 @@ const MenuItems = () => {
     return (
         <div className="space-y-4 pb-10 font-inter">
             {/* KPI Cards Row */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm flex flex-col">
                     <div className="flex items-start space-x-4">
                         <div className="p-2 bg-indigo-50 rounded-full text-[#6366f1]">
@@ -141,21 +141,6 @@ const MenuItems = () => {
                     </div>
                     <div className="text-[10px] font-bold text-green-500 text-center">
                         {activePercentage}% <span className="text-gray-400 font-medium ml-1">of total</span>
-                    </div>
-                </div>
-
-                <div className="bg-white p-2 rounded-xl border border-gray-100 shadow-sm flex flex-col">
-                    <div className="flex items-start space-x-4">
-                        <div className="p-2 bg-orange-50 rounded-full text-orange-500">
-                            <PauseCircle className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <p className="text-[11px] font-semibold text-gray-500 mb-0.5">Inactive Items</p>
-                            <p className="text-3xl font-black text-gray-900 leading-tight">{inactiveItems}</p>
-                        </div>
-                    </div>
-                    <div className="text-[10px] font-bold text-orange-400 text-center">
-                        {inactivePercentage}% <span className="text-gray-400 font-medium ml-1">of total</span>
                     </div>
                 </div>
 
@@ -195,41 +180,43 @@ const MenuItems = () => {
                 
                 {/* Left Side: Data Table (span 3) */}
                 <div className="lg:col-span-3 bg-white border border-gray-100 overflow-hidden flex flex-col">
-                    <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 justify-between items-center bg-white">
+                    <div className="p-4 md:p-5 border-b border-gray-100 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center bg-white">
                         <h3 className="font-bold text-gray-900 text-[15px]">Menu Items</h3>
                         
-                        <div className="flex items-center space-x-3">
-                            <div className="relative">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center w-full lg:w-auto gap-3">
+                            <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <input 
                                     type="text" 
                                     placeholder="Search menu items..." 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 transition-all"
+                                    className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full md:w-64 transition-all"
                                 />
                             </div>
                             
-                            <select 
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                                className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
-                            >
-                                <option>Category</option>
-                                {categoriesData?.map(c => (
-                                    <option key={c.id} value={c.name}>{c.name}</option>
-                                ))}
-                            </select>
-                            
-                            <select 
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
-                            >
-                                <option>Status</option>
-                                <option>Active</option>
-                                <option>Inactive</option>
-                            </select>
+                            <div className="flex items-center gap-3 w-full md:w-auto">
+                                <select 
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="flex-1 md:flex-none bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                                >
+                                    <option>Category</option>
+                                    {categoriesData?.map(c => (
+                                        <option key={c.id} value={c.name}>{c.name}</option>
+                                    ))}
+                                </select>
+                                
+                                <select 
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="flex-1 md:flex-none bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                                >
+                                    <option>Status</option>
+                                    <option>Active</option>
+                                    <option>Inactive</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     
