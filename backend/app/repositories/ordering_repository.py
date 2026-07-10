@@ -29,7 +29,7 @@ class OrderingRepository:
         return result.scalars().first()
     
     async def get_sessions(self, db: AsyncSession, page: int, page_size: int, status: Optional[str] = None) -> Tuple[List[CustomerSession], int]:
-        stmt = select(CustomerSession).options(selectinload(CustomerSession.orders))
+        stmt = select(CustomerSession).options(selectinload(CustomerSession.orders).selectinload(Order.items))
         count_stmt = select(func.count(CustomerSession.id))
         
         if status:
