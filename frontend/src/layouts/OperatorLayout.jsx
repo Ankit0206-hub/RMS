@@ -6,7 +6,6 @@ import {
     ShoppingBag, 
     Grid, 
     Calendar, 
-    Truck, 
     CreditCard, 
     User, 
     FileText, 
@@ -40,7 +39,6 @@ const OperatorLayout = () => {
         { path: '/operator/reservations', label: 'Reservations', icon: Calendar },
         
         { type: 'header', label: 'Offering' },
-        { path: '/operator/delivery', label: 'Delivery Executive', icon: Truck },
         { path: '/operator/billing', label: 'Payments', icon: CreditCard, badge: 'New' },
         { path: '/operator/customers', label: 'Customer', icon: User },
         { path: '/operator/invoices', label: 'Invoice', icon: FileText },
