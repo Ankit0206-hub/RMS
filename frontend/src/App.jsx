@@ -20,7 +20,6 @@ import Dashboard from './pages/admin/Dashboard';
 import OperatorLayout from './layouts/OperatorLayout';
 import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
-import DeliveryExecutive from './pages/operator/DeliveryExecutive';
 import WaiterDashboard from './pages/waiter/WaiterDashboard';
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
@@ -129,7 +128,6 @@ const App = () => {
                             <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
                             
                             {/* Newly added working routes matching the mockup sidebar */}
-                            <Route path="delivery" element={<DeliveryExecutive />} />
                             <Route path="reservations" element={<OperatorPlaceholder title="Table Reservations Monitor" />} />
                             <Route path="customers" element={<Customers />} />
                             <Route path="invoices" element={<Invoices />} />
