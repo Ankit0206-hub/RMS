@@ -39,9 +39,8 @@ const OperatorLayout = () => {
         { path: '/operator/reservations', label: 'Reservations', icon: Calendar },
         
         { type: 'header', label: 'Offering' },
-        { path: '/operator/billing', label: 'Payments', icon: CreditCard, badge: 'New' },
+        { path: '/operator/billing', label: 'Billing', icon: FileText },
         { path: '/operator/customers', label: 'Customer', icon: User },
-        { path: '/operator/invoices', label: 'Invoice', icon: FileText },
         
         { type: 'header', label: 'Back Office' },
         { path: '/operator/testimonials', label: 'Testimonial', icon: MessageSquare },

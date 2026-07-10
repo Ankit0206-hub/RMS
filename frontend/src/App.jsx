@@ -20,6 +20,7 @@ import Dashboard from './pages/admin/Dashboard';
 import OperatorLayout from './layouts/OperatorLayout';
 import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
+import OperatorBilling from './pages/operator/OperatorBilling';
 import WaiterDashboard from './pages/waiter/WaiterDashboard';
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
@@ -122,7 +123,7 @@ const App = () => {
                             <Route path="dashboard" element={<OperatorDashboard />} />
                             <Route path="tables" element={<Tables />} />
                             <Route path="orders" element={<Orders />} />
-                            <Route path="billing" element={<Bills />} />
+                            <Route path="billing" element={<OperatorBilling />} />
                             <Route path="food-items" element={<FoodItems />} />
                             <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
                             <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
