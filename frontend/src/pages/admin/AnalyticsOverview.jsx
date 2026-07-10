@@ -129,10 +129,10 @@ const AnalyticsOverview = () => {
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10}} dy={10} />
+                                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10}} dy={10} />
                                         <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10}} tickFormatter={formatYAxis} />
                                         <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                        <Area type="monotone" dataKey="sales" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} />
+                                        <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -145,13 +145,13 @@ const AnalyticsOverview = () => {
                             <h3 className="font-bold text-gray-900 text-sm mb-4">Sales by Payment Method</h3>
                             <div className="flex-1 flex flex-col justify-center space-y-5">
                                 {paymentMethodData.map((item, idx) => {
-                                    const max = paymentMethodData[0].value;
-                                    const width = (item.value / max) * 100;
+                                    const max = paymentMethodData.length > 0 ? paymentMethodData[0].amount : 1;
+                                    const width = ((item.amount || 0) / max) * 100;
                                     return (
                                         <div key={idx} className="relative">
                                             <div className="flex justify-between text-[10px] font-bold text-gray-600 mb-1.5">
                                                 <span>{item.name}</span>
-                                                <span className="text-gray-900">₹ {item.value.toLocaleString()} ({item.percent})</span>
+                                                <span className="text-gray-900">₹ {(item.amount || 0).toLocaleString()} ({item.percent || '0%'})</span>
                                             </div>
                                             <div className="w-full h-2 bg-indigo-50 rounded-full overflow-hidden">
                                                 <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${width}%` }}></div>
@@ -196,13 +196,13 @@ const AnalyticsOverview = () => {
                                                         <span className="text-[10px] font-bold text-gray-900">{w.name}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-2 px-4 text-center text-[10px] font-bold text-gray-600">{w.orders}</td>
-                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{w.sales.toLocaleString()}</td>
-                                                <td className="py-2 px-4 text-right text-[10px] font-semibold text-gray-600">{w.avg.toFixed(2)}</td>
+                                                <td className="py-2 px-4 text-center text-[10px] font-bold text-gray-600">{w.orders || 0}</td>
+                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{(w.sales || 0).toLocaleString()}</td>
+                                                <td className="py-2 px-4 text-right text-[10px] font-semibold text-gray-600">{((w.sales || 0)/(w.orders || 1)).toFixed(2)}</td>
                                                 <td className="py-2 px-4 text-right">
                                                     <div className="flex items-center justify-end text-[10px] font-bold text-gray-900">
                                                         <Star className="w-3 h-3 text-orange-400 fill-current mr-1" />
-                                                        {w.rating}
+                                                        {w.rating || '4.5'}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -233,13 +233,13 @@ const AnalyticsOverview = () => {
                                             <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50">
                                                 <td className="py-2 px-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <div className="w-6 h-6 rounded bg-gray-50 flex items-center justify-center text-xs">{c.img}</div>
+                                                        <div className="w-6 h-6 rounded bg-gray-50 flex items-center justify-center text-xs">{c.img || '🍽️'}</div>
                                                         <span className="text-[10px] font-bold text-gray-900">{c.name}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{c.sales.toLocaleString()}</td>
-                                                <td className="py-2 px-4 text-center text-[10px] font-semibold text-gray-600">{c.items}</td>
-                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-600">{c.percent}</td>
+                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{(c.value || 0).toLocaleString()}</td>
+                                                <td className="py-2 px-4 text-center text-[10px] font-semibold text-gray-600">{c.items || 0}</td>
+                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-600">{c.percent || '0%'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -268,13 +268,13 @@ const AnalyticsOverview = () => {
                                             <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50">
                                                 <td className="py-2 px-4">
                                                     <div className="flex items-center space-x-2">
-                                                        <img src={f.img} alt={f.name} className="w-6 h-6 rounded object-cover" />
-                                                        <span className="text-[10px] font-bold text-gray-900 truncate w-24 block" title={f.name}>{f.name}</span>
+                                                        <img src={f.img || `https://ui-avatars.com/api/?name=${f.item_name || 'Item'}&background=random`} alt={f.item_name} className="w-6 h-6 rounded object-cover" />
+                                                        <span className="text-[10px] font-bold text-gray-900 truncate w-24 block" title={f.item_name}>{f.item_name}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-2 px-4 text-[10px] font-semibold text-gray-600">{f.category}</td>
-                                                <td className="py-2 px-4 text-center text-[10px] font-bold text-gray-600">{f.qty}</td>
-                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{f.sales.toLocaleString()}</td>
+                                                <td className="py-2 px-4 text-[10px] font-semibold text-gray-600">{f.category || 'Unknown'}</td>
+                                                <td className="py-2 px-4 text-center text-[10px] font-bold text-gray-600">{f.total_quantity || 0}</td>
+                                                <td className="py-2 px-4 text-right text-[10px] font-bold text-gray-900">{(f.total_revenue || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
