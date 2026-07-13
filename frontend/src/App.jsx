@@ -23,6 +23,7 @@ import OperatorDashboard from './pages/operator/OperatorDashboard';
 import TableAssignment from './pages/operator/TableAssignment';
 import OperatorBilling from './pages/operator/OperatorBilling';
 import Waiters from './pages/operator/Waiters';
+import OperatorSettings from './pages/operator/OperatorSettings';
 import OperatorTables from './pages/operator/Tables';
 import OperatorFloorPlan from './pages/operator/FloorPlan';
 import WaiterDashboard from './pages/waiter/WaiterDashboard';
@@ -41,6 +42,7 @@ import Refunds from './pages/admin/Refunds';
 import PaymentMethods from './pages/admin/PaymentMethods';
 import Customers from './pages/admin/Customers';
 import AnalyticsOverview from './pages/admin/AnalyticsOverview';
+import OperatorReservations from './pages/operator/OperatorReservations';
 import Notifications from './pages/admin/Notifications';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from 'react-hot-toast';
@@ -125,6 +127,7 @@ const App = () => {
                         <Route path="/operator" element={<ProtectedRoute allowedRoles={['operator', 'admin']}><OperatorLayout /></ProtectedRoute>}>
                             <Route index element={<Navigate to="/operator/dashboard" />} />
                             <Route path="dashboard" element={<OperatorDashboard />} />
+                            <Route path="reservations" element={<OperatorReservations />} />
                             <Route path="table-assignment" element={<TableAssignment />} />
                             <Route path="tables" element={<OperatorTables />} />
                             <Route path="orders" element={<Orders />} />
@@ -138,13 +141,12 @@ const App = () => {
                             <Route path="waiters" element={<Waiters />} />
                             <Route path="floor-plan" element={<OperatorFloorPlan />} />
                             <Route path="orders/details" element={<OperatorPlaceholder title="Order Details" />} />
-                            <Route path="reservations" element={<OperatorPlaceholder title="Table Reservations Monitor" />} />
                             <Route path="customers" element={<Customers />} />
                             <Route path="invoices" element={<Invoices />} />
                             <Route path="testimonials" element={<OperatorPlaceholder title="Customer Testimonials & Feedback" />} />
                             <Route path="users" element={<OperatorPlaceholder title="User & Staff Directory" />} />
                             <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
-                            <Route path="settings" element={<OperatorPlaceholder title="Operator Preferences & Settings" />} />
+                            <Route path="settings" element={<OperatorSettings />} />
                             <Route path="notifications" element={<Notifications />} />
                         </Route>
 
