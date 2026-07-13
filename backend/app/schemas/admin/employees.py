@@ -29,6 +29,7 @@ class EmployeeResponse(EmployeeBase):
     employee_code: str
     created_at: datetime
     updated_at: datetime
+    role_name: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -25,6 +25,8 @@ class TableResponse(TableBase):
     updated_at: datetime
     current_order_id: Optional[str] = None
     current_order_amount: Optional[str] = None
+    assigned_waiter_id: Optional[int] = None
+    assigned_waiter_name: Optional[str] = None
 
     class Config:
         from_attributes = True

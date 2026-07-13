@@ -54,6 +54,10 @@ class Employee(TimestampMixin, Base):
     
     role: Mapped["Role"] = relationship(back_populates="employees")
     # Backpopulates for other relationships to be added later
+    
+    @property
+    def role_name(self) -> str:
+        return self.role.name if self.role else ""
 
 class LoginHistory(TimestampMixin, Base):
     __tablename__ = "login_history"

@@ -55,4 +55,8 @@ class TablesRepository:
         await db.refresh(db_obj)
         return db_obj
 
+    async def unassign_waiter(self, db: AsyncSession, table_id: int) -> None:
+        await db.execute(update(TableAssignment).where(TableAssignment.table_id == table_id).values(is_active=False))
+        await db.commit()
+
 tables_repo = TablesRepository()

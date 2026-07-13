@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
     LayoutDashboard, 
@@ -18,14 +18,46 @@ import {
     Menu,
     Sun,
     Search,
-    Utensils
+    Utensils,
+    UtensilsCrossed,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 
 const OperatorLayout = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const location = useLocation();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [expandedMenus, setExpandedMenus] = useState({});
+
+    // Auto-close sidebar on mobile when navigating
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+        }
+    }, [location.pathname]);
+
+    // Handle window resize to auto-open/close sidebar
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setIsSidebarOpen(true);
+            } else {
+                setIsSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const toggleMenu = (label) => {
+        setExpandedMenus(prev => ({
+            ...prev,
+            [label]: !prev[label]
+        }));
+    };
 
     const handleLogout = () => {
         logout();
@@ -34,25 +66,50 @@ const OperatorLayout = () => {
 
     const navItems = [
         { path: '/operator/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/operator/orders', label: 'Pos', icon: ShoppingBag },
-        { path: '/operator/tables', label: 'Table', icon: Grid },
-        { path: '/operator/reservations', label: 'Reservations', icon: Calendar },
+        { path: '/operator/table-assignment', label: 'Table Assignment', icon: Grid },
+        { path: '/operator/waiters', label: 'Waiters', icon: Users },
         
-        { type: 'header', label: 'Offering' },
-        { path: '/operator/billing', label: 'Billing', icon: FileText },
-        { path: '/operator/customers', label: 'Customer', icon: User },
+        { 
+            label: 'Restaurant', icon: Utensils, 
+            children: [
+                { path: '/operator/tables', label: 'Tables' },
+                { path: '/operator/floor-plan', label: 'Floor Plan' }
+            ] 
+        },
+        { 
+            label: 'Menu Management', icon: UtensilsCrossed, 
+            children: [
+                { path: '/operator/menu-items', label: 'Menu Items' },
+                { path: '/operator/categories', label: 'Add Category & Items' }
+            ] 
+        },
+        { 
+            label: 'Orders', icon: FileText, 
+            children: [
+                { path: '/operator/orders', label: 'All Orders' },
+                { path: '/operator/orders/details', label: 'Order Details' }
+            ] 
+        },
         
-        { type: 'header', label: 'Back Office' },
-        { path: '/operator/testimonials', label: 'Testimonial', icon: MessageSquare },
-        { path: '/operator/users', label: 'User', icon: Users },
+        { path: '/operator/billing', label: 'Billing & Payments', icon: CreditCard },
+        { path: '/operator/customers', label: 'Customers', icon: User },
+        { path: '/operator/notifications', label: 'Notifications', icon: Bell, badge: '12' },
         { path: '/operator/reports', label: 'Reports', icon: BarChart2 },
-        { path: '/operator/settings', label: 'Setting', icon: Settings },
+        { path: '/operator/settings', label: 'Settings', icon: Settings },
     ];
 
     return (
         <div className="flex h-screen bg-gray-50 text-gray-900 font-inter overflow-hidden">
+            {/* Mobile Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-gray-900/20 z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-[260px]' : 'w-20'} shrink-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full w-[260px] lg:translate-x-0 lg:w-20'} lg:static lg:block shrink-0 bg-white border-r border-gray-100 flex flex-col transition-all duration-300`}>
                 {/* Logo Area */}
                 <div className={`h-16 flex items-center ${isSidebarOpen ? 'px-6' : 'justify-center px-0'} border-b border-gray-50/50`}>
                     <div className="flex items-center">
@@ -104,6 +161,46 @@ const OperatorLayout = () => {
 
                         const Icon = item.icon;
 
+                        if (item.children) {
+                            const isExpanded = expandedMenus[item.label];
+                            return (
+                                <div key={item.label}>
+                                    <div 
+                                        onClick={() => isSidebarOpen && toggleMenu(item.label)}
+                                        className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer text-gray-500 hover:bg-gray-50 hover:text-gray-900 ${!isSidebarOpen ? 'justify-center' : ''}`}
+                                        title={!isSidebarOpen ? item.label : undefined}
+                                    >
+                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors text-gray-400 group-hover:text-gray-600 ${isSidebarOpen ? 'mr-3.5' : ''}`} />
+                                        {isSidebarOpen && (
+                                            <>
+                                                <span className="whitespace-nowrap flex-1">{item.label}</span>
+                                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            </>
+                                        )}
+                                    </div>
+                                    {isSidebarOpen && isExpanded && (
+                                        <div className="ml-7 mt-1 space-y-1 relative before:absolute before:left-[-11px] before:top-0 before:bottom-0 before:w-px before:bg-gray-200">
+                                            {item.children.map(child => (
+                                                <NavLink key={child.path} to={child.path}>
+                                                    {({ isActive }) => (
+                                                        <div className={`relative flex items-center px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                                                            isActive 
+                                                            ? 'bg-gray-100/80 text-gray-900 font-bold' 
+                                                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                                        }`}>
+                                                            {/* Line indicator for child item */}
+                                                            <div className="absolute left-[-11px] top-1/2 w-2.5 h-px bg-gray-200"></div>
+                                                            <span className="whitespace-nowrap">{child.label}</span>
+                                                        </div>
+                                                    )}
+                                                </NavLink>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+
                         return (
                             <NavLink
                                 key={item.path}
@@ -113,15 +210,15 @@ const OperatorLayout = () => {
                                 {({ isActive }) => (
                                     <div className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer ${
                                         isActive 
-                                        ? 'bg-gray-100/80 text-gray-900 font-bold' 
+                                        ? 'bg-cyan-50/50 text-cyan-700 font-bold' 
                                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                                     } ${!isSidebarOpen ? 'justify-center' : ''}`}>
                                         <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isSidebarOpen ? 'mr-3.5' : ''} ${
-                                            isActive ? 'text-gray-900' : 'text-gray-400 group-hover:text-gray-600'
+                                            isActive ? 'text-cyan-600' : 'text-gray-400 group-hover:text-gray-600'
                                         }`} />
                                         {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
                                         {isSidebarOpen && item.badge && (
-                                            <span className="bg-slate-900 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ml-auto uppercase tracking-wider">
+                                            <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ml-auto uppercase tracking-wider">
                                                 {item.badge}
                                             </span>
                                         )}
@@ -148,7 +245,7 @@ const OperatorLayout = () => {
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Topbar */}
-                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0">
+                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 md:px-8 shrink-0">
                     <div className="flex items-center space-x-4">
                         <button 
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -214,7 +311,7 @@ const OperatorLayout = () => {
                 </header>
 
                 {/* Sub-view rendering */}
-                <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+                <div className="flex-1 overflow-y-auto md:p-8 bg-gray-50">
                     <Outlet />
                 </div>
             </main>

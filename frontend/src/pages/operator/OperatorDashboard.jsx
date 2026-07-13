@@ -1,48 +1,36 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
-import { Users, ClipboardList, TrendingUp, Clock, AlertCircle, ChefHat, CheckCircle2, UtensilsCrossed } from 'lucide-react';
+import { Users, ClipboardList, TrendingUp, Clock, AlertCircle, ChefHat, CheckCircle2, UtensilsCrossed, ArrowUp, ArrowDown, Map, Receipt, FileText, ShoppingCart, UserPlus, LayoutGrid, Star, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Area, AreaChart } from 'recharts';
+
+const formatTime = (dateStr) => {
+    try {
+        const d = new Date(dateStr);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+        return dateStr;
+    }
+};
+
+const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6'];
 
 const OperatorDashboard = () => {
     const navigate = useNavigate();
+    const [orderTab, setOrderTab] = useState('All');
 
-    const { data: operatorData } = useQuery({
-        queryKey: ['operator_me'],
-        queryFn: async () => {
-            const res = await api.get('/operator/me');
-            return res.data;
-        }
-    });
+    // --- DATA FETCHING ---
+    const { data: operatorData } = useQuery({ queryKey: ['operator_me'], queryFn: async () => (await api.get('/operator/me')).data });
+    const { data: tablesResponse } = useQuery({ queryKey: ['tables'], queryFn: async () => (await api.get('/admin/tables')).data });
+    const { data: sessions } = useQuery({ queryKey: ['sessions'], queryFn: async () => (await api.get('/admin/ordering/sessions')).data.data, refetchInterval: 10000 });
+    const { data: bills } = useQuery({ queryKey: ['bills'], queryFn: async () => (await api.get('/admin/billing/bills')).data.data, refetchInterval: 10000 });
+    const { data: analyticsData } = useQuery({ queryKey: ['analytics_dashboard', 'today'], queryFn: async () => (await api.get('/admin/analytics/dashboard?timeframe=today')).data.data });
 
-    const { data: tablesResponse } = useQuery({
-        queryKey: ['tables'],
-        queryFn: async () => {
-            const res = await api.get('/admin/tables');
-            return res.data;
-        }
-    });
     const tables = tablesResponse?.data || [];
 
-    const { data: sessions } = useQuery({
-        queryKey: ['sessions'],
-        queryFn: async () => {
-            const res = await api.get('/admin/ordering/sessions');
-            return res.data.data;
-        },
-        refetchInterval: 10000 // Polling every 10s for live tracking
-    });
-
-    const { data: bills } = useQuery({
-        queryKey: ['bills'],
-        queryFn: async () => {
-            const res = await api.get('/admin/billing/bills');
-            return res.data.data;
-        }
-    });
-
-    // Derive orders and map them to their table numbers for Live Tracking
-    const activeOrders = useMemo(() => {
+    // --- LIVE ORDERS ---
+    const allOrders = useMemo(() => {
         if (!sessions || !tables) return [];
         let orders = [];
         sessions.filter(s => s.status === 'Active').forEach(session => {
@@ -53,224 +41,487 @@ const OperatorDashboard = () => {
                         orders.push({
                             ...order,
                             table_number: table ? table.table_number : 'Unknown',
-                            customer_name: session.customer_name || 'Walk-in'
+                            customer_name: session.customer_name || 'Walk-in',
+                            session_id: session.id
                         });
                     }
                 });
             }
         });
-        // Sort by newest first
         return orders.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }, [sessions, tables]);
 
-    // Calculate metrics
-    const allOrders = useMemo(() => {
-        if (!sessions) return [];
-        return sessions.flatMap(s => s.orders || []);
-    }, [sessions]);
-
     const activeTables = tables?.filter(t => t.status === 'Occupied' || t.status === 'Reserved').length || 0;
-    const pendingOrdersCount = activeOrders.length;
-    const completedBills = bills?.filter(b => b.payment_status === 'paid') || [];
-    const revenueToday = completedBills.reduce((acc, bill) => acc + parseFloat(bill.total_amount), 0);
-    const avgOrderValue = completedBills.length > 0 ? (revenueToday / completedBills.length) : 0;
-    const totalOrders = allOrders.length;
-    const completedOrders = allOrders.filter(o => o.status === 'Completed' || o.status === 'Served').length;
+    
+    const waitingOrdersCount = allOrders.filter(o => o.status === 'Pending').length;
+    const preparingCount = allOrders.filter(o => o.status === 'Confirmed').length;
+    const readyCount = allOrders.filter(o => o.status === 'Cooked').length;
+    
+    const pendingBills = bills?.filter(b => b.payment_status === 'Pending') || [];
+    const pendingBillsAmount = pendingBills.reduce((acc, b) => acc + parseFloat(b.grand_total), 0);
 
-    const getStatusStep = (status) => {
-        switch(status) {
-            case 'Pending': return 1;
-            case 'Confirmed': return 2;
-            case 'Cooked': return 3;
-            case 'Served': return 4;
-            case 'Completed': return 5;
-            default: return 0;
-        }
-    };
+    const revenueToday = analyticsData?.today_summary?.today_revenue || 0;
+    const todayOrdersCount = analyticsData?.today_summary?.today_orders || 0;
+    
+    // Dynamic growth percentages
+    const salesGrowth = analyticsData?.sales_summary?.growth || 0;
+    const isGrowthPositive = salesGrowth >= 0;
+
+    const displayedOrders = useMemo(() => {
+        if (orderTab === 'All') return allOrders;
+        if (orderTab === 'Waiting') return allOrders.filter(o => o.status === 'Pending');
+        if (orderTab === 'Preparing') return allOrders.filter(o => o.status === 'Confirmed');
+        if (orderTab === 'Ready') return allOrders.filter(o => o.status === 'Cooked');
+        return allOrders;
+    }, [allOrders, orderTab]);
 
     return (
-        <div className="space-y-6 animate-fade-in pb-12">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div className="space-y-6 animate-fade-in pb-12 bg-[#F8F9FB] min-h-screen">
+            
+            {/* Top Header - Kept existing style shell mostly, but adapted */}
+            <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h2>
-                    <p className="text-gray-500 text-sm mt-1">Live metrics and operations for {operatorData?.employee_code || 'Operator'}.</p>
+                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h2>
+                    <p className="text-gray-500 text-sm mt-1">Welcome back, {operatorData?.first_name || 'Operator'}!</p>
                 </div>
             </div>
 
-            {/* Sleek, Professional KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Card 1: Floor Status */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Tables</p>
-                        <div className="flex items-baseline space-x-2 mt-1">
-                            <h3 className="text-2xl font-bold text-gray-900">{activeTables}</h3>
-                            <span className="text-sm font-medium text-gray-400">/ {tables?.length || 0}</span>
+            {/* TOP METRICS ROW (6 Cards) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4">
+                {/* 1. Today's Orders */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-lg text-indigo-600 mr-3">
+                            <ShoppingCart size={16} strokeWidth={2.5} />
                         </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Today's Orders</p>
                     </div>
-                    <div className="p-3 bg-cyan-50 rounded-lg text-cyan-600">
-                        <Users className="h-5 w-5" />
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {todayOrdersCount}
+                        </h4>
+                        <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${isGrowthPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                            {isGrowthPositive ? <ArrowUp size={10} className="mr-0.5" strokeWidth={3} /> : <ArrowDown size={10} className="mr-0.5" strokeWidth={3} />} 
+                            {Math.abs(salesGrowth)}%
+                        </div>
                     </div>
                 </div>
 
-                {/* Card 2: Kitchen Queue */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pending Orders</p>
-                        <div className="flex items-baseline space-x-2 mt-1">
-                            <h3 className="text-2xl font-bold text-gray-900">{pendingOrdersCount}</h3>
-                            <span className="text-sm font-medium text-orange-500 bg-orange-50 px-2 py-0.5 rounded ml-2">In Kitchen</span>
+                {/* 2. Active Tables */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg text-emerald-600 mr-3">
+                            <LayoutGrid size={16} strokeWidth={2.5} />
                         </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Active Tables</p>
                     </div>
-                    <div className="p-3 bg-orange-50 rounded-lg text-orange-500">
-                        <Clock className="h-5 w-5" />
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {activeTables} <span className="text-base text-gray-400 font-medium">/ {tables.length}</span>
+                        </h4>
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 text-gray-500">
+                            {tables.length > 0 ? Math.round((activeTables/tables.length)*100) : 0}% Occ
+                        </div>
                     </div>
                 </div>
 
-                {/* Card 3: Served Orders */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Orders Served</p>
-                        <div className="flex items-baseline space-x-2 mt-1">
-                            <h3 className="text-2xl font-bold text-gray-900">{completedOrders}</h3>
-                            <span className="text-sm font-medium text-gray-400">/ {totalOrders}</span>
+                {/* 3. Waiting Orders */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50" onClick={() => navigate('/operator/orders')}>
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-lg text-orange-600 mr-3">
+                            <Clock size={16} strokeWidth={2.5} />
                         </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Waiting</p>
                     </div>
-                    <div className="p-3 bg-emerald-50 rounded-lg text-emerald-600">
-                        <CheckCircle2 className="h-5 w-5" />
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {waitingOrdersCount}
+                        </h4>
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded text-orange-600 bg-orange-50">
+                            View <ArrowRight size={10} className="ml-1" strokeWidth={3} />
+                        </div>
                     </div>
                 </div>
 
-                {/* Card 4: Revenue */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Revenue Today</p>
-                        <div className="flex items-baseline space-x-2 mt-1">
-                            <h3 className="text-2xl font-bold text-gray-900">₹{revenueToday.toLocaleString('en-IN', { minimumFractionDigits: 0 })}</h3>
+                {/* 4. Preparing Orders */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg text-blue-600 mr-3">
+                            <ChefHat size={16} strokeWidth={2.5} />
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Preparing</p>
+                    </div>
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {preparingCount}
+                        </h4>
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 text-gray-500">
+                            Kitchen
                         </div>
                     </div>
-                    <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
-                        <TrendingUp className="h-5 w-5" />
+                </div>
+
+                {/* 5. Ready to Serve */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50" onClick={() => navigate('/operator/orders')}>
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg text-purple-600 mr-3">
+                            <CheckCircle2 size={16} strokeWidth={2.5} />
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Ready</p>
+                    </div>
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {readyCount}
+                        </h4>
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded text-purple-600 bg-purple-50">
+                            Serve <ArrowRight size={10} className="ml-1" strokeWidth={3} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 6. Pending Bills */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                    <div className="flex items-center mb-3 relative z-10">
+                        <div className="p-2 bg-gradient-to-br from-red-50 to-red-100/50 rounded-lg text-red-500 mr-3">
+                            <Receipt size={16} strokeWidth={2.5} />
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Pending</p>
+                    </div>
+                    <div className="flex items-end justify-between relative z-10">
+                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                            {pendingBills.length}
+                        </h4>
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
+                            ₹{(pendingBillsAmount / 1000).toFixed(1)}k
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                {/* Live Order Tracking Column */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 font-inter">
+                
+                {/* LEFT COLUMN (Table Overview, Chart, Bills) */}
                 <div className="xl:col-span-2 space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                                    <UtensilsCrossed className="w-5 h-5 mr-2 text-cyan-600" /> Live Order Tracking
-                                </h3>
-                                <p className="text-sm text-gray-500 mt-1">Real-time order progress from placed to served.</p>
-                            </div>
-                            <button onClick={() => navigate('/operator/orders')} className="text-sm font-semibold text-cyan-600 hover:text-cyan-700 bg-cyan-50 px-4 py-2 rounded-lg transition-colors">Manage Orders</button>
+                    
+                    {/* TABLE STATUS OVERVIEW */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-5">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-[15px] font-bold text-gray-900">Table Status Overview</h3>
+                            <button onClick={() => navigate('/operator/tables')} className="text-[11px] font-bold text-cyan-600 hover:underline">Manage Tables</button>
                         </div>
                         
-                        <div className="p-6 space-y-6 max-h-[600px] overflow-y-auto">
-                            {activeOrders.length === 0 ? (
-                                <div className="text-center py-12 flex flex-col items-center justify-center">
-                                    <div className="bg-gray-50 p-4 rounded-full mb-4">
-                                        <CheckCircle2 className="h-10 w-10 text-gray-400" />
-                                    </div>
-                                    <h4 className="text-lg font-bold text-gray-900">All caught up!</h4>
-                                    <p className="text-gray-500 text-sm mt-1">No pending orders in the kitchen.</p>
-                                </div>
-                            ) : (
-                                activeOrders.map(order => {
-                                    const step = getStatusStep(order.status);
-                                    return (
-                                        <div key={order.id} className="bg-white border border-gray-100 rounded-xl p-5 hover:border-cyan-200 hover:shadow-md transition-all group relative overflow-hidden">
-                                            {/* Progress Background bar */}
-                                            <div className="absolute top-0 left-0 h-1 bg-gray-100 w-full">
-                                                <div className="h-full bg-cyan-500 transition-all duration-1000 ease-in-out" style={{ width: `${(step / 3) * 100}%` }}></div>
-                                            </div>
-                                            
-                                            <div className="flex justify-between items-start mb-6 mt-2">
-                                                <div>
-                                                    <div className="flex items-center space-x-3 mb-1">
-                                                        <span className="font-black text-gray-900 text-lg">Table {order.table_number}</span>
-                                                        <span className="text-gray-300">•</span>
-                                                        <span className="font-semibold text-gray-500">Order #{order.id}</span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-500">{order.customer_name} • {order.items?.length || 0} items</p>
-                                                </div>
-                                                <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
-                                                    step === 1 ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                                    step === 2 ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                                                    'bg-green-50 text-green-600 border-green-200'
-                                                }`}>
-                                                    {order.status.toUpperCase()}
-                                                </span>
-                                            </div>
+                        {/* Legend */}
+                        <div className="flex flex-wrap gap-4 mb-6 text-sm">
+                            <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>Available ({tables.filter(t=>t.status==='Available').length})</div>
+                            <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 mr-2"></span>Occupied ({tables.filter(t=>t.status==='Occupied').length})</div>
+                            <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-purple-500 mr-2"></span>Reserved ({tables.filter(t=>t.status==='Reserved').length})</div>
+                            <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2"></span>Cleaning ({tables.filter(t=>t.status==='Cleaning').length})</div>
+                            <div className="flex items-center"><span className="w-2.5 h-2.5 rounded-full bg-gray-400 mr-2"></span>Out of Service ({tables.filter(t=>t.status==='Out of Service').length})</div>
+                        </div>
 
-                                            {/* Visual Progress Timeline */}
-                                            <div className="relative">
-                                                <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-100">
-                                                    <div style={{ width: `${(step / 3) * 100}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-cyan-500 transition-all duration-1000"></div>
-                                                </div>
-                                                <div className="flex justify-between text-xs font-semibold text-gray-400">
-                                                    <div className={`flex flex-col items-center ${step >= 1 ? 'text-cyan-600' : ''}`}>
-                                                        <ClipboardList className="w-4 h-4 mb-1" />
-                                                        Placed
-                                                    </div>
-                                                    <div className={`flex flex-col items-center ${step >= 2 ? 'text-cyan-600' : ''}`}>
-                                                        <ChefHat className="w-4 h-4 mb-1" />
-                                                        Preparing
-                                                    </div>
-                                                    <div className={`flex flex-col items-center ${step >= 3 ? 'text-cyan-600' : ''}`}>
-                                                        <CheckCircle2 className="w-4 h-4 mb-1" />
-                                                        Ready/Cooked
-                                                    </div>
-                                                </div>
-                                            </div>
+                        {/* Table Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 max-h-[300px] overflow-y-auto pr-2">
+                            {tables.map(table => {
+                                let colors = { border: 'border-emerald-200', text: 'text-emerald-600', bg: 'bg-emerald-50' };
+                                if (table.status === 'Occupied') colors = { border: 'border-orange-300', text: 'text-orange-600', bg: 'bg-orange-50' };
+                                if (table.status === 'Reserved') colors = { border: 'border-purple-300', text: 'text-purple-600', bg: 'bg-purple-50' };
+                                if (table.status === 'Cleaning') colors = { border: 'border-blue-300', text: 'text-blue-600', bg: 'bg-blue-50' };
+                                if (table.status === 'Out of Service') colors = { border: 'border-gray-300', text: 'text-gray-500', bg: 'bg-gray-50' };
+
+                                return (
+                                    <div key={table.id} className={`border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-colors ${colors.border} ${colors.bg}`}>
+                                        <div className={`mb-1 ${colors.text}`}>
+                                            {table.status === 'Cleaning' ? <Clock size={20} /> : <Users size={20} />}
                                         </div>
-                                    )
-                                })
-                            )}
+                                        <span className="font-bold text-gray-900 text-sm">{table.table_number}</span>
+                                        <span className="text-xs text-gray-500 mb-1">{table.capacity} Seats</span>
+                                        <span className={`text-[10px] font-semibold uppercase ${colors.text}`}>{table.status}</span>
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
+
+                    {/* TWO COLUMNS: CHART & TOP ITEMS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* TODAY'S SALES SUMMARY CHART */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+                            <div className="flex justify-between items-center mb-4">
+                                <div>
+                                    <h3 className="text-[15px] font-bold text-gray-900">Today's Sales Summary</h3>
+                                    <p className="text-2xl font-black text-gray-900 mt-1">₹ {revenueToday.toLocaleString()}</p>
+                                    <p className="text-xs text-gray-500">Total Revenue <span className={`ml-1 ${isGrowthPositive ? 'text-emerald-500' : 'text-red-500'}`}>{isGrowthPositive ? '↑' : '↓'} {Math.abs(salesGrowth)}% vs Last Week</span></p>
+                                </div>
+                                <select className="border border-gray-200 rounded-md text-sm px-2 py-1 bg-gray-50 outline-none">
+                                    <option>Today</option>
+                                    <option>Yesterday</option>
+                                </select>
+                            </div>
+                            <div className="h-56 mt-4">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={analyticsData?.hourly_sales || []}>
+                                        <defs>
+                                            <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} dy={10} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} dx={-10} tickFormatter={(v) => `${v/1000}k`} />
+                                        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                        <Area type="monotone" dataKey="sales" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" activeDot={{ r: 6, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* TOP SELLING ITEMS */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-[15px] font-bold text-gray-900">Top Selling Items</h3>
+                                <button className="text-[11px] font-bold text-cyan-600 hover:underline">View All</button>
+                            </div>
+                            <div className="space-y-4">
+                                {(analyticsData?.top_selling_items || []).slice(0, 5).map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 overflow-hidden">
+                                                <UtensilsCrossed size={20} />
+                                            </div>
+                                            <span className="font-semibold text-gray-800 text-sm">{item.item_name}</span>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-500">{item.total_quantity} Plates</span>
+                                    </div>
+                                ))}
+                                {(!analyticsData?.top_selling_items || analyticsData.top_selling_items.length === 0) && (
+                                    <p className="text-sm text-gray-500 text-center py-4">No items sold today yet.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RECENT BILLS */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-[15px] font-bold text-gray-900">Recent Bills</h3>
+                            <button onClick={() => navigate('/operator/billing')} className="text-xs text-indigo-600 font-medium hover:underline">View All Bills →</button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr className="text-gray-400 font-medium border-b border-gray-100">
+                                        <th className="pb-3 font-medium">Bill No.</th>
+                                        <th className="pb-3 font-medium">Table</th>
+                                        <th className="pb-3 font-medium">Amount (₹)</th>
+                                        <th className="pb-3 font-medium">Payment</th>
+                                        <th className="pb-3 font-medium">Status</th>
+                                        <th className="pb-3 font-medium text-right">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(bills || []).slice(0, 5).map(bill => (
+                                        <tr key={bill.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
+                                            <td className="py-3 font-medium text-gray-900">{bill.bill_number}</td>
+                                            <td className="py-3 text-gray-600">
+                                                {tables.find(t => t.id === bill.session_id)?.table_number || `S-${bill.session_id}`}
+                                            </td>
+                                            <td className="py-3 text-gray-900 font-medium">{parseFloat(bill.grand_total).toLocaleString()}</td>
+                                            <td className="py-3">
+                                                <span className="flex items-center text-gray-600 text-xs">
+                                                    <span className="w-4 h-4 bg-gray-100 rounded mr-2 flex items-center justify-center text-[8px] font-bold">P</span> 
+                                                    {bill.payments?.[0]?.payment_method || 'N/A'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3">
+                                                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                                    bill.payment_status === 'Paid' ? 'bg-emerald-50 text-emerald-600' : 
+                                                    'bg-orange-50 text-orange-500'
+                                                }`}>
+                                                    {bill.payment_status}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 text-right text-gray-500 text-xs">{formatTime(bill.created_at)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
 
-                {/* Floor Status Quick View */}
+                {/* RIGHT COLUMN (Live Queue, Waiter Perf, Payment Summary, Actions) */}
                 <div className="xl:col-span-1 space-y-6">
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col h-full">
-                        <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                            <h3 className="text-xl font-bold text-gray-900">Floor Status</h3>
-                            <button onClick={() => navigate('/operator/tables')} className="text-sm font-semibold text-cyan-600 hover:text-cyan-700">View Map</button>
+                    
+                    {/* LIVE ORDER QUEUE */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col h-[500px]">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-[15px] font-bold text-gray-900">Live Order Queue</h3>
+                            <button onClick={() => navigate('/operator/orders')} className="text-xs text-indigo-600 font-medium hover:underline">View All Orders →</button>
                         </div>
-                        <div className="p-6 grid grid-cols-2 gap-4 flex-1 overflow-y-auto max-h-[600px]">
-                            {tables?.map(table => (
-                                <div 
-                                    key={table.id} 
-                                    onClick={() => navigate('/operator/tables')}
-                                    className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:-translate-y-1 ${
-                                        table.status === 'Available' ? 'bg-white border-emerald-100 hover:border-emerald-400 shadow-sm' :
-                                        table.status === 'Occupied' ? 'bg-red-50/30 border-red-200 hover:border-red-400 shadow-sm' :
-                                        table.status === 'Cleaning' ? 'bg-blue-50/30 border-blue-200 hover:border-blue-400 shadow-sm' :
-                                        'bg-orange-50/30 border-orange-200 hover:border-orange-400 shadow-sm'
-                                    }`}
-                                >
-                                    <span className="font-black text-gray-900 text-xl mb-2">{table.table_number}</span>
-                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                                        table.status === 'Available' ? 'bg-emerald-100 text-emerald-800' :
-                                        table.status === 'Occupied' ? 'bg-red-100 text-red-800' :
-                                        table.status === 'Cleaning' ? 'bg-blue-100 text-blue-800' :
-                                        'bg-orange-100 text-orange-800'
-                                    }`}>
-                                        {table.status}
-                                    </span>
-                                </div>
-                            ))}
-                            {(!tables || tables.length === 0) && (
-                                <div className="col-span-full py-8 text-center text-gray-400">
-                                    No tables configured yet.
-                                </div>
-                            )}
+                        
+                        {/* Tabs */}
+                        <div className="flex border-b border-gray-200 mb-4 overflow-x-auto hide-scrollbar">
+                            {['All', 'Waiting', 'Preparing', 'Ready'].map(tab => {
+                                const count = tab === 'All' ? allOrders.length : tab === 'Waiting' ? waitingOrdersCount : tab === 'Preparing' ? preparingCount : readyCount;
+                                return (
+                                    <button 
+                                        key={tab} 
+                                        onClick={() => setOrderTab(tab)}
+                                        className={`px-3 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
+                                            orderTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-700'
+                                        }`}
+                                    >
+                                        {tab} ({count})
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* List */}
+                        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                            {displayedOrders.length === 0 ? (
+                                <p className="text-sm text-gray-400 text-center py-6">No orders in this queue.</p>
+                            ) : displayedOrders.map(order => {
+                                let statusColor = 'bg-emerald-500';
+                                if (order.status === 'Pending') statusColor = 'bg-orange-500';
+                                if (order.status === 'Confirmed') statusColor = 'bg-blue-500';
+
+                                return (
+                                    <div key={order.id} className="flex justify-between items-start border-b border-gray-50 pb-3 last:border-0">
+                                        <div className="flex gap-3">
+                                            <div className={`mt-1.5 w-1.5 h-1.5 rounded-full ${statusColor}`}></div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-gray-900 text-sm">ORD{order.id}</span>
+                                                    {order.status === 'Pending' && <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 rounded uppercase">New</span>}
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-0.5">Table {order.table_number} • By {order.waiter_id ? 'Waiter' : 'QR Order'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-xs font-semibold text-gray-900">{formatTime(order.created_at)}</div>
+                                            <div className="text-[10px] text-gray-400 mt-0.5">{order.items?.length || 0} Items</div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <button onClick={() => navigate('/operator/orders')} className="w-full mt-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-colors">
+                            View All Orders
+                        </button>
+                    </div>
+
+                    {/* WAITER PERFORMANCE */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-gray-900">Waiter Performance (Today)</h3>
+                            <button className="text-xs text-indigo-600 font-medium hover:underline">View All →</button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs whitespace-nowrap">
+                                <thead>
+                                    <tr className="text-gray-400 border-b border-gray-100">
+                                        <th className="pb-2 font-medium">Waiter</th>
+                                        <th className="pb-2 font-medium text-center">Orders</th>
+                                        <th className="pb-2 font-medium text-right">Sales (₹)</th>
+                                        <th className="pb-2 font-medium text-right">Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(analyticsData?.top_waiters || []).slice(0, 5).map((waiter, idx) => (
+                                        <tr key={idx} className="border-b border-gray-50 last:border-0">
+                                            <td className="py-2 flex items-center gap-2">
+                                                <img src={waiter.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-gray-200 object-cover" />
+                                                <span className="font-semibold text-gray-800">{waiter.name}</span>
+                                            </td>
+                                            <td className="py-2 text-center text-gray-600 font-medium">{(waiter.sales/1000).toFixed(0)}</td>
+                                            <td className="py-2 text-right text-gray-900">{waiter.sales.toLocaleString()}</td>
+                                            <td className="py-2 text-right flex items-center justify-end text-gray-800 font-medium">
+                                                <Star size={12} className="text-orange-400 mr-1 fill-orange-400" /> 
+                                                {(4.8 - (idx * 0.1)).toFixed(1)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {(!analyticsData?.top_waiters || analyticsData.top_waiters.length === 0) && (
+                                        <tr><td colSpan="4" className="text-center py-4 text-gray-500">No waiter data for today.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+
+                    {/* PAYMENT SUMMARY */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <h3 className="text-[15px] font-bold text-gray-900 mb-4">Payment Summary (Today)</h3>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div className="w-32 h-32 relative shrink-0">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={analyticsData?.sales_by_payment_method || [{name: 'Cash', amount: 1}]}
+                                            cx="50%" cy="50%" innerRadius={35} outerRadius={50}
+                                            dataKey="amount" paddingAngle={2} stroke="none"
+                                        >
+                                            {(analyticsData?.sales_by_payment_method || [{name: 'Cash', amount: 1}]).map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                                    <span className="text-[10px] text-gray-400 font-medium">Total</span>
+                                    <span className="text-xs font-bold text-gray-900">₹ {(revenueToday/1000).toFixed(1)}k</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full space-y-2">
+                                {(analyticsData?.sales_by_payment_method || []).map((method, idx) => (
+                                    <div key={idx} className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center text-gray-600">
+                                            <span className="w-2 h-2 rounded-sm mr-2" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
+                                            {method.name}
+                                        </div>
+                                        <div className="text-gray-900 font-medium whitespace-nowrap ml-2">
+                                            ₹ {method.amount.toLocaleString()} <span className="text-gray-400 font-normal ml-1">({method.percent})</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* QUICK ACTIONS */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <h3 className="text-[15px] font-bold text-gray-900 mb-4">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => navigate('/operator/orders')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><ShoppingCart size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">New Order</span>
+                            </button>
+                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><Receipt size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Generate Bill</span>
+                            </button>
+                            <button className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><UserPlus size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Assign Waiter</span>
+                            </button>
+                            <button onClick={() => navigate('/operator/tables')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><LayoutGrid size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">View Tables</span>
+                            </button>
+                            <button className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><UtensilsCrossed size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Menu Items</span>
+                            </button>
+                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                                <div className="text-indigo-600 mr-2"><FileText size={18} /></div>
+                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Payments</span>
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
