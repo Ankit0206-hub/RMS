@@ -21,7 +21,8 @@ class EmployeeRepository:
         return result.scalar_one_or_none()
 
     async def get_all(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Employee]:
-        result = await db.execute(select(Employee).order_by(Employee.id.desc()).offset(skip).limit(limit))
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(select(Employee).options(selectinload(Employee.role)).order_by(Employee.id.desc()).offset(skip).limit(limit))
         return result.scalars().all()
 
     async def create(self, db: AsyncSession, employee_in: EmployeeCreate) -> Employee:

@@ -20,7 +20,11 @@ import Dashboard from './pages/admin/Dashboard';
 import OperatorLayout from './layouts/OperatorLayout';
 import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
+import TableAssignment from './pages/operator/TableAssignment';
 import OperatorBilling from './pages/operator/OperatorBilling';
+import Waiters from './pages/operator/Waiters';
+import OperatorTables from './pages/operator/Tables';
+import OperatorFloorPlan from './pages/operator/FloorPlan';
 import WaiterDashboard from './pages/waiter/WaiterDashboard';
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
@@ -117,18 +121,23 @@ const App = () => {
                             <Route path="tables/reservations" element={<TableReservations />} />
                         </Route>
 
-                        {/* Operator Routes */}
+                            {/* Operator Routes */}
                         <Route path="/operator" element={<ProtectedRoute allowedRoles={['operator', 'admin']}><OperatorLayout /></ProtectedRoute>}>
                             <Route index element={<Navigate to="/operator/dashboard" />} />
                             <Route path="dashboard" element={<OperatorDashboard />} />
-                            <Route path="tables" element={<Tables />} />
+                            <Route path="table-assignment" element={<TableAssignment />} />
+                            <Route path="tables" element={<OperatorTables />} />
                             <Route path="orders" element={<Orders />} />
                             <Route path="billing" element={<OperatorBilling />} />
                             <Route path="food-items" element={<FoodItems />} />
+                            <Route path="categories" element={<AddCategoryWithItems />} />
+                            <Route path="menu-items" element={<MenuItems />} />
                             <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
                             <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
                             
-                            {/* Newly added working routes matching the mockup sidebar */}
+                            <Route path="waiters" element={<Waiters />} />
+                            <Route path="floor-plan" element={<OperatorFloorPlan />} />
+                            <Route path="orders/details" element={<OperatorPlaceholder title="Order Details" />} />
                             <Route path="reservations" element={<OperatorPlaceholder title="Table Reservations Monitor" />} />
                             <Route path="customers" element={<Customers />} />
                             <Route path="invoices" element={<Invoices />} />
@@ -136,6 +145,7 @@ const App = () => {
                             <Route path="users" element={<OperatorPlaceholder title="User & Staff Directory" />} />
                             <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
                             <Route path="settings" element={<OperatorPlaceholder title="Operator Preferences & Settings" />} />
+                            <Route path="notifications" element={<Notifications />} />
                         </Route>
 
                         {/* Waiter Routes */}
