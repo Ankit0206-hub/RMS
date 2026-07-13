@@ -124,13 +124,11 @@ const Waiters = () => {
     }
 
     return (
-        <div className="flex h-full font-inter overflow-hidden bg-[#F8F9FB]">
-            {/* Main Content Area */}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${selectedWaiter ? 'lg:mr-[380px]' : ''}`}>
-                <div className=" overflow-y-auto flex-1 scrollbar-hide space-y-4">
-                    
-                    {/* Header */}
-                    <div className="flex justify-between items-end">
+        <div className="font-inter bg-[#F8F9FB] min-h-[calc(100vh-64px)] md:-m-8 flex flex-col">
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${selectedWaiter ? 'lg:mr-[380px]' : ''}`}>
+                <div className="flex-1 p-4 md:p-8 space-y-4">
+                    {/* Header Section */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl border border-gray-100 shadow-sm flex-wrap">
                         <div>
                             <div className="flex items-center text-[13px] font-medium text-gray-500 mb-2">
                                 <span>Dashboard</span>
@@ -139,62 +137,52 @@ const Waiters = () => {
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Waiters</h1>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-[13px] font-bold text-gray-700">
+                        <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+                            <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm text-[13px] font-bold text-gray-700 whitespace-nowrap shrink-0">
                                 <Calendar size={14} className="mr-2 text-indigo-600" />
                                 May 20, 2025
                                 <ChevronDown size={14} className="ml-2 text-gray-400" />
                             </div>
-                            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-sm transition-colors">
+                            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-sm transition-colors whitespace-nowrap shrink-0">
                                 <Plus size={16} className="mr-1.5" /> Add Waiter
                             </button>
                         </div>
                     </div>
 
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center">
-                            <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 mr-4 shrink-0"><Users size={22}/></div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Total Waiters</p>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">{totalWaiters}</h3>
-                                <p className="text-[10px] font-semibold text-gray-500 truncate">
-                                    Active: <span className="text-emerald-500">{activeWaiters}</span> • Inactive: <span className="text-red-500">{inactiveWaiters}</span>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div className="bg-white p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center">
+                            <div className="p-2.5 md:p-3 bg-indigo-50 rounded-lg md:rounded-xl text-indigo-600 mb-2 md:mb-0 md:mr-4 shrink-0"><Users size={20} className="md:w-5 md:h-5"/></div>
+                            <div className="flex-1 min-w-0 w-full">
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Total Waiters</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 leading-tight mb-1">{totalWaiters}</h3>
+                                <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 truncate">
+                                    Active: <span className="text-emerald-500">{activeWaiters}</span> <span className="hidden sm:inline">• Inactive: <span className="text-red-500">{inactiveWaiters}</span></span>
                                 </p>
                             </div>
                         </div>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center">
-                            <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600 mr-4 shrink-0"><UserCheck size={22}/></div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Available Now</p>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">{availableWaiters}</h3>
-                                <p className="text-[10px] font-semibold text-gray-500 truncate">{availablePct}% of total</p>
+                        <div className="bg-white p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center">
+                            <div className="p-2.5 md:p-3 bg-emerald-50 rounded-lg md:rounded-xl text-emerald-600 mb-2 md:mb-0 md:mr-4 shrink-0"><UserCheck size={20} className="md:w-5 md:h-5"/></div>
+                            <div className="flex-1 min-w-0 w-full">
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Available</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 leading-tight mb-1">{availableWaiters}</h3>
+                                <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 truncate">{availablePct}% of total</p>
                             </div>
                         </div>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center">
-                            <div className="p-3 bg-orange-50 rounded-xl text-orange-500 mr-4 shrink-0"><Bell size={22}/></div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Serving Tables</p>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">{servingWaiters}</h3>
-                                <p className="text-[10px] font-semibold text-gray-500 truncate">{servingPct}% of total</p>
+                        <div className="bg-white p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center">
+                            <div className="p-2.5 md:p-3 bg-orange-50 rounded-lg md:rounded-xl text-orange-500 mb-2 md:mb-0 md:mr-4 shrink-0"><Bell size={20} className="md:w-5 md:h-5"/></div>
+                            <div className="flex-1 min-w-0 w-full">
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Serving</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 leading-tight mb-1">{servingWaiters}</h3>
+                                <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 truncate">{servingPct}% of total</p>
                             </div>
                         </div>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center">
-                            <div className="p-3 bg-blue-50 rounded-xl text-blue-500 mr-4 shrink-0"><ClipboardList size={22}/></div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Today's Orders</p>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">{totalOrders}</h3>
-                                <p className="text-[10px] font-semibold text-gray-500 truncate">Handled by waiters</p>
-                            </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center">
-                            <div className="p-3 bg-purple-50 rounded-xl text-purple-600 mr-4 shrink-0"><Wallet size={22}/></div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1">Today's Sales</p>
-                                <h3 className="text-2xl font-black text-gray-900 leading-tight mb-1">₹ {totalSales.toLocaleString()}</h3>
-                                <p className={`text-[10px] font-semibold truncate ${isGrowthPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-                                    {isGrowthPositive ? '↑' : '↓'} {Math.abs(salesGrowth)}% vs last week
-                                </p>
+                        <div className="bg-white p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center">
+                            <div className="p-2.5 md:p-3 bg-blue-50 rounded-lg md:rounded-xl text-blue-500 mb-2 md:mb-0 md:mr-4 shrink-0"><ClipboardList size={20} className="md:w-5 md:h-5"/></div>
+                            <div className="flex-1 min-w-0 w-full">
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Today's Orders</p>
+                                <h3 className="text-xl md:text-2xl font-black text-gray-900 leading-tight mb-1">{totalOrders}</h3>
+                                <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 truncate">Handled by waiters</p>
                             </div>
                         </div>
                     </div>
@@ -202,19 +190,19 @@ const Waiters = () => {
                     {/* Filters & Table */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col">
                         {/* Filters */}
-                        <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 items-center justify-between">
-                            <div className="relative flex-1 min-w-[280px] max-w-md">
+                        <div className="p-4 md:p-5 border-b border-gray-100 flex flex-col gap-4">
+                            <div className="relative w-full">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <input 
                                     type="text" 
-                                    placeholder="Search waiter by name, phone or employee ID..." 
+                                    placeholder="Search waiter by name, phone or ID..." 
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                     className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                 />
                             </div>
-                            <div className="flex items-center space-x-3">
-                                <div className="flex flex-col">
+                            <div className="flex items-center gap-3 overflow-x-auto w-full pb-2 scrollbar-hide">
+                                <div className="flex flex-col shrink-0">
                                     <span className="text-[10px] font-semibold text-gray-500 mb-1 ml-1">Status</span>
                                     <select 
                                         className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 outline-none"
@@ -228,7 +216,7 @@ const Waiters = () => {
                                         <option>Offline</option>
                                     </select>
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="flex flex-col shrink-0">
                                     <span className="text-[10px] font-semibold text-gray-500 mb-1 ml-1">Availability</span>
                                     <select 
                                         className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 outline-none"
@@ -240,7 +228,7 @@ const Waiters = () => {
                                         <option>Available</option>
                                     </select>
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="flex flex-col shrink-0">
                                     <span className="text-[10px] font-semibold text-gray-500 mb-1 ml-1">Section</span>
                                     <select 
                                         className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 outline-none"
@@ -253,7 +241,7 @@ const Waiters = () => {
                                         <option>Terrace</option>
                                     </select>
                                 </div>
-                                <div className="flex items-end h-full pt-4">
+                                <div className="flex items-end h-full pt-4 shrink-0">
                                     <button className="flex items-center px-4 py-2 border border-gray-200 rounded-lg text-[13px] font-bold text-gray-700 hover:bg-gray-50 mr-2">
                                         <Filter size={14} className="mr-1.5" /> Filters
                                     </button>

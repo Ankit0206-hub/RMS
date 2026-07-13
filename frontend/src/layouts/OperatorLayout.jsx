@@ -66,6 +66,7 @@ const OperatorLayout = () => {
 
     const navItems = [
         { path: '/operator/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/operator/reservations', label: 'Reservations', icon: Calendar },
         { path: '/operator/table-assignment', label: 'Table Assignment', icon: Grid },
         { path: '/operator/waiters', label: 'Waiters', icon: Users },
         
