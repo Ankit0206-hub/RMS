@@ -6,6 +6,8 @@
   --font-inter: "Inter", sans-serif;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* --- Base Resets --- */
 html,
 body,
@@ -83,4 +85,39 @@ img {
 
 .animate-slideUp {
   animation: slideUp 0.25s ease-out;
+}
+/* --- React Select Theme Overrides --- */
+.react-select__control {
+    background-color: #f9fafb !important;
+    border-color: #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    padding: 1px !important;
+    box-shadow: none !important;
+}
+.react-select__control:hover {
+    border-color: #d1d5db !important;
+}
+
+.dark .react-select__control {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+.dark .react-select__control:hover {
+    border-color: #475569 !important;
+}
+.dark .react-select__menu {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+.dark .react-select__option {
+    color: #f1f5f9 !important;
+    background-color: transparent;
+}
+.dark .react-select__option--is-focused {
+    background-color: #1e293b !important;
+}
+.dark .react-select__single-value, 
+.dark .react-select__input-container,
+.dark .react-select__placeholder {
+    color: #cbd5e1 !important;
 }

@@ -76,28 +76,28 @@ const OperatorDashboard = () => {
     }, [allOrders, orderTab]);
 
     return (
-        <div className="space-y-6 animate-fade-in pb-12 bg-[#F8F9FB] min-h-screen">
+        <div className="space-y-6 animate-fade-in pb-12">
             
             {/* Top Header - Kept existing style shell mostly, but adapted */}
             <div className="flex justify-between items-center mb-2">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h2>
-                    <p className="text-gray-500 text-sm mt-1">Welcome back, {operatorData?.first_name || 'Operator'}!</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h2>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back, {operatorData?.first_name || 'Operator'}!</p>
                 </div>
             </div>
 
             {/* TOP METRICS ROW (6 Cards) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4">
                 {/* 1. Today's Orders */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-lg text-indigo-600 mr-3">
                             <ShoppingCart size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Today's Orders</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Today's Orders</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {todayOrdersCount}
                         </h4>
                         <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${isGrowthPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
@@ -108,33 +108,33 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 2. Active Tables */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg text-emerald-600 mr-3">
                             <LayoutGrid size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Active Tables</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Active Tables</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {activeTables} <span className="text-base text-gray-400 font-medium">/ {tables.length}</span>
                         </h4>
-                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 text-gray-500">
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
                             {tables.length > 0 ? Math.round((activeTables/tables.length)*100) : 0}% Occ
                         </div>
                     </div>
                 </div>
 
                 {/* 3. Waiting Orders */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50" onClick={() => navigate('/operator/orders')}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-lg text-orange-600 mr-3">
                             <Clock size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Waiting</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Waiting</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {waitingOrdersCount}
                         </h4>
                         <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded text-orange-600 bg-orange-50">
@@ -144,33 +144,33 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 4. Preparing Orders */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg text-blue-600 mr-3">
                             <ChefHat size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Preparing</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Preparing</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {preparingCount}
                         </h4>
-                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 text-gray-500">
+                        <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
                             Kitchen
                         </div>
                     </div>
                 </div>
 
                 {/* 5. Ready to Serve */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50" onClick={() => navigate('/operator/orders')}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg text-purple-600 mr-3">
                             <CheckCircle2 size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Ready</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Ready</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {readyCount}
                         </h4>
                         <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded text-purple-600 bg-purple-50">
@@ -180,15 +180,15 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 6. Pending Bills */}
-                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-red-50 to-red-100/50 rounded-lg text-red-500 mr-3">
                             <Receipt size={16} strokeWidth={2.5} />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Pending</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Pending</p>
                     </div>
                     <div className="flex items-end justify-between relative z-10">
-                        <h4 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+                        <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
                             {pendingBills.length}
                         </h4>
                         <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-50 text-red-600">
@@ -204,9 +204,9 @@ const OperatorDashboard = () => {
                 <div className="xl:col-span-2 space-y-6">
                     
                     {/* TABLE STATUS OVERVIEW */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-5">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden p-5">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-[15px] font-bold text-gray-900">Table Status Overview</h3>
+                            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Table Status Overview</h3>
                             <button onClick={() => navigate('/operator/tables')} className="text-[11px] font-bold text-cyan-600 hover:underline">Manage Tables</button>
                         </div>
                         
@@ -226,15 +226,15 @@ const OperatorDashboard = () => {
                                 if (table.status === 'Occupied') colors = { border: 'border-orange-300', text: 'text-orange-600', bg: 'bg-orange-50' };
                                 if (table.status === 'Reserved') colors = { border: 'border-purple-300', text: 'text-purple-600', bg: 'bg-purple-50' };
                                 if (table.status === 'Cleaning') colors = { border: 'border-blue-300', text: 'text-blue-600', bg: 'bg-blue-50' };
-                                if (table.status === 'Out of Service') colors = { border: 'border-gray-300', text: 'text-gray-500', bg: 'bg-gray-50' };
+                                if (table.status === 'Out of Service') colors = { border: 'border-gray-300 dark:border-slate-600', text: 'text-gray-500 dark:text-slate-400', bg: 'bg-gray-50 dark:bg-slate-800/50' };
 
                                 return (
                                     <div key={table.id} className={`border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-colors ${colors.border} ${colors.bg}`}>
                                         <div className={`mb-1 ${colors.text}`}>
                                             {table.status === 'Cleaning' ? <Clock size={20} /> : <Users size={20} />}
                                         </div>
-                                        <span className="font-bold text-gray-900 text-sm">{table.table_number}</span>
-                                        <span className="text-xs text-gray-500 mb-1">{table.capacity} Seats</span>
+                                        <span className="font-bold text-gray-900 dark:text-white text-sm">{table.table_number}</span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400 mb-1">{table.capacity} Seats</span>
                                         <span className={`text-[10px] font-semibold uppercase ${colors.text}`}>{table.status}</span>
                                     </div>
                                 )
@@ -245,14 +245,14 @@ const OperatorDashboard = () => {
                     {/* TWO COLUMNS: CHART & TOP ITEMS */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* TODAY'S SALES SUMMARY CHART */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex flex-col">
                             <div className="flex justify-between items-center mb-4">
                                 <div>
-                                    <h3 className="text-[15px] font-bold text-gray-900">Today's Sales Summary</h3>
-                                    <p className="text-2xl font-black text-gray-900 mt-1">₹ {revenueToday.toLocaleString()}</p>
-                                    <p className="text-xs text-gray-500">Total Revenue <span className={`ml-1 ${isGrowthPositive ? 'text-emerald-500' : 'text-red-500'}`}>{isGrowthPositive ? '↑' : '↓'} {Math.abs(salesGrowth)}% vs Last Week</span></p>
+                                    <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Today's Sales Summary</h3>
+                                    <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">₹ {revenueToday.toLocaleString()}</p>
+                                    <p className="text-xs text-gray-500 dark:text-slate-400">Total Revenue <span className={`ml-1 ${isGrowthPositive ? 'text-emerald-500' : 'text-red-500'}`}>{isGrowthPositive ? '↑' : '↓'} {Math.abs(salesGrowth)}% vs Last Week</span></p>
                                 </div>
-                                <select className="border border-gray-200 rounded-md text-sm px-2 py-1 bg-gray-50 outline-none">
+                                <select className="border border-gray-200 dark:border-slate-700 rounded-md text-sm px-2 py-1 bg-gray-50 dark:bg-slate-800/50 outline-none">
                                     <option>Today</option>
                                     <option>Yesterday</option>
                                 </select>
@@ -277,9 +277,9 @@ const OperatorDashboard = () => {
                         </div>
 
                         {/* TOP SELLING ITEMS */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-[15px] font-bold text-gray-900">Top Selling Items</h3>
+                                <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Top Selling Items</h3>
                                 <button className="text-[11px] font-bold text-cyan-600 hover:underline">View All</button>
                             </div>
                             <div className="space-y-4">
@@ -289,28 +289,28 @@ const OperatorDashboard = () => {
                                             <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 overflow-hidden">
                                                 <UtensilsCrossed size={20} />
                                             </div>
-                                            <span className="font-semibold text-gray-800 text-sm">{item.item_name}</span>
+                                            <span className="font-semibold text-gray-800 dark:text-slate-200 text-sm">{item.item_name}</span>
                                         </div>
-                                        <span className="text-sm font-medium text-gray-500">{item.total_quantity} Plates</span>
+                                        <span className="text-sm font-medium text-gray-500 dark:text-slate-400">{item.total_quantity} Plates</span>
                                     </div>
                                 ))}
                                 {(!analyticsData?.top_selling_items || analyticsData.top_selling_items.length === 0) && (
-                                    <p className="text-sm text-gray-500 text-center py-4">No items sold today yet.</p>
+                                    <p className="text-sm text-gray-500 dark:text-slate-400 text-center py-4">No items sold today yet.</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* RECENT BILLS */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6 overflow-hidden">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-[15px] font-bold text-gray-900">Recent Bills</h3>
+                            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Recent Bills</h3>
                             <button onClick={() => navigate('/operator/billing')} className="text-xs text-indigo-600 font-medium hover:underline">View All Bills →</button>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm whitespace-nowrap">
                                 <thead>
-                                    <tr className="text-gray-400 font-medium border-b border-gray-100">
+                                    <tr className="text-gray-400 font-medium border-b border-gray-100 dark:border-slate-800">
                                         <th className="pb-3 font-medium">Bill No.</th>
                                         <th className="pb-3 font-medium">Table</th>
                                         <th className="pb-3 font-medium">Amount (₹)</th>
@@ -321,15 +321,15 @@ const OperatorDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {(bills || []).slice(0, 5).map(bill => (
-                                        <tr key={bill.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                                            <td className="py-3 font-medium text-gray-900">{bill.bill_number}</td>
-                                            <td className="py-3 text-gray-600">
+                                        <tr key={bill.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                                            <td className="py-3 font-medium text-gray-900 dark:text-white">{bill.bill_number}</td>
+                                            <td className="py-3 text-gray-600 dark:text-slate-400">
                                                 {tables.find(t => t.id === bill.session_id)?.table_number || `S-${bill.session_id}`}
                                             </td>
-                                            <td className="py-3 text-gray-900 font-medium">{parseFloat(bill.grand_total).toLocaleString()}</td>
+                                            <td className="py-3 text-gray-900 dark:text-white font-medium">{parseFloat(bill.grand_total).toLocaleString()}</td>
                                             <td className="py-3">
-                                                <span className="flex items-center text-gray-600 text-xs">
-                                                    <span className="w-4 h-4 bg-gray-100 rounded mr-2 flex items-center justify-center text-[8px] font-bold">P</span> 
+                                                <span className="flex items-center text-gray-600 dark:text-slate-400 text-xs">
+                                                    <span className="w-4 h-4 bg-gray-100 dark:bg-slate-800 rounded mr-2 flex items-center justify-center text-[8px] font-bold">P</span> 
                                                     {bill.payments?.[0]?.payment_method || 'N/A'}
                                                 </span>
                                             </td>
@@ -341,7 +341,7 @@ const OperatorDashboard = () => {
                                                     {bill.payment_status}
                                                 </span>
                                             </td>
-                                            <td className="py-3 text-right text-gray-500 text-xs">{formatTime(bill.created_at)}</td>
+                                            <td className="py-3 text-right text-gray-500 dark:text-slate-400 text-xs">{formatTime(bill.created_at)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -355,14 +355,14 @@ const OperatorDashboard = () => {
                 <div className="xl:col-span-1 space-y-6">
                     
                     {/* LIVE ORDER QUEUE */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col h-[500px]">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex flex-col h-[500px]">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-[15px] font-bold text-gray-900">Live Order Queue</h3>
+                            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white">Live Order Queue</h3>
                             <button onClick={() => navigate('/operator/orders')} className="text-xs text-indigo-600 font-medium hover:underline">View All Orders →</button>
                         </div>
                         
                         {/* Tabs */}
-                        <div className="flex border-b border-gray-200 mb-4 overflow-x-auto hide-scrollbar">
+                        <div className="flex border-b border-gray-200 dark:border-slate-700 mb-4 overflow-x-auto hide-scrollbar">
                             {['All', 'Waiting', 'Preparing', 'Ready'].map(tab => {
                                 const count = tab === 'All' ? allOrders.length : tab === 'Waiting' ? waitingOrdersCount : tab === 'Preparing' ? preparingCount : readyCount;
                                 return (
@@ -370,7 +370,7 @@ const OperatorDashboard = () => {
                                         key={tab} 
                                         onClick={() => setOrderTab(tab)}
                                         className={`px-3 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
-                                            orderTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-700'
+                                            orderTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-700 dark:text-slate-300'
                                         }`}
                                     >
                                         {tab} ({count})
@@ -389,19 +389,19 @@ const OperatorDashboard = () => {
                                 if (order.status === 'Confirmed') statusColor = 'bg-blue-500';
 
                                 return (
-                                    <div key={order.id} className="flex justify-between items-start border-b border-gray-50 pb-3 last:border-0">
+                                    <div key={order.id} className="flex justify-between items-start border-b border-gray-50 dark:border-slate-800/50 pb-3 last:border-0">
                                         <div className="flex gap-3">
                                             <div className={`mt-1.5 w-1.5 h-1.5 rounded-full ${statusColor}`}></div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-gray-900 text-sm">ORD{order.id}</span>
+                                                    <span className="font-bold text-gray-900 dark:text-white text-sm">ORD{order.id}</span>
                                                     {order.status === 'Pending' && <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 rounded uppercase">New</span>}
                                                 </div>
-                                                <p className="text-xs text-gray-500 mt-0.5">Table {order.table_number} • By {order.waiter_id ? 'Waiter' : 'QR Order'}</p>
+                                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Table {order.table_number} • By {order.waiter_id ? 'Waiter' : 'QR Order'}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-xs font-semibold text-gray-900">{formatTime(order.created_at)}</div>
+                                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{formatTime(order.created_at)}</div>
                                             <div className="text-[10px] text-gray-400 mt-0.5">{order.items?.length || 0} Items</div>
                                         </div>
                                     </div>
@@ -414,15 +414,15 @@ const OperatorDashboard = () => {
                     </div>
 
                     {/* WAITER PERFORMANCE */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-gray-900">Waiter Performance (Today)</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Waiter Performance (Today)</h3>
                             <button className="text-xs text-indigo-600 font-medium hover:underline">View All →</button>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs whitespace-nowrap">
                                 <thead>
-                                    <tr className="text-gray-400 border-b border-gray-100">
+                                    <tr className="text-gray-400 border-b border-gray-100 dark:border-slate-800">
                                         <th className="pb-2 font-medium">Waiter</th>
                                         <th className="pb-2 font-medium text-center">Orders</th>
                                         <th className="pb-2 font-medium text-right">Sales (₹)</th>
@@ -431,21 +431,21 @@ const OperatorDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {(analyticsData?.top_waiters || []).slice(0, 5).map((waiter, idx) => (
-                                        <tr key={idx} className="border-b border-gray-50 last:border-0">
+                                        <tr key={idx} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0">
                                             <td className="py-2 flex items-center gap-2">
                                                 <img src={waiter.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-gray-200 object-cover" />
-                                                <span className="font-semibold text-gray-800">{waiter.name}</span>
+                                                <span className="font-semibold text-gray-800 dark:text-slate-200">{waiter.name}</span>
                                             </td>
-                                            <td className="py-2 text-center text-gray-600 font-medium">{(waiter.sales/1000).toFixed(0)}</td>
-                                            <td className="py-2 text-right text-gray-900">{waiter.sales.toLocaleString()}</td>
-                                            <td className="py-2 text-right flex items-center justify-end text-gray-800 font-medium">
+                                            <td className="py-2 text-center text-gray-600 dark:text-slate-400 font-medium">{(waiter.sales/1000).toFixed(0)}</td>
+                                            <td className="py-2 text-right text-gray-900 dark:text-white">{waiter.sales.toLocaleString()}</td>
+                                            <td className="py-2 text-right flex items-center justify-end text-gray-800 dark:text-slate-200 font-medium">
                                                 <Star size={12} className="text-orange-400 mr-1 fill-orange-400" /> 
                                                 {(4.8 - (idx * 0.1)).toFixed(1)}
                                             </td>
                                         </tr>
                                     ))}
                                     {(!analyticsData?.top_waiters || analyticsData.top_waiters.length === 0) && (
-                                        <tr><td colSpan="4" className="text-center py-4 text-gray-500">No waiter data for today.</td></tr>
+                                        <tr><td colSpan="4" className="text-center py-4 text-gray-500 dark:text-slate-400">No waiter data for today.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -453,8 +453,8 @@ const OperatorDashboard = () => {
                     </div>
 
                     {/* PAYMENT SUMMARY */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                        <h3 className="text-[15px] font-bold text-gray-900 mb-4">Payment Summary (Today)</h3>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                        <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-4">Payment Summary (Today)</h3>
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="w-32 h-32 relative shrink-0">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -472,17 +472,17 @@ const OperatorDashboard = () => {
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                                     <span className="text-[10px] text-gray-400 font-medium">Total</span>
-                                    <span className="text-xs font-bold text-gray-900">₹ {(revenueToday/1000).toFixed(1)}k</span>
+                                    <span className="text-xs font-bold text-gray-900 dark:text-white">₹ {(revenueToday/1000).toFixed(1)}k</span>
                                 </div>
                             </div>
                             <div className="flex-1 w-full space-y-2">
                                 {(analyticsData?.sales_by_payment_method || []).map((method, idx) => (
                                     <div key={idx} className="flex items-center justify-between text-xs">
-                                        <div className="flex items-center text-gray-600">
+                                        <div className="flex items-center text-gray-600 dark:text-slate-400">
                                             <span className="w-2 h-2 rounded-sm mr-2" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></span>
                                             {method.name}
                                         </div>
-                                        <div className="text-gray-900 font-medium whitespace-nowrap ml-2">
+                                        <div className="text-gray-900 dark:text-white font-medium whitespace-nowrap ml-2">
                                             ₹ {method.amount.toLocaleString()} <span className="text-gray-400 font-normal ml-1">({method.percent})</span>
                                         </div>
                                     </div>
@@ -492,32 +492,32 @@ const OperatorDashboard = () => {
                     </div>
 
                     {/* QUICK ACTIONS */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                        <h3 className="text-[15px] font-bold text-gray-900 mb-4">Quick Actions</h3>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
+                        <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <button onClick={() => navigate('/operator/orders')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button onClick={() => navigate('/operator/orders')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><ShoppingCart size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">New Order</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">New Order</span>
                             </button>
-                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><Receipt size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Generate Bill</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Generate Bill</span>
                             </button>
-                            <button className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><UserPlus size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Assign Waiter</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Assign Waiter</span>
                             </button>
-                            <button onClick={() => navigate('/operator/tables')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button onClick={() => navigate('/operator/tables')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><LayoutGrid size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">View Tables</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">View Tables</span>
                             </button>
-                            <button className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button onClick={() => navigate('/operator/menu-items')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><UtensilsCrossed size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Menu Items</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Menu Items</span>
                             </button>
-                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
+                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
                                 <div className="text-indigo-600 mr-2"><FileText size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 group-hover:text-indigo-700">Payments</span>
+                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Payments</span>
                             </button>
                         </div>
                     </div>

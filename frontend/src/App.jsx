@@ -22,6 +22,8 @@ import WaiterLayout from './layouts/WaiterLayout';
 import OperatorDashboard from './pages/operator/OperatorDashboard';
 import TableAssignment from './pages/operator/TableAssignment';
 import OperatorBilling from './pages/operator/OperatorBilling';
+import OperatorOrders from './pages/operator/OperatorOrders';
+import OperatorOrderDetails from './pages/operator/OperatorOrderDetails';
 import Waiters from './pages/operator/Waiters';
 import OperatorSettings from './pages/operator/OperatorSettings';
 import OperatorTables from './pages/operator/Tables';
@@ -130,7 +132,7 @@ const App = () => {
                             <Route path="reservations" element={<OperatorReservations />} />
                             <Route path="table-assignment" element={<TableAssignment />} />
                             <Route path="tables" element={<OperatorTables />} />
-                            <Route path="orders" element={<Orders />} />
+                            <Route path="orders" element={<OperatorOrders />} />
                             <Route path="billing" element={<OperatorBilling />} />
                             <Route path="food-items" element={<FoodItems />} />
                             <Route path="categories" element={<AddCategoryWithItems />} />
@@ -140,7 +142,7 @@ const App = () => {
                             
                             <Route path="waiters" element={<Waiters />} />
                             <Route path="floor-plan" element={<OperatorFloorPlan />} />
-                            <Route path="orders/details" element={<OperatorPlaceholder title="Order Details" />} />
+                            <Route path="orders/:id" element={<OperatorOrderDetails />} />
                             <Route path="customers" element={<Customers />} />
                             <Route path="invoices" element={<Invoices />} />
                             <Route path="testimonials" element={<OperatorPlaceholder title="Customer Testimonials & Feedback" />} />

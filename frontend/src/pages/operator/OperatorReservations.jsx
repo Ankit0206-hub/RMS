@@ -48,9 +48,9 @@ const OperatorReservations = () => {
     const getStatusColor = (status) => {
         switch(status) {
             case 'Occupied': return { border: 'bg-cyan-400', text: 'text-cyan-600', badge: 'border-cyan-300 text-cyan-700' };
-            case 'Vacant': return { border: 'bg-green-500', text: 'text-green-600', badge: 'border-gray-200 text-gray-500' };
+            case 'Vacant': return { border: 'bg-green-500', text: 'text-green-600', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
             case 'Reserved': return { border: 'bg-amber-400', text: 'text-amber-600', badge: 'border-amber-400 text-amber-700' };
-            default: return { border: 'bg-gray-300', text: 'text-gray-500', badge: 'border-gray-200 text-gray-500' };
+            default: return { border: 'bg-gray-300', text: 'text-gray-500 dark:text-slate-400', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
         }
     };
 
@@ -89,23 +89,23 @@ const OperatorReservations = () => {
     };
 
     return (
-        <div className="bg-[#f8f9fc] min-h-[90vh] -m-6 flex font-inter shadow-inner">
+        <div className="min-h-[90vh] -m-6 flex font-inter shadow-inner">
             <Toaster position="top-right" />
             
             {/* ---------------- LEFT SIDEBAR (Reservations List) ---------------- */}
-            <div className="w-[300px] bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
+            <div className="w-[300px] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 flex flex-col flex-shrink-0">
                 
                 {/* Tabs */}
                 <div className="flex p-4 pb-0">
                     <button 
                         onClick={() => setLeftTab('RESERVATION')}
-                        className={`flex-1 py-2 text-xs font-bold border-b-2 transition-colors ${leftTab === 'RESERVATION' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+                        className={`flex-1 py-2 text-xs font-bold border-b-2 transition-colors ${leftTab === 'RESERVATION' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200'}`}
                     >
                         RESERVATION
                     </button>
                     <button 
                         onClick={() => setLeftTab('WAITING')}
-                        className={`flex-1 py-2 text-xs font-bold border-b-2 transition-colors ${leftTab === 'WAITING' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+                        className={`flex-1 py-2 text-xs font-bold border-b-2 transition-colors ${leftTab === 'WAITING' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200'}`}
                     >
                         WAITING
                     </button>
@@ -117,7 +117,7 @@ const OperatorReservations = () => {
                         <input 
                             type="text" 
                             placeholder="Search Guest"
-                            className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-xs font-semibold rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                            className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                         />
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     </div>
@@ -139,16 +139,16 @@ const OperatorReservations = () => {
                                 <div 
                                     key={idx}
                                     onClick={() => handleGuestClick(guest.table)}
-                                    className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50'}`}
+                                    className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                 >
                                     <div className="flex items-start space-x-3">
                                         <div className="text-right w-14 pt-0.5">
-                                            <div className="text-gray-900 font-bold text-xs">{guest.time.split(' ')[0]}</div>
+                                            <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.time.split(' ')[0]}</div>
                                             <div className="text-gray-400 font-semibold text-[9px]">{guest.time.split(' ')[1]}</div>
                                         </div>
                                         <div>
-                                            <div className="text-gray-900 font-bold text-xs">{guest.name}</div>
-                                            <div className="text-gray-500 font-medium text-[10px] my-0.5">{guest.phone}</div>
+                                            <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.name}</div>
+                                            <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.phone}</div>
                                             <div className="text-gray-400 font-semibold text-[9px]">{guest.guests} Guests / {guest.room}</div>
                                         </div>
                                     </div>
@@ -181,16 +181,16 @@ const OperatorReservations = () => {
                                 <div 
                                     key={idx}
                                     onClick={() => handleGuestClick(guest.table)}
-                                    className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50'}`}
+                                    className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                 >
                                     <div className="flex items-start space-x-3">
                                         <div className="text-right w-14 pt-0.5">
-                                            <div className="text-gray-900 font-bold text-xs">{guest.time.split(' ')[0]}</div>
+                                            <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.time.split(' ')[0]}</div>
                                             <div className="text-gray-400 font-semibold text-[9px]">{guest.time.split(' ')[1]}</div>
                                         </div>
                                         <div>
-                                            <div className="text-gray-900 font-bold text-xs">{guest.name}</div>
-                                            <div className="text-gray-500 font-medium text-[10px] my-0.5">{guest.phone}</div>
+                                            <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.name}</div>
+                                            <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.phone}</div>
                                             <div className="text-gray-400 font-semibold text-[9px]">{guest.guests} Guests / {guest.room}</div>
                                         </div>
                                     </div>
@@ -210,33 +210,33 @@ const OperatorReservations = () => {
             <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
                 
                 {/* Top Toolbar */}
-                <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 shrink-0 shadow-sm z-10">
+                <div className="h-16 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between px-6 shrink-0 shadow-sm z-10">
                     
                     {/* Left Controls */}
                     <div className="flex items-center space-x-6">
-                        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-700 shadow-sm">
-                            <ChevronLeft className="w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-900" />
+                        <div className="flex items-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 shadow-sm">
+                            <ChevronLeft className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
                             <span className="mx-3">Thu, Jan 19</span>
-                            <ChevronRight className="w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-900" />
+                            <ChevronRight className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
                         </div>
                         
-                        <div className="flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
                             <span>Dinner</span>
-                            <ChevronDown className="w-4 h-4 text-gray-500" />
+                            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                         </div>
                     </div>
 
                     {/* Center Room Tabs */}
-                    <div className="hidden md:flex items-center space-x-6 text-xs font-bold text-gray-600">
-                        <div className="flex items-center space-x-2 text-gray-900 border-b-2 border-indigo-600 pb-1 cursor-pointer">
+                    <div className="hidden md:flex items-center space-x-6 text-xs font-bold text-gray-600 dark:text-slate-400">
+                        <div className="flex items-center space-x-2 text-gray-900 dark:text-white border-b-2 border-indigo-600 pb-1 cursor-pointer">
                             <span>Main Room</span>
                             <span className="bg-green-100 text-green-700 px-1.5 rounded text-[10px]">8/12</span>
                         </div>
-                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 cursor-pointer transition-colors">
+                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
                             <span>Patio</span>
                             <span className="bg-green-100 text-green-700 px-1.5 rounded text-[10px]">2/8</span>
                         </div>
-                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 cursor-pointer transition-colors">
+                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
                             <span>Terrace</span>
                             <span className="bg-red-100 text-red-600 px-1.5 rounded text-[10px]">6/6</span>
                         </div>
@@ -248,15 +248,15 @@ const OperatorReservations = () => {
                             <div className="flex items-center space-x-2 text-xs">
                                 <Clock className="w-4 h-4 text-indigo-500" />
                                 <div>
-                                    <div className="text-gray-500 font-semibold text-[9px]">Avg. Wait</div>
-                                    <div className="text-gray-900 font-bold leading-tight">30 min</div>
+                                    <div className="text-gray-500 dark:text-slate-400 font-semibold text-[9px]">Avg. Wait</div>
+                                    <div className="text-gray-900 dark:text-white font-bold leading-tight">30 min</div>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-2 text-xs">
                                 <Users className="w-4 h-4 text-indigo-500" />
                                 <div>
-                                    <div className="text-gray-500 font-semibold text-[9px]">Current Capacity</div>
-                                    <div className="text-gray-900 font-bold leading-tight">80% Full</div>
+                                    <div className="text-gray-500 dark:text-slate-400 font-semibold text-[9px]">Current Capacity</div>
+                                    <div className="text-gray-900 dark:text-white font-bold leading-tight">80% Full</div>
                                 </div>
                             </div>
                         </div>
@@ -264,7 +264,7 @@ const OperatorReservations = () => {
                         <div className="h-6 w-px bg-gray-200"></div>
 
                         <div className="flex space-x-3">
-                            <button className="p-2 border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
+                            <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
                                 <Calendar className="w-4 h-4" />
                             </button>
                             <button className="hidden sm:flex items-center px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm active:scale-95">
@@ -288,8 +288,8 @@ const OperatorReservations = () => {
                                     <div 
                                         key={table.id}
                                         onClick={() => handleTableClick(table.id)}
-                                        className={`relative w-36 h-20 bg-white rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
-                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200'}`}
+                                        className={`relative w-36 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
+                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
                                         {/* Colored Status Stripe */}
                                         <div className={`w-3 shrink-0 rounded-l-2xl ${getStatusColor(table.status).border}`}></div>
@@ -297,7 +297,7 @@ const OperatorReservations = () => {
                                         {/* Table Content */}
                                         <div className="flex-1 p-3 flex flex-col justify-center">
                                             <span className="text-gray-400 font-bold text-xs">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 font-bold text-xs mt-1 truncate max-w-full block">{table.guest}</span>}
+                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate max-w-full block">{table.guest}</span>}
                                             <span className={`text-[10px] font-bold mt-0.5 ${getStatusColor(table.status).text}`}>{table.status}</span>
                                         </div>
 
@@ -312,15 +312,15 @@ const OperatorReservations = () => {
                                     <div 
                                         key={table.id}
                                         onClick={() => handleTableClick(table.id)}
-                                        className={`relative w-20 h-44 bg-white rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex flex-col
-                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200'}`}
+                                        className={`relative w-20 h-44 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex flex-col
+                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
                                         <div className="flex-1 p-3 flex flex-col items-center justify-between py-6">
                                             <span className="text-gray-400 font-bold text-xs">{table.id}</span>
                                             <div className="flex flex-col items-center">
-                                                {table.guest && <span className="text-gray-900 font-bold text-[10px] truncate max-w-[60px]">{table.guest}</span>}
+                                                {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[10px] truncate max-w-[60px]">{table.guest}</span>}
                                                 <span className={`text-[10px] font-bold ${getStatusColor(table.status).text}`}>{table.status}</span>
-                                                {table.time && <span className="text-gray-500 text-[9px] font-bold">{table.time}</span>}
+                                                {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold">{table.time}</span>}
                                             </div>
                                         </div>
 
@@ -338,15 +338,15 @@ const OperatorReservations = () => {
                                     <div 
                                         key={table.id}
                                         onClick={() => handleTableClick(table.id)}
-                                        className={`relative w-20 h-20 bg-white rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
-                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200'}`}
+                                        className={`relative w-20 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
+                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
                                         {/* Colored Status Stripe */}
                                         <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status).border}`}></div>
                                         
                                         <div className="flex-1 p-2 flex flex-col items-center justify-center pr-3">
                                             <span className="text-gray-400 font-bold text-xs mb-1">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 font-bold text-[9px] truncate max-w-[50px]">{table.guest}</span>}
+                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[9px] truncate max-w-[50px]">{table.guest}</span>}
                                             <span className={`text-[9px] font-bold mt-0.5 ${getStatusColor(table.status).text}`}>{table.status}</span>
                                         </div>
 
@@ -361,8 +361,8 @@ const OperatorReservations = () => {
                                     <div 
                                         key={table.id}
                                         onClick={() => handleTableClick(table.id)}
-                                        className={`relative w-36 h-20 bg-white rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
-                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200'}`}
+                                        className={`relative w-36 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex
+                                            ${selectedTable === table.id ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
                                         {/* Colored Status Stripe on Right for Column 4 */}
                                         <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status).border}`}></div>
@@ -370,10 +370,10 @@ const OperatorReservations = () => {
                                         {/* Table Content */}
                                         <div className="flex-1 p-3 flex flex-col justify-center pr-4">
                                             <span className="text-gray-400 font-bold text-xs">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 font-bold text-xs mt-1 truncate block">{table.guest}</span>}
+                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate block">{table.guest}</span>}
                                             <div className="flex space-x-1 items-center mt-0.5">
                                                 <span className={`text-[10px] font-bold ${getStatusColor(table.status).text}`}>{table.status}</span>
-                                                {table.time && <span className="text-gray-500 text-[9px] font-bold ml-1">{table.time}</span>}
+                                                {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold ml-1">{table.time}</span>}
                                             </div>
                                         </div>
 

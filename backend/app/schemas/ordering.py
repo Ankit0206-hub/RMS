@@ -14,6 +14,9 @@ class OrderItemResponse(OrderItemBase):
     id: int
     order_id: int
     price_at_order: float
+    menu_item_name: Optional[str] = None
+    menu_item_category: Optional[str] = None
+    menu_item_image: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class OrderBase(BaseModel):
