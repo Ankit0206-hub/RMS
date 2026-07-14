@@ -154,7 +154,7 @@ export default function OrderDetails() {
         <div className="border-t bg-white p-5">
           <Button
             onClick={() =>
-              navigate("/invoice", {
+              navigate("/customer/invoice", {
                 state: { order },
               })
             }

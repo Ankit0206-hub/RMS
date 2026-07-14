@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 const OperatorLayout = () => {
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
@@ -134,19 +134,19 @@ const OperatorLayout = () => {
                     <div className="flex items-center px-6 py-5 border-b border-gray-50 dark:border-slate-800/50/80">
                         <img
                             src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150"
-                            alt="Saiful Talukdar"
+                            alt={`${user?.first_name || 'User'} ${user?.last_name || ''}`}
                             className="w-10 h-10 rounded-full object-cover border border-slate-100 dark:border-slate-800 shrink-0"
                         />
                         <div className="ml-3 min-w-0">
-                            <h4 className="text-sm font-bold text-slate-850 dark:text-white truncate leading-tight">Saiful Talukdar</h4>
-                            <p className="text-[11px] font-semibold text-slate-400 truncate mt-1">Restraunt Manager</p>
+                            <h4 className="text-sm font-bold text-slate-850 dark:text-white truncate leading-tight">{user?.first_name} {user?.last_name}</h4>
+                            <p className="text-[11px] font-semibold text-slate-400 truncate mt-1 capitalize">{user?.role || 'Operator'}</p>
                         </div>
                     </div>
                 ) : (
                     <div className="flex justify-center py-4 border-b border-gray-50 dark:border-slate-800/50/80">
                         <img
                             src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150"
-                            alt="Saiful Talukdar"
+                            alt={`${user?.first_name || 'User'} ${user?.last_name || ''}`}
                             className="w-9 h-9 rounded-full object-cover border border-slate-100 dark:border-slate-800"
                         />
                     </div>
@@ -300,8 +300,8 @@ const OperatorLayout = () => {
                                     ></div>
                                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-50">
                                         <div className="px-4 py-2 border-b border-gray-100 dark:border-slate-800">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Saiful Talukdar</p>
-                                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">saiful@restrobit.com</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.first_name} {user?.last_name}</p>
+                                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{user?.email}</p>
                                         </div>
                                         <button
                                             onClick={handleLogout}

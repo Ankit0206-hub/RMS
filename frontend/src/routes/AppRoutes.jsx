@@ -34,6 +34,9 @@ import PopularFoods from "../pages/customer/PopularFoods.jsx";
 import Offers from "../pages/customer/Offers.jsx";
 import Addresses from "../pages/customer/Addresses.jsx";
 import AddAddress from "../pages/customer/AddAddress.jsx";
+import Menu from "../pages/customer/Menu.jsx";
+import Reservation from "../pages/customer/Reservation.jsx";
+import Logout from "../pages/customer/Logout.jsx";
 export default function AppRoutes() {
   return (
     
@@ -73,6 +76,9 @@ export default function AppRoutes() {
         <Route path="addresses" element={<Addresses />} />
 
         <Route path="add-address" element={<AddAddress />} />
+        <Route path="menu" element={<Menu />} />
+        <Route path="reservation" element={<Reservation />} />
+        <Route path="logout" element={<Logout />} />
       </Routes>
     
   );

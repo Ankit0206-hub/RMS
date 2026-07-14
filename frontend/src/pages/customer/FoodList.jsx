@@ -118,7 +118,7 @@ export default function FoodList() {
             <div
               key={food.name}
               onClick={() =>
-                navigate("/food-details", {
+                navigate("/customer/food-details", {
                   state: {
                     food,
                   },
@@ -164,7 +164,7 @@ export default function FoodList() {
                   onClick={(e) => {
                     e.stopPropagation();
 
-                    navigate("/food-details", {
+                    navigate("/customer/food-details", {
                       state: {
                         food,
                       },

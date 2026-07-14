@@ -152,7 +152,7 @@ export default function PopularFoods() {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            navigate("/food-details", {
+                                            navigate("/customer/food-details", {
                                                 state: { food },
                                             });
                                         }}
