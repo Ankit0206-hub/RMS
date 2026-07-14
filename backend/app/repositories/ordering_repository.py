@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from app.models.ordering import CustomerSession, Order, OrderItem
 from app.models.restaurant import RestaurantTable
+from app.models.menu import MenuItem
 
 class OrderingRepository:
     async def create_session(self, db: AsyncSession, session_data: dict) -> CustomerSession:
@@ -61,7 +62,8 @@ class OrderingRepository:
 
     async def get_orders(self, db: AsyncSession, page: int, page_size: int, status: Optional[str] = None) -> Tuple[List[Order], int]:
         stmt = select(Order).options(
-            selectinload(Order.items),
+            selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
+            selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
             selectinload(Order.session).selectinload(CustomerSession.table)
         )
         count_stmt = select(func.count(Order.id))
@@ -77,7 +79,11 @@ class OrderingRepository:
         return result.scalars().all(), total
 
     async def get_order_by_id(self, db: AsyncSession, order_id: int) -> Optional[Order]:
-        stmt = select(Order).options(selectinload(Order.items)).where(Order.id == order_id)
+        stmt = select(Order).options(
+            selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
+            selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
+            selectinload(Order.session).selectinload(CustomerSession.table)
+        ).where(Order.id == order_id)
         result = await db.execute(stmt)
         return result.scalars().first()
 

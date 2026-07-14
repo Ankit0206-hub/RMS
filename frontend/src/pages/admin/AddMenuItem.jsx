@@ -21,6 +21,9 @@ const menuItemSchema = z.object({
 const AddMenuItem = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const isOperator = window.location.pathname.startsWith('/operator');
+    const returnPath = isOperator ? '/operator/menu-items' : '/admin/menu';
+    const dashPath = isOperator ? '/operator/dashboard' : '/admin/dashboard';
 
     // Fetch categories to populate dropdown
     const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -47,7 +50,7 @@ const AddMenuItem = () => {
         onSuccess: () => {
             toast.success("Menu item created successfully");
             queryClient.invalidateQueries(['menuItems']);
-            navigate('/admin/menu');
+            navigate(returnPath);
         },
         onError: (error) => {
             toast.error(error.response?.data?.message || "Failed to create menu item");
@@ -65,15 +68,15 @@ const AddMenuItem = () => {
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">Add Menu Item</h2>
                     <div className="flex items-center text-xs text-gray-500 mt-1.5 font-medium">
-                        <span onClick={() => navigate('/admin/dashboard')} className="hover:text-blue-600 cursor-pointer">Dashboard</span>
+                        <span onClick={() => navigate(dashPath)} className="hover:text-blue-600 cursor-pointer">Dashboard</span>
                         <ChevronRight className="w-3 h-3 mx-1" />
-                        <span onClick={() => navigate('/admin/menu')} className="hover:text-blue-600 cursor-pointer">Menu Management</span>
+                        <span onClick={() => navigate(returnPath)} className="hover:text-blue-600 cursor-pointer">Menu Management</span>
                         <ChevronRight className="w-3 h-3 mx-1" />
                         <span className="text-gray-900">Add Menu Item</span>
                     </div>
                 </div>
                 <button 
-                    onClick={() => navigate('/admin/menu')}
+                    onClick={() => navigate(returnPath)}
                     className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center transition-colors shadow-sm"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -194,7 +197,7 @@ const AddMenuItem = () => {
                 <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3">
                     <button 
                         type="button"
-                        onClick={() => navigate('/admin/menu')}
+                        onClick={() => navigate(returnPath)}
                         className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors"
                     >
                         Cancel

@@ -9,6 +9,8 @@ import Select from 'react-select';
 const AddCategoryWithItems = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const isOperator = window.location.pathname.startsWith('/operator');
+    const returnPath = isOperator ? '/operator/menu-items' : '/admin/menu';
 
     const [category, setCategory] = useState({
         name: '',
@@ -116,7 +118,7 @@ const AddCategoryWithItems = () => {
             queryClient.invalidateQueries(['menu', 'kpis']);
 
             toast.success(isNewCategory ? "Category and items created successfully!" : "Items added to category successfully!");
-            navigate('/admin/menu');
+            navigate(returnPath);
         } catch (error) {
             console.error("Error creating/adding items:", error);
             toast.error(error.response?.data?.detail || "Failed to process request.");
@@ -128,34 +130,34 @@ const AddCategoryWithItems = () => {
             {/* Header */}
             <div className="flex items-center space-x-4">
                 <button 
-                    onClick={() => navigate('/admin/menu')}
-                    className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 bg-white"
+                    onClick={() => navigate(returnPath)}
+                    className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg transition-colors border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Add Menu Items</h2>
-                    <p className="text-sm text-gray-500 mt-1">Create a new category or add items to an existing one</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Menu Items</h2>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Create a new category or add items to an existing one</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Category Details */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                        <h3 className="font-bold text-gray-900 text-[15px]">Category Selection</h3>
-                        <div className="flex bg-gray-100 p-1 rounded-lg">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col space-y-4">
+                    <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
+                        <h3 className="font-bold text-gray-900 dark:text-white text-[15px]">Category Selection</h3>
+                        <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
                             <button
                                 type="button"
                                 onClick={() => setIsNewCategory(true)}
-                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${isNewCategory ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${isNewCategory ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'}`}
                             >
                                 Create New
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsNewCategory(false)}
-                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${!isNewCategory ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${!isNewCategory ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'}`}
                             >
                                 Select Existing
                             </button>
@@ -165,32 +167,32 @@ const AddCategoryWithItems = () => {
                     {isNewCategory ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Category Name *</label>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Category Name *</label>
                                 <input 
                                     type="text"
                                     name="name"
                                     value={category.name}
                                     onChange={handleCategoryChange}
                                     required={isNewCategory}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     placeholder="e.g. Starters, Main Course"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Description</label>
                                 <input 
                                     type="text"
                                     name="description"
                                     value={category.description}
                                     onChange={handleCategoryChange}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     placeholder="Optional category description"
                                 />
                             </div>
                         </div>
                     ) : (
                         <div>
-                            <label className="block text-xs font-semibold text-gray-700 mb-1">Select Category *</label>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Select Category *</label>
                             <Select
                                 options={categories?.map(c => ({ value: c.id, label: c.name })) || []}
                                 value={categories?.map(c => ({ value: c.id, label: c.name })).find(c => c.value === selectedCategoryId) || null}
@@ -198,29 +200,17 @@ const AddCategoryWithItems = () => {
                                 isClearable
                                 isSearchable
                                 placeholder="Search or select a category..."
-                                className="text-sm"
-                                styles={{
-                                    control: (base) => ({
-                                        ...base,
-                                        backgroundColor: '#f9fafb',
-                                        borderColor: '#e5e7eb',
-                                        borderRadius: '0.5rem',
-                                        padding: '1px',
-                                        boxShadow: 'none',
-                                        '&:hover': {
-                                            borderColor: '#d1d5db'
-                                        }
-                                    })
-                                }}
+                                classNamePrefix="react-select"
+                                className="text-sm react-select-container"
                             />
                         </div>
                     )}
                 </div>
 
                 {/* Menu Items Details */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                        <h3 className="font-bold text-gray-900 text-[15px]">Menu Items</h3>
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col space-y-4">
+                    <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
+                        <h3 className="font-bold text-gray-900 dark:text-white text-[15px]">Menu Items</h3>
                         <button 
                             type="button" 
                             onClick={addItemRow}
@@ -232,7 +222,7 @@ const AddCategoryWithItems = () => {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="text-xs uppercase bg-gray-50 text-gray-600">
+                            <thead className="text-xs uppercase bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400">
                                 <tr>
                                     <th className="px-4 py-3 font-bold">Item Code *</th>
                                     <th className="px-4 py-3 font-bold">Name *</th>
@@ -246,7 +236,7 @@ const AddCategoryWithItems = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {items.map((item, index) => (
-                                    <tr key={index} className="hover:bg-gray-50/50">
+                                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:bg-slate-800/50/50">
                                         <td className="px-2 py-3">
                                             <input 
                                                 type="text" 
@@ -254,7 +244,7 @@ const AddCategoryWithItems = () => {
                                                 value={item.item_code} 
                                                 onChange={(e) => handleItemChange(index, e)}
                                                 required
-                                                className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
+                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="Code"
                                             />
                                         </td>
@@ -265,7 +255,7 @@ const AddCategoryWithItems = () => {
                                                 value={item.name} 
                                                 onChange={(e) => handleItemChange(index, e)}
                                                 required
-                                                className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
+                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="Name"
                                             />
                                         </td>
@@ -275,7 +265,7 @@ const AddCategoryWithItems = () => {
                                                 name="description" 
                                                 value={item.description} 
                                                 onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
+                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="Optional desc"
                                             />
                                         </td>
@@ -287,7 +277,7 @@ const AddCategoryWithItems = () => {
                                                 value={item.price} 
                                                 onChange={(e) => handleItemChange(index, e)}
                                                 required
-                                                className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
+                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="0.00"
                                             />
                                         </td>
@@ -298,7 +288,7 @@ const AddCategoryWithItems = () => {
                                                 name="half_price" 
                                                 value={item.half_price} 
                                                 onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-xs focus:outline-none focus:border-blue-500"
+                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="0.00"
                                             />
                                         </td>
@@ -308,7 +298,7 @@ const AddCategoryWithItems = () => {
                                                 name="is_veg" 
                                                 checked={item.is_veg} 
                                                 onChange={(e) => handleItemChange(index, e)}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
                                             />
                                         </td>
                                         <td className="px-2 py-3 text-center">
@@ -317,7 +307,7 @@ const AddCategoryWithItems = () => {
                                                 name="is_available" 
                                                 checked={item.is_available} 
                                                 onChange={(e) => handleItemChange(index, e)}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
                                             />
                                         </td>
                                         <td className="px-2 py-3 text-center">

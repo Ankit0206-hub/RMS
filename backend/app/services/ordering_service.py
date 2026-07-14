@@ -26,12 +26,18 @@ class OrderingService:
         return await self.repository.create_session(db, session_in.model_dump())
 
     async def get_sessions(self, db: AsyncSession, page: int, page_size: int, status: str = None):
-        return await self.repository.get_sessions(db, page, page_size, status)
+        sessions, total = await self.repository.get_sessions(db, page, page_size, status)
+        for session in sessions:
+            for order in session.orders:
+                order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
+        return sessions, total
 
     async def get_session(self, db: AsyncSession, session_id: int):
         session = await self.repository.get_session_by_id(db, session_id)
         if not session:
             raise NotFoundException("Session not found")
+        for order in session.orders:
+            order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
         return session
 
     async def create_order(self, db: AsyncSession, order_in: OrderCreate, waiter_id: int = None):
@@ -100,12 +106,45 @@ class OrderingService:
             # Calculate total amount
             order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
             
+            for item in order.items:
+                if getattr(item, 'menu_item', None):
+                    item.menu_item_name = item.menu_item.name
+                    item.menu_item_category = item.menu_item.category.name if getattr(item.menu_item, 'category', None) else "Uncategorized"
+                    # Get primary image or first image
+                    if getattr(item.menu_item, 'images', None) and len(item.menu_item.images) > 0:
+                        primary_img = next((img for img in item.menu_item.images if img.is_primary), item.menu_item.images[0])
+                        item.menu_item_image = primary_img.image_url
+                    else:
+                        item.menu_item_image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop" # Default fallback
+            
         return orders, total
         
     async def get_order(self, db: AsyncSession, order_id: int):
         order = await self.repository.get_order_by_id(db, order_id)
         if not order:
             raise NotFoundException("Order not found")
+            
+        if order.session:
+            order.customer_name = order.session.customer_name or "Walk-in Customer"
+            order.customer_phone = order.session.customer_phone or "-"
+            if order.session.table:
+                order.table_number = f"{order.session.table.table_number} - {order.session.table.name}" if order.session.table.name else order.session.table.table_number
+                order.order_type = "Dine In"
+            else:
+                order.order_type = "Take Away"
+                
+        order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
+        
+        for item in order.items:
+            if getattr(item, 'menu_item', None):
+                item.menu_item_name = item.menu_item.name
+                item.menu_item_category = item.menu_item.category.name if getattr(item.menu_item, 'category', None) else "Uncategorized"
+                if getattr(item.menu_item, 'images', None) and len(item.menu_item.images) > 0:
+                    primary_img = next((img for img in item.menu_item.images if img.is_primary), item.menu_item.images[0])
+                    item.menu_item_image = primary_img.image_url
+                else:
+                    item.menu_item_image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
+                    
         return order
         
     async def update_order_status(self, db: AsyncSession, order_id: int, status_update: OrderStatusUpdate):

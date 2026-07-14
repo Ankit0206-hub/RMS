@@ -8,13 +8,26 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            // Assume logged in if token exists for now.
-            // Ideally verify token with a /me endpoint
-            setUser({ role: localStorage.getItem('role') });
-        }
-        setLoading(false);
+        const verifyToken = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await api.get('/admin/auth/me');
+                    if (response.data?.data) {
+                        setUser(response.data.data);
+                    } else {
+                        // Fallback
+                        setUser({ role: localStorage.getItem('role') });
+                    }
+                } catch (error) {
+                    console.error("Token verification failed", error);
+                    // Depending on requirements, we might want to logout here
+                    // logout();
+                }
+            }
+            setLoading(false);
+        };
+        verifyToken();
     }, []);
 
     const login = async (email, password) => {
@@ -22,7 +35,11 @@ export const AuthProvider = ({ children }) => {
         const { access_token, role } = response.data.data;
         localStorage.setItem('token', access_token);
         localStorage.setItem('role', role);
-        setUser({ role });
+        
+        // Fetch full profile immediately after login
+        const meResponse = await api.get('/admin/auth/me');
+        setUser(meResponse.data?.data || { role });
+        
         return role;
     };
 

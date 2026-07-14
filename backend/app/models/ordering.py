@@ -44,6 +44,7 @@ class OrderItem(TimestampMixin, Base):
     notes: Mapped[Optional[str]] = mapped_column(String(255))
 
     order: Mapped["Order"] = relationship(back_populates="items")
+    menu_item: Mapped["MenuItem"] = relationship("MenuItem")
 
 class OrderStatusHistory(TimestampMixin, Base):
     __tablename__ = "order_status_history"

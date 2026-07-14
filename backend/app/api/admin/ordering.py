@@ -17,7 +17,7 @@ async def create_session(session_in: CustomerSessionCreate, db: AsyncSession = D
 @router.get("/sessions", response_model=StandardResponse[list[CustomerSessionResponse]])
 async def get_sessions(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1),
     status: str = None,
     db: AsyncSession = Depends(get_db)
 ):
@@ -39,7 +39,7 @@ async def create_order(order_in: OrderCreate, db: AsyncSession = Depends(get_db)
 @router.get("/orders", response_model=StandardResponse[list[OrderResponse]])
 async def get_orders(
     page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
+    page_size: int = Query(20, ge=1),
     status: str = None,
     db: AsyncSession = Depends(get_db)
 ):

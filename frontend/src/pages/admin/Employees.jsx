@@ -371,20 +371,19 @@ const Employees = () => {
                 /* Override DataTable base styles for this specific page to match design perfectly */
                 th {
                     text-transform: none !important;
-                    color: #4b5563 !important;
-                    font-size: 11px !important;
+font-size: 11px !important;
                     padding-top: 16px !important;
                     padding-bottom: 16px !important;
                     border-bottom-width: 2px !important;
-                    border-bottom-color: #f3f4f6 !important;
-                }
+                    border-bottom-
+}
                 td {
                     padding-top: 12px !important;
                     padding-bottom: 12px !important;
                 }
                 tr {
-                    border-bottom-color: #f9fafb !important;
-                }
+                    border-bottom-
+}
             `}</style>
         </div>
     );

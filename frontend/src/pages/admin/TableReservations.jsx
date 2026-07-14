@@ -229,22 +229,21 @@ const TableReservations = () => {
                 /* Override DataTable base styles for this specific page to match design perfectly */
                 th {
                     text-transform: none !important;
-                    color: #111827 !important;
-                    font-size: 11px !important;
+font-size: 11px !important;
                     font-weight: 700 !important;
                     padding-top: 14px !important;
                     padding-bottom: 14px !important;
                     border-bottom-width: 1px !important;
-                    border-bottom-color: #f3f4f6 !important;
-                }
+                    border-bottom-
+}
                 td {
                     padding-top: 10px !important;
                     padding-bottom: 10px !important;
-                    border-bottom-color: #f9fafb !important;
-                }
+                    border-bottom-
+}
                 tr {
-                    border-bottom-color: #f9fafb !important;
-                }
+                    border-bottom-
+}
             `}</style>
 
             <AddReservationModal 

@@ -67,6 +67,6 @@ async def update_reservation(db: AsyncSession, reservation_id: int, obj_in: Rese
 
 async def delete_reservation(db: AsyncSession, reservation_id: int):
     reservation = await get_reservation_by_id(db, reservation_id)
-    db.delete(reservation)
+    await db.delete(reservation)
     await db.commit()
     return {"message": "Reservation deleted successfully"}

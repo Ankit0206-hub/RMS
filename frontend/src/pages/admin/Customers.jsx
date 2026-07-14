@@ -31,7 +31,7 @@ const Customers = () => {
 
     const customersData = React.useMemo(() => {
         if (!sessionsResponse?.data) return [];
-        return sessionsResponse.data.map(session => ({
+        let data = sessionsResponse.data.map(session => ({
             id: session.id,
             rawId: session.id,
             name: session.customer_name || 'Walk-in Customer',
@@ -41,7 +41,16 @@ const Customers = () => {
             status: session.status,
             orders: session.orders || []
         }));
-    }, [sessionsResponse]);
+
+        if (searchTerm) {
+            const lowerSearch = searchTerm.toLowerCase();
+            data = data.filter(c => 
+                c.name.toLowerCase().includes(lowerSearch) || 
+                c.phone.includes(lowerSearch)
+            );
+        }
+        return data;
+    }, [sessionsResponse, searchTerm]);
 
     const { data: activeSessionsResponse } = useQuery({
         queryKey: ['activeCustomerSessions'],
@@ -312,25 +321,24 @@ const Customers = () => {
                 /* Specific Timeline Grid adjustments for Status */
                 th {
                     text-transform: none !important;
-                    color: #111827 !important;
-                    font-size: 11px !important;
+font-size: 11px !important;
                     font-weight: 700 !important;
                     padding-top: 14px !important;
                     padding-bottom: 14px !important;
                     border-bottom-width: 1px !important;
-                    border-bottom-color: #f3f4f6 !important;
-                }
+                    border-bottom-
+}
                 td {
                     padding-top: 12px !important;
                     padding-bottom: 12px !important;
-                    border-bottom-color: #f9fafb !important;
-                }
+                    border-bottom-
+}
                 tr {
-                    border-bottom-color: #f9fafb !important;
-                }
+                    border-bottom-
+}
                 tr:hover {
-                    background-color: #fcfcfd !important;
-                }
+                    background-
+}
             `}</style>
         </div>
     );

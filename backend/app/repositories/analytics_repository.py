@@ -258,8 +258,8 @@ class AnalyticsRepository:
         this_week_stmt = select(func.sum(Bill.grand_total)).where(Bill.payment_status == 'Paid', Bill.generated_at >= this_week_start)
         last_week_stmt = select(func.sum(Bill.grand_total)).where(Bill.payment_status == 'Paid', Bill.generated_at >= last_week_start, Bill.generated_at < this_week_start)
         
-        this_week_sales = await db.scalar(this_week_stmt) or 0.0
-        last_week_sales = await db.scalar(last_week_stmt) or 0.0
+        this_week_sales = float(await db.scalar(this_week_stmt) or 0.0)
+        last_week_sales = float(await db.scalar(last_week_stmt) or 0.0)
         
         growth = 0.0
         if last_week_sales > 0:
