@@ -25,7 +25,7 @@ export default function Settings() {
     {
       title: "Language",
       icon: Globe,
-      action: () => alert("Language page coming soon"),
+      action: () => navigate("/customer/language"),
     },
     {
       title: "Privacy Policy",

@@ -42,7 +42,8 @@ export default function PopularDishes() {
 
     const [favorites, setFavorites] = useState([]);
 
-    const featuredDishes = popularDishes.slice(0, 2);
+    // On desktop we might as well show all 4, on mobile it wraps anyway
+    const featuredDishes = popularDishes;
 
     const toggleFavorite = (id) => {
         setFavorites((prev) =>
@@ -68,8 +69,8 @@ export default function PopularDishes() {
                 </button>
             </div>
 
-            {/* Only 2 dishes on Home */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Responsive grid for tablet/desktop */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {featuredDishes.map((dish) => (
                     <div
                         key={dish.id}

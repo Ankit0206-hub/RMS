@@ -105,7 +105,7 @@ export default function Categories() {
               <div
                 key={cat.name}
                 onClick={() =>
-                  navigate(`/food-list/${cat.name.toLowerCase().replace(/\s+/g, "-")}`)
+                  navigate(`/customer/food-list/${cat.name.toLowerCase().replace(/\s+/g, "-")}`)
                 }
                 className="rounded-2xl bg-white p-4 shadow-sm border border-gray-100 active:scale-95 transition cursor-pointer"
               >

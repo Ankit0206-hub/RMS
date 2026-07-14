@@ -1,21 +1,61 @@
-import React from 'react';
-import { 
-    Camera,
-    ChevronDown
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Camera, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 
 const OperatorSettings = () => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     
+    const [formData, setFormData] = useState({
+        first_name: user?.first_name || '',
+        last_name: user?.last_name || '',
+        email: user?.email || '',
+        phone: user?.phone || ''
+    });
+
+    const [status, setStatus] = useState({ loading: false, error: null, success: false });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        if (status.error || status.success) {
+            setStatus({ ...status, error: null, success: false });
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setStatus({ loading: true, error: null, success: false });
+
+        try {
+            const response = await api.put('/operator/me', formData);
+            // Assuming the backend returns the updated user object directly or in data.
+            updateUser(formData); // Update local context
+            setStatus({ loading: false, error: null, success: true });
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                setStatus(prev => ({ ...prev, success: false }));
+            }, 3000);
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            setStatus({ 
+                loading: false, 
+                error: err.response?.data?.detail || 'Failed to update profile', 
+                success: false 
+            });
+        }
+    };
+
     return (
         <div className="font-inter">
-            <div className="max-w-4xl w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
                 
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-[22px] font-bold text-gray-900 dark:text-white mb-1">Profile Settings</h1>
-                    <p className="text-[14px] font-medium text-gray-500 dark:text-slate-400">Manage your personal information and account details</p>
+                <div className="mb-8 flex justify-between items-end">
+                    <div>
+                        <h1 className="text-[22px] font-bold text-gray-900 dark:text-white mb-1">Profile Settings</h1>
+                        <p className="text-[14px] font-medium text-gray-500 dark:text-slate-400">Manage your personal information and account details</p>
+                    </div>
                 </div>
 
                 {/* Top Card: Photo & Basic Info */}
@@ -43,15 +83,18 @@ const OperatorSettings = () => {
                 <div className="bg-[#FAFAFA] dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-6">Personal Information</h3>
                     
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleSave}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {/* First Name */}
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">First name</label>
                                 <input 
                                     type="text" 
-                                    defaultValue={user?.first_name || ''}
+                                    name="first_name"
+                                    value={formData.first_name}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm"
+                                    required
                                 />
                             </div>
                             
@@ -60,8 +103,11 @@ const OperatorSettings = () => {
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">Last name</label>
                                 <input 
                                     type="text" 
-                                    defaultValue={user?.last_name || ''}
+                                    name="last_name"
+                                    value={formData.last_name}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm"
+                                    required
                                 />
                             </div>
 
@@ -70,8 +116,11 @@ const OperatorSettings = () => {
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">Email address</label>
                                 <input 
                                     type="email" 
-                                    defaultValue={user?.email || ''}
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm"
+                                    required
                                 />
                             </div>
 
@@ -80,7 +129,9 @@ const OperatorSettings = () => {
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">Phone number</label>
                                 <input 
                                     type="text" 
-                                    defaultValue={user?.phone || ''}
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
                                     className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm"
                                 />
                             </div>
@@ -90,8 +141,9 @@ const OperatorSettings = () => {
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">Job title / Role</label>
                                 <input 
                                     type="text" 
-                                    defaultValue={user?.role || 'Operator'}
-                                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm capitalize"
+                                    value={user?.role || 'Operator'}
+                                    disabled
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm capitalize"
                                 />
                             </div>
 
@@ -100,19 +152,36 @@ const OperatorSettings = () => {
                                 <label className="text-[13px] font-bold text-gray-900 dark:text-white">Company name</label>
                                 <input 
                                     type="text" 
-                                    defaultValue="DineOps Restaurant"
-                                    className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all shadow-sm"
+                                    value="DineOps Restaurant"
+                                    disabled
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm"
                                 />
                             </div>
                         </div>
+
+                        {/* Status Messages */}
+                        {status.error && (
+                            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-xl text-[13px] font-medium">
+                                {status.error}
+                            </div>
+                        )}
+                        {status.success && (
+                            <div className="mt-4 p-3 bg-green-50 text-green-600 rounded-xl text-[13px] font-medium">
+                                Profile updated successfully!
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="mt-8 flex justify-end pb-2">
+                            <button 
+                                type="submit" 
+                                disabled={status.loading}
+                                className={`px-6 py-3.5 bg-[#111111] hover:bg-black text-white text-[14px] font-bold rounded-xl shadow-lg shadow-black/10 transition-all transform hover:-translate-y-0.5 ${status.loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            >
+                                {status.loading ? 'Saving...' : 'Save changes'}
+                            </button>
+                        </div>
                     </form>
-                </div>
-                
-                {/* Action Buttons */}
-                <div className="mt-8 flex justify-end pb-8">
-                    <button className="px-6 py-3.5 bg-[#111111] hover:bg-black text-white text-[14px] font-bold rounded-xl shadow-lg shadow-black/10 transition-all transform hover:-translate-y-0.5">
-                        Save changes
-                    </button>
                 </div>
             </div>
         </div>

@@ -58,7 +58,7 @@ export default function Favorites() {
               <div
                 key={food.id}
                 onClick={() =>
-                  navigate("/food-details", {
+                  navigate("/customer/food-details", {
                     state: { food },
                   })
                 }

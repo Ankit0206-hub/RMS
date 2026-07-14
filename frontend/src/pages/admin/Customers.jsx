@@ -143,10 +143,10 @@ const Customers = () => {
             </div>
 
             {/* Main Grid */}
-            <div className="grid grid-cols-1 gap-6">
+            <div className={`flex flex-col xl:flex-row gap-6 items-start ${selectedCustomer ? '' : 'w-full'}`}>
                 
                 {/* Data Table */}
-                <div className="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden flex flex-col">
+                <div className={`bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden flex flex-col w-full ${selectedCustomer ? 'xl:w-1/2 2xl:w-3/5' : ''}`}>
                     
                     {/* Toolbar */}
                     <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 justify-between items-center bg-white">
@@ -196,18 +196,19 @@ const Customers = () => {
                     />
                 </div>
 
-                {/* Right Side: Customer Details Drawer */}
+                {/* Right Side: Customer Details Drawer / Pane */}
                 {selectedCustomer && (
                     <>
                         <div 
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity" 
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 xl:hidden transition-opacity" 
                             onClick={() => setSelectedCustomer(null)}
                         />
-                        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[600px] bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0">
+                        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[600px] bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0 xl:static xl:w-1/2 2xl:w-2/5 xl:max-w-none xl:rounded-xl xl:shadow-sm xl:border xl:border-gray-100 xl:transform-none xl:z-0 xl:h-auto">
                             
                             {/* Header Profile */}
-                            <div className="p-6 border-b border-gray-100 bg-white">
-                                <div className="flex justify-end mb-4">
+                            <div className="p-6 border-b border-gray-100 bg-white rounded-t-xl">
+                                <div className="flex justify-between items-center mb-4 xl:justify-end">
+                                    <h2 className="text-sm font-bold text-gray-900 xl:hidden">Customer Details</h2>
                                     <button 
                                         onClick={() => setSelectedCustomer(null)}
                                         className="rounded-lg p-2 bg-gray-50 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
@@ -242,11 +243,12 @@ const Customers = () => {
                         </div>
 
                         {/* Customer Activity Timeline */}
-                        <div className="flex-1 overflow-y-auto bg-white p-6">
+                        <div className="flex-1 overflow-auto bg-white p-6 rounded-b-xl">
                             <h3 className="text-sm font-bold text-gray-900 mb-6">Customer Activity <span className="text-gray-500 font-medium">(Order History)</span></h3>
 
-                            {/* Timeline Table Header */}
-                            <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-4 px-2">
+                            <div className="min-w-[500px]">
+                                {/* Timeline Table Header */}
+                                <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-4 px-2">
                                 <div className="w-[90px] pl-8">Order ID</div>
                                 <div className="flex-1 pl-2">Date & Time</div>
                                 <div className="w-14 text-center">Items</div>
@@ -303,6 +305,7 @@ const Customers = () => {
                                     </div>
                                 )})}
                             </div>
+                            </div>
                         </div>
 
                         {/* View All Button */}
@@ -316,30 +319,6 @@ const Customers = () => {
                     </>
                 )}
             </div>
-
-            <style>{`
-                /* Specific Timeline Grid adjustments for Status */
-                th {
-                    text-transform: none !important;
-font-size: 11px !important;
-                    font-weight: 700 !important;
-                    padding-top: 14px !important;
-                    padding-bottom: 14px !important;
-                    border-bottom-width: 1px !important;
-                    border-bottom-
-}
-                td {
-                    padding-top: 12px !important;
-                    padding-bottom: 12px !important;
-                    border-bottom-
-}
-                tr {
-                    border-bottom-
-}
-                tr:hover {
-                    background-
-}
-            `}</style>
         </div>
     );
 };

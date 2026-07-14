@@ -88,7 +88,7 @@ export default function OrderHistory() {
               <div
                 key={order.id}
                 onClick={() =>
-                  navigate("/order-details", {
+                  navigate("/customer/order-details", {
                     state: { order },
                   })
                 }
