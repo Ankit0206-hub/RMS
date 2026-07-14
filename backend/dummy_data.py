@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from app.db.database import AsyncSessionLocal
+from app.db.database import AsyncSessionLocal, engine
 from app.models.security import Role, Employee
 from app.models.restaurant import RestaurantTable
 from app.models.menu import MenuCategory, MenuItem
@@ -221,15 +221,21 @@ async def clear():
     os.remove(LOG_FILE)
     print("Dummy data successfully cleared!")
 
+async def main(cmd: str):
+    try:
+        if cmd == "--seed":
+            await seed()
+        elif cmd == "--clear":
+            await clear()
+        else:
+            print("Invalid command. Use --seed or --clear")
+    finally:
+        await engine.dispose()
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python dummy_data.py [--seed|--clear]")
         sys.exit(1)
 
-    cmd = sys.argv[1]
-    if cmd == "--seed":
-        asyncio.run(seed())
-    elif cmd == "--clear":
-        asyncio.run(clear())
-    else:
-        print("Invalid command. Use --seed or --clear")
+    asyncio.run(main(sys.argv[1]))
