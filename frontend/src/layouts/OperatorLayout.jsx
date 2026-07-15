@@ -234,16 +234,6 @@ const OperatorLayout = () => {
                 </nav>
 
                 {/* Footer Sign out / Login */}
-                <div className="p-4 border-t border-gray-50 dark:border-slate-800/50/80">
-                    <button
-                        onClick={handleLogout}
-                        title={!isSidebarOpen ? 'Sign out' : undefined}
-                        className={`flex items-center px-3.5 py-2.5 text-[13px] font-semibold text-gray-500 dark:text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-600 transition-colors ${!isSidebarOpen ? 'justify-center w-full' : 'w-full'}`}
-                    >
-                        <ArrowLeft className={`h-[18px] w-[18px] shrink-0 ${isSidebarOpen ? 'mr-3.5' : ''} text-gray-400 group-hover:text-red-500`} />
-                        {isSidebarOpen && <span className="whitespace-nowrap">Login</span>}
-                    </button>
-                </div>
             </aside>
 
             {/* Main Content Area */}
