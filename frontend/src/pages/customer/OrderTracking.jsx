@@ -145,7 +145,7 @@ export default function OrderTracking() {
           View Bill
         </button>
         <button
-          onClick={() => navigate("/customer/add-more-items")}
+          onClick={() => navigate("/customer/home")}
           className="flex-[2] flex h-14 items-center justify-center rounded-2xl bg-orange-500 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
         >
           Add More Items

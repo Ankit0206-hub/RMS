@@ -1,14 +1,29 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    const saved = localStorage.getItem("cartItems");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [favorites, setFavorites] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [addresses, setAddresses] = useState([]);
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem("orders");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }, [orders]);
   const [editingAddress, setEditingAddress] = useState(null);
   const [user, setUser] = useState({
     
@@ -149,7 +164,6 @@ export const AppProvider = ({ children }) => {
         placeOrder,
         user,
         updateUser,
-        user,
         addresses,
         addAddress,
         updateAddress,
