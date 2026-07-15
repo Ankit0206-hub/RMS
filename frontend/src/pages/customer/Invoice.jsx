@@ -1,247 +1,156 @@
-import { ArrowLeft, Receipt } from "lucide-react";
+import { ArrowLeft, ReceiptText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
-
 import PageLayout from "../../components/customer/layout/PageLayout";
-import Button from "../../components/customer/ui/Button";
+import { useApp } from "../../context/AppContext";
 
 export default function Invoice() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { cartItems } = useApp();
 
-  const order = location.state?.order;
+  // For UI mockup purposes, fallback to cartItems if no order is passed
+  const orderItems = location.state?.order?.items || cartItems;
+  const orderId = location.state?.order?.id || "1425";
+  const orderDate = location.state?.order?.date || "12 May, 2024";
 
-  if (!order) {
+  if (!orderItems || orderItems.length === 0) {
     return (
-      <PageLayout className="bg-gray-50">
-        <div className="flex h-full items-center justify-center">
-          <Button onClick={() => navigate("/customer/orders")}>
-            Back to Orders
-          </Button>
+      <PageLayout className="bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-6">
+          <p className="text-gray-500 mb-6">No active invoice found.</p>
+          <button
+            onClick={() => navigate("/customer/home")}
+            className="rounded-2xl bg-orange-500 px-8 py-3 font-bold text-white shadow-lg"
+          >
+            Go Home
+          </button>
         </div>
       </PageLayout>
     );
   }
 
-  const subtotal = order.items.reduce(
+  const subtotal = orderItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  const gst = Math.round(subtotal * 0.05);
+  const tax = Math.round(subtotal * 0.05);
   const serviceCharge = 30;
-  const total = subtotal + gst + serviceCharge;
+  // Apply any mock discount if needed
+  const discount = 0; 
+  const total = subtotal + tax + serviceCharge - discount;
 
   return (
-    <PageLayout className="bg-gray-50">
-      <div className="flex h-full flex-col">
-
-        {/* Header */}
-
-        <div className="bg-white shadow-sm px-5 py-4 flex items-center">
-
-          <button onClick={() => navigate(-1)}>
-            <ArrowLeft size={22} />
+    <PageLayout className="bg-gray-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-1">
+            <ArrowLeft size={24} className="text-gray-900" />
           </button>
-
-          <h1 className="flex-1 text-center text-lg font-semibold mr-6">
-            Invoice
-          </h1>
-
+          <h1 className="text-xl font-bold text-gray-900">Invoice</h1>
         </div>
+        <button className="text-orange-500 font-bold text-sm">
+          Download
+        </button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-5">
-
-          {/* Invoice Card */}
-
-          <div className="bg-white rounded-3xl shadow-sm p-6">
-
-            <div className="flex flex-col items-center">
-
-              <div className="h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center">
-
-                <Receipt
-                  size={30}
-                  className="text-orange-500"
-                />
-
-              </div>
-
-              <h2 className="mt-4 text-2xl font-bold">
-                TastyBites
-              </h2>
-
-              <p className="text-gray-500 text-sm">
-                Food Invoice
-              </p>
-
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        {/* Invoice Card */}
+        <div className="bg-white rounded-[2rem] shadow-sm p-6 border border-gray-100">
+          
+          <div className="flex flex-col items-center pb-6 border-b border-gray-100 border-dashed">
+            <div className="h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center mb-3">
+              <ReceiptText size={28} strokeWidth={2} className="text-orange-500" />
             </div>
+            <h2 className="text-2xl font-bold text-gray-900">DineOps</h2>
+            <p className="text-sm font-medium text-gray-500 mt-1">Food Invoice</p>
+          </div>
 
-            {/* Invoice Info */}
-
-            <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
-
-              <div>
-
-                <p className="text-gray-400">
-                  Invoice No.
-                </p>
-
-                <p className="font-semibold">
-                  INV-{order.id}
-                </p>
-
-              </div>
-
-              <div className="text-right">
-
-                <p className="text-gray-400">
-                  Date
-                </p>
-
-                <p className="font-semibold">
-                  {order.date}
-                </p>
-
-              </div>
-
+          {/* Invoice Info */}
+          <div className="py-6 grid grid-cols-2 gap-4 border-b border-gray-100 border-dashed">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">Invoice No.</p>
+              <p className="text-base font-bold text-gray-900">INV-{orderId}</p>
             </div>
+            <div className="text-right">
+              <p className="text-sm font-medium text-gray-500 mb-1">Date</p>
+              <p className="text-base font-bold text-gray-900">{orderDate}</p>
+            </div>
+          </div>
 
-            {/* Ordered Items */}
-
-            <div className="mt-8">
-
-              <h3 className="font-semibold text-lg mb-4">
-                Ordered Items
-              </h3>
-
-              {order.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between py-3 border-b"
-                >
-                  <div>
-                    <h4 className="font-medium">
-                      {item.name}
-                    </h4>
-
-                    <p className="text-sm text-gray-500">
-                      Qty: {item.quantity}
-                    </p>
+          {/* Ordered Items */}
+          <div className="py-6 border-b border-gray-100 border-dashed">
+            <h3 className="font-bold text-gray-900 text-lg mb-4">Ordered Items</h3>
+            <div className="space-y-4">
+              {orderItems.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-start">
+                  <div className="flex-1 pr-4">
+                    <h4 className="font-bold text-gray-900 leading-tight">{item.name}</h4>
+                    {item.instructions && (
+                      <p className="text-xs font-medium text-orange-500 mt-0.5 line-clamp-1">{item.instructions}</p>
+                    )}
+                    <p className="text-sm font-medium text-gray-500 mt-1">Qty: {item.quantity}</p>
                   </div>
-
-                  <span className="font-semibold">
+                  <span className="font-bold text-gray-900 whitespace-nowrap">
                     ₹{item.price * item.quantity}
                   </span>
                 </div>
               ))}
-                          </div>
+            </div>
+          </div>
 
-            {/* Bill Summary */}
-
-            <div className="mt-8 border-t pt-6">
-
-              <h3 className="mb-4 text-lg font-semibold">
-                Bill Summary
-              </h3>
-
-              <div className="space-y-3">
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    Subtotal
-                  </span>
-
-                  <span>
-                    ₹{subtotal}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    GST (5%)
-                  </span>
-
-                  <span>
-                    ₹{gst}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    Service Charge
-                  </span>
-
-                  <span>
-                    ₹{serviceCharge}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    Payment Method
-                  </span>
-
-                  <span className="capitalize">
-                    {order.paymentMethod}
-                  </span>
-                </div>
-
-                <hr />
-
-                <div className="flex justify-between text-xl font-bold">
-
-                  <span>
-                    Total
-                  </span>
-
-                  <span className="text-orange-500">
-                    ₹{total}
-                  </span>
-
-                </div>
-
+          {/* Bill Summary */}
+          <div className="pt-6">
+            <h3 className="font-bold text-gray-900 text-lg mb-4">Bill Summary</h3>
+            <div className="space-y-3 text-sm font-medium text-gray-500">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span className="text-gray-900">₹{subtotal}</span>
               </div>
-
+              <div className="flex justify-between">
+                <span>Tax (5%)</span>
+                <span className="text-gray-900">₹{tax}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Service Charge</span>
+                <span className="text-gray-900">₹{serviceCharge}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-green-500">
+                  <span>Discount</span>
+                  <span>-₹{discount}</span>
+                </div>
+              )}
+              
+              <div className="my-4 border-t border-gray-100 border-dashed" />
+              
+              <div className="flex justify-between items-center text-lg font-bold text-gray-900">
+                <span>Total Amount</span>
+                <span className="text-orange-500 text-xl">₹{total}</span>
+              </div>
             </div>
+          </div>
 
-            {/* Thank You */}
-
-            <div className="mt-8 rounded-2xl bg-orange-50 p-4 text-center">
-
-              <h3 className="font-semibold text-orange-600">
-                Thank You!
-              </h3>
-
-              <p className="mt-2 text-sm text-gray-600">
-                Thank you for dining with TastyBites.
-                We hope to serve you again soon!
-              </p>
-
-            </div>
-
+          {/* Thank You */}
+          <div className="mt-8 rounded-2xl bg-orange-50 p-5 text-center border border-orange-100">
+            <h3 className="font-bold text-orange-600">Thank You!</h3>
+            <p className="mt-1 text-sm font-medium text-gray-600 leading-relaxed">
+              Thank you for dining with DineOps. We hope to serve you again soon!
+            </p>
           </div>
 
         </div>
+      </div>
 
-        {/* Bottom Buttons */}
-
-        <div className="border-t bg-white p-5 space-y-3">
-
-          <Button
-            onClick={() => window.print()}
-          >
-            Download Invoice
-          </Button>
-
-          <button
-            onClick={() => navigate("/customer/review")}
-            className="w-full rounded-xl border border-orange-500 py-3 font-medium text-orange-500 transition hover:bg-orange-50"
-          >
-            Review
-          </button>
-
-        </div>
-
+      {/* Bottom Sticky Button */}
+      <div className="border-t border-gray-100 bg-white p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
+        <button
+          onClick={() => navigate("/customer/review")}
+          className="flex h-14 w-full items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+        >
+          <span>Confirm & Pay</span>
+          <span>₹{total}</span>
+        </button>
       </div>
 
     </PageLayout>

@@ -1,167 +1,140 @@
 import { useState } from "react";
 import {
-    ArrowLeft,
-    Phone,
-    GlassWater,
-    UtensilsCrossed,
-    Receipt,
-    Smile,
-    CookingPot,
-    CheckCircle2,
+  ArrowLeft,
+  GlassWater,
+  UtensilsCrossed,
+  Receipt,
+  MessageSquareMore,
+  CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-import Button from "../../components/customer/ui/Button";
+import PageLayout from "../../components/customer/layout/PageLayout";
 
 export default function CallWaiter() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [selected, setSelected] = useState("");
-    const [showSuccess, setShowSuccess] = useState(false);
+  const [selected, setSelected] = useState("");
+  const [note, setNote] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
-    const services = [
-        {
-            id: "water",
-            title: "Need Water",
-            icon: <GlassWater size={28} className="text-sky-500" />,
-        },
-        {
-            id: "tissue",
-            title: "Need Tissue",
-            icon: <CookingPot size={28} className="text-gray-600" />,
-        },
-        {
-            id: "plate",
-            title: "Extra Plate",
-            icon: <UtensilsCrossed size={28} className="text-orange-500" />,
-        },
-        {
-            id: "spoon",
-            title: "Extra Spoon",
-            icon: <UtensilsCrossed size={28} className="text-yellow-600" />,
-        },
-        {
-            id: "bill",
-            title: "Need Bill",
-            icon: <Receipt size={28} className="text-green-600" />,
-        },
-        {
-            id: "other",
-            title: "Other Assistance",
-            icon: <Smile size={28} className="text-amber-500" />,
-        },
-    ];
+  const services = [
+    {
+      id: "water",
+      title: "Need Water",
+      icon: <GlassWater size={28} className="text-blue-500" />,
+    },
+    {
+      id: "cutlery",
+      title: "Need Cutlery",
+      icon: <UtensilsCrossed size={28} className="text-orange-500" />,
+    },
+    {
+      id: "tissue",
+      title: "Need Tissue",
+      icon: <Receipt size={28} className="text-gray-500" />,
+    },
+    {
+      id: "other",
+      title: "Other Help",
+      icon: <MessageSquareMore size={28} className="text-purple-500" />,
+    },
+  ];
 
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-
-            {/* Header */}
-
-            <div className="bg-white shadow-sm px-5 py-4 flex items-center">
-
-                <button onClick={() => navigate(-1)}>
-                    <ArrowLeft size={22} />
-                </button>
-
-                <h1 className="flex-1 text-center text-lg font-semibold mr-6">
-                    Call Waiter
-                </h1>
-
-            </div>
-
-            <div className="flex-1 px-5 py-6">
-
-                <h2 className="text-2xl font-bold">
-                    How can we help you?
-                </h2>
-
-                <p className="text-gray-500 mt-2 mb-6">
-                    Let us know what you need
-                </p>
-
-                <div className="grid grid-cols-2 gap-4">
-
-                    {services.map((service) => (
-
-                        <button
-                            key={service.id}
-                            onClick={() => setSelected(service.id)}
-                            className={`rounded-2xl border p-6 flex flex-col items-center justify-center transition-all
-                ${selected === service.id
-                                    ? "border-green-500 bg-green-50"
-                                    : "border-gray-200 bg-white"
-                                }`}
-                        >
-
-                            {service.icon}
-
-                            <span className="mt-4 text-sm font-semibold text-center">
-                                {service.title}
-                            </span>
-
-                        </button>
-
-                    ))}
-                </div>
-
-            </div>
-
-            {/* Bottom Button */}
-
-            <div className="bg-white border-t px-5 py-4">
-
-                <Button
-                    className="bg-green-600 hover:bg-green-700"
-                    disabled={!selected}
-                    onClick={() => {
-                        setShowSuccess(true);
-
-                        setTimeout(() => {
-                            setShowSuccess(false);
-                            navigate("/customer/home");
-                        }, 2500);
-                    }}
-                >
-                    <div className="flex items-center justify-center gap-2">
-                        <Phone size={18} />
-                        <span>Call Waiter</span>
-                    </div>
-                </Button>
-
-            </div>
-            {showSuccess && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-
-                    <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl animate-[fadeIn_.25s_ease]">
-
-                        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-
-                            <CheckCircle2
-                                size={52}
-                                className="text-green-600"
-                            />
-
-                        </div>
-
-                        <h2 className="mt-6 text-2xl font-bold text-gray-900">
-                            Waiter Notified
-                        </h2>
-
-                        <p className="mt-3 text-sm leading-6 text-gray-500">
-                            Your request has been sent successfully.
-                            <br />
-                            A waiter will be with you shortly.
-                        </p>
-
-                        <div className="mt-6 rounded-xl bg-green-50 py-3 text-sm font-medium text-green-700">
-                            Thank you for your patience 😊
-                        </div>
-
-                    </div>
-
-                </div>
-            )}
-
+  return (
+    <PageLayout className="bg-gray-50 flex flex-col relative">
+      {/* Header */}
+      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-1">
+            <ArrowLeft size={24} className="text-gray-900" />
+          </button>
+          <h1 className="text-xl font-bold text-gray-900">Request Waiter</h1>
         </div>
-    );
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-6">
+        <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+          How can we help you?
+        </h2>
+        <p className="text-sm text-gray-500 mt-2 mb-8 font-medium">
+          Select an option below to notify the waiter
+        </p>
+
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {services.map((service) => (
+            <button
+              key={service.id}
+              onClick={() => setSelected(service.id)}
+              className={`rounded-3xl border-2 p-6 flex flex-col items-center justify-center transition-all ${
+                selected === service.id
+                  ? "border-orange-500 bg-orange-50 shadow-sm shadow-orange-100"
+                  : "border-transparent bg-white shadow-sm"
+              }`}
+            >
+              <div className="mb-3">{service.icon}</div>
+              <span className={`text-sm font-bold ${selected === service.id ? "text-orange-600" : "text-gray-700"}`}>
+                {service.title}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Additional Note */}
+        <div>
+          <h3 className="text-base font-bold text-gray-900 mb-3 px-1">
+            Additional Note (Optional)
+          </h3>
+          <textarea
+            rows={3}
+            placeholder="Type your request here..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-900 outline-none focus:border-orange-500 shadow-sm transition"
+          />
+        </div>
+      </div>
+
+      {/* Bottom Button */}
+      <div className="border-t border-gray-100 bg-white p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
+        <button
+          disabled={!selected}
+          onClick={() => {
+            setShowSuccess(true);
+            setTimeout(() => {
+              setShowSuccess(false);
+              navigate(-1);
+            }, 2500);
+          }}
+          className={`h-14 w-full rounded-2xl font-bold text-white shadow-lg transition active:scale-[0.98] ${
+            selected
+              ? "bg-orange-500 shadow-orange-200 hover:bg-orange-600"
+              : "bg-orange-300 shadow-none cursor-not-allowed"
+          }`}
+        >
+          Send Request
+        </button>
+      </div>
+
+      {/* Success Modal Overlay */}
+      {showSuccess && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm px-6">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl animate-[fadeIn_.2s_ease-out]">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-50 mb-6">
+              <CheckCircle2 size={44} strokeWidth={2.5} className="text-green-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Waiter Notified
+            </h2>
+            <p className="text-sm font-medium leading-relaxed text-gray-500 mb-6">
+              Your request has been sent successfully.<br />
+              A waiter will be with you shortly.
+            </p>
+            <div className="rounded-2xl bg-gray-50 py-3.5 text-sm font-bold text-gray-700">
+              Thank you for your patience
+            </div>
+          </div>
+        </div>
+      )}
+    </PageLayout>
+  );
 }

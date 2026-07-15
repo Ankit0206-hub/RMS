@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Heart, Plus, Star } from "lucide-react";
+import { Heart, Plus, Minus, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../../../context/AppContext";
 
 const popularDishes = [
     {
@@ -39,6 +40,7 @@ const popularDishes = [
 
 export default function PopularDishes() {
     const navigate = useNavigate();
+    const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
 
     const [favorites, setFavorites] = useState([]);
 
@@ -74,7 +76,7 @@ export default function PopularDishes() {
                 {featuredDishes.map((dish) => (
                     <div
                         key={dish.id}
-                        onClick={() => navigate("/customer/food-details")}
+                        onClick={() => navigate("/customer/food-details", { state: { food: dish } })}
                         className="cursor-pointer overflow-hidden rounded-2xl bg-white shadow transition hover:shadow-lg"
                     >
                         <div className="relative">
@@ -122,15 +124,45 @@ export default function PopularDishes() {
                                     ₹{dish.price}
                                 </span>
 
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate("/customer/food-details");
-                                    }}
-                                    className="rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600"
-                                >
-                                    <Plus size={16} />
-                                </button>
+                                {(() => {
+                                    const cartItem = cartItems.find((item) => item.id === dish.id);
+                                    if (cartItem) {
+                                        return (
+                                            <div className="flex items-center gap-3 rounded-full bg-orange-500 px-2 py-1 text-white">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        decreaseQuantity(dish.id);
+                                                    }}
+                                                    className="p-1"
+                                                >
+                                                    <Minus size={14} />
+                                                </button>
+                                                <span className="text-sm font-semibold">{cartItem.quantity}</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        increaseQuantity(dish.id);
+                                                    }}
+                                                    className="p-1"
+                                                >
+                                                    <Plus size={14} />
+                                                </button>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                addToCart(dish);
+                                            }}
+                                            className="rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600"
+                                        >
+                                            <Plus size={16} />
+                                        </button>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>

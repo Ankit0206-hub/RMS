@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import toast from "react-hot-toast";
 
 const AppContext = createContext();
 
@@ -22,10 +23,17 @@ export const AppProvider = ({ children }) => {
       id: food.id || food.name,
     };
 
-    setCartItems((prev) => {
-      const existing = prev.find((cartItem) => cartItem.id === item.id);
+    const existing = cartItems.find((cartItem) => cartItem.id === item.id);
+    if (existing) {
+      toast.success(`Increased ${item.name} quantity`);
+    } else {
+      toast.success(`Added ${item.name} to cart`);
+    }
 
-      if (existing) {
+    setCartItems((prev) => {
+      const existingInPrev = prev.find((cartItem) => cartItem.id === item.id);
+
+      if (existingInPrev) {
         return prev.map((cartItem) =>
           cartItem.id === item.id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
