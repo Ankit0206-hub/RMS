@@ -1,5 +1,6 @@
-import { Star } from "lucide-react";
+import { Star, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../../../context/AppContext";
 
 const foods = [
   {
@@ -27,7 +28,7 @@ const foods = [
       "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=800",
   },
   {
-    id: 4,
+    id: 7,
     name: "Pasta Alfredo",
     price: 249,
     rating: 4.9,
@@ -38,6 +39,7 @@ const foods = [
 
 export default function TrendingFood() {
   const navigate = useNavigate();
+  const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
 
   return (
     <div className="mt-6">
@@ -53,8 +55,8 @@ export default function TrendingFood() {
         {foods.map((food) => (
           <div
             key={food.id}
-            onClick={() => navigate("/customer/food-details")}
-            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm active:scale-[0.99] transition"
+            onClick={() => navigate("/customer/food-details", { state: { food } })}
+            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm active:scale-[0.99] transition cursor-pointer"
           >
 
             {/* Image */}
@@ -75,14 +77,54 @@ export default function TrendingFood() {
                 <Star size={14} className="fill-yellow-400 text-yellow-400" />
                 {food.rating}
               </div>
+              
+              <p className="mt-1 font-semibold text-orange-500">
+                ₹{food.price}
+              </p>
 
             </div>
 
-            {/* Price */}
-            <div className="text-right">
-              <p className="font-semibold text-orange-500">
-                ₹{food.price}
-              </p>
+            {/* Action */}
+            <div className="flex items-center justify-end">
+              {(() => {
+                const cartItem = cartItems.find((item) => item.id === food.id);
+                if (cartItem) {
+                  return (
+                    <div className="flex items-center gap-2 rounded-full bg-orange-500 px-2 py-1 text-white">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          decreaseQuantity(food.id);
+                        }}
+                        className="p-1"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="text-sm font-semibold w-3 text-center">{cartItem.quantity}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          increaseQuantity(food.id);
+                        }}
+                        className="p-1"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  );
+                }
+                return (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(food);
+                    }}
+                    className="rounded-full bg-orange-500 p-2 text-white shadow-sm hover:bg-orange-600 active:scale-95"
+                  >
+                    <Plus size={16} />
+                  </button>
+                );
+              })()}
             </div>
 
           </div>
