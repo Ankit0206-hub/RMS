@@ -96,18 +96,42 @@ async def seed():
         for mi in menu_items: ids["MenuItem"].append(mi.id)
 
         # Sessions, Orders, Bills
-        for i in range(20): # 20 sessions
+        now = datetime.utcnow()
+        
+        for i in range(25): # 25 sessions
             table = random.choice(tables)
+            
+            # Determine logic for this session to make it look "alive"
+            # 60% Completed, 40% Active
+            is_active = random.random() < 0.4
+            session_status = "Active" if is_active else "Completed"
+            
+            # Spread times across the last 12 hours
+            hours_ago = random.randint(0, 11)
+            minutes_ago = random.randint(0, 59)
+            created_time = now - timedelta(hours=hours_ago, minutes=minutes_ago)
+            
             session_obj = CustomerSession(
                 table_id=table.id,
                 customer_name=f"Dummy Customer {i}",
                 customer_phone=f"555000{i:04d}",
                 number_of_people=random.randint(1, 4),
-                status="Completed"
+                status=session_status,
+                created_at=created_time,
+                updated_at=created_time
             )
             session.add(session_obj)
             await session.commit()
             ids["CustomerSession"].append(session_obj.id)
+            
+            if is_active:
+                # Update table status if active
+                stmt = select(RestaurantTable).where(RestaurantTable.id == table.id)
+                res = await session.execute(stmt)
+                tbl = res.scalars().first()
+                if tbl:
+                    tbl.status = random.choice(["Occupied", "Reserved"])
+                    await session.commit()
 
             # Orders
             waiter = random.choice(waiters)
@@ -115,17 +139,24 @@ async def seed():
             session_total = 0.0
             
             for o_idx in range(num_orders):
+                if is_active:
+                    order_status = random.choice(["Pending", "Confirmed", "Cooked", "Served"])
+                else:
+                    order_status = "Completed"
+                    
                 order = Order(
                     session_id=session_obj.id,
                     waiter_id=waiter.id,
                     order_type="Dine-in",
-                    status="Completed"
+                    status=order_status,
+                    created_at=created_time + timedelta(minutes=1),
+                    updated_at=created_time + timedelta(minutes=1)
                 )
                 session.add(order)
                 await session.commit()
                 ids["Order"].append(order.id)
 
-                history = OrderStatusHistory(order_id=order.id, status="Completed", changed_by_employee_id=waiter.id)
+                history = OrderStatusHistory(order_id=order.id, status=order_status, changed_by_employee_id=waiter.id, changed_at=created_time + timedelta(minutes=1))
                 session.add(history)
                 await session.commit()
                 ids["OrderStatusHistory"].append(history.id)
@@ -142,51 +173,59 @@ async def seed():
                         order_id=order.id,
                         menu_item_id=mi.id,
                         quantity=qty,
-                        price_at_order=price_at_order
+                        price_at_order=price_at_order,
+                        created_at=created_time + timedelta(minutes=1)
                     )
                     session.add(oi)
                     await session.commit()
                     ids["OrderItem"].append(oi.id)
 
-            # Bill
-            bill = Bill(
-                session_id=session_obj.id,
-                bill_number=f"DUMMY-BILL-{i}",
-                generated_by_employee_id=employees[0].id, # Operator
-                subtotal=session_total,
-                total_tax=session_total * 0.1, # 10% tax
-                total_discount=0,
-                service_charge=0,
-                grand_total=session_total * 1.1,
-                payment_status="Paid"
-            )
-            session.add(bill)
-            await session.commit()
-            ids["Bill"].append(bill.id)
+            # Bill (Generate bills for all completed sessions, and some active sessions)
+            if not is_active or random.random() < 0.3:
+                bill_status = "Paid" if not is_active else "Pending"
+                bill_time = created_time + timedelta(minutes=30)
+                
+                bill = Bill(
+                    session_id=session_obj.id,
+                    bill_number=f"DUMMY-BILL-{i}",
+                    generated_by_employee_id=employees[0].id, # Operator
+                    subtotal=session_total,
+                    total_tax=session_total * 0.1, # 10% tax
+                    total_discount=0,
+                    service_charge=0,
+                    grand_total=session_total * 1.1,
+                    payment_status=bill_status,
+                    created_at=bill_time
+                )
+                session.add(bill)
+                await session.commit()
+                ids["Bill"].append(bill.id)
 
-            # Bill Items (Simplified, normally derived from orders)
-            b_item = BillItem(
-                bill_id=bill.id,
-                item_name="Dummy Consolidated Order",
-                quantity=1,
-                price=session_total,
-                total=session_total
-            )
-            session.add(b_item)
-            await session.commit()
-            ids["BillItem"].append(b_item.id)
+                # Bill Items (Simplified)
+                b_item = BillItem(
+                    bill_id=bill.id,
+                    item_name="Dummy Consolidated Order",
+                    quantity=1,
+                    price=session_total,
+                    total=session_total
+                )
+                session.add(b_item)
+                await session.commit()
+                ids["BillItem"].append(b_item.id)
 
-            # Payment
-            payment = Payment(
-                bill_id=bill.id,
-                amount=bill.grand_total,
-                payment_method=random.choice(["Cash", "Card", "UPI"]),
-                transaction_id=f"DUMMY-TXN-{i}",
-                status="Success"
-            )
-            session.add(payment)
-            await session.commit()
-            ids["Payment"].append(payment.id)
+                # Payment (Only if Paid)
+                if bill_status == "Paid":
+                    payment = Payment(
+                        bill_id=bill.id,
+                        amount=bill.grand_total,
+                        payment_method=random.choice(["Cash", "Card", "UPI"]),
+                        transaction_id=f"DUMMY-TXN-{i}",
+                        status="Success",
+                        created_at=bill_time + timedelta(minutes=5)
+                    )
+                    session.add(payment)
+                    await session.commit()
+                    ids["Payment"].append(payment.id)
             
     with open(LOG_FILE, "w") as f:
         json.dump(ids, f)

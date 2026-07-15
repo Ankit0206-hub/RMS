@@ -10,7 +10,8 @@ async def create_database():
         password=settings.MYSQL_PASSWORD,
     )
     async with conn.cursor() as cur:
-        await cur.execute(f"CREATE DATABASE IF NOT EXISTS {settings.MYSQL_DB}")
+        await cur.execute(f"DROP DATABASE IF EXISTS {settings.MYSQL_DB}")
+        await cur.execute(f"CREATE DATABASE {settings.MYSQL_DB}")
     conn.close()
 
 if __name__ == "__main__":

@@ -37,12 +37,22 @@ export const WebSocketProvider = ({ children }) => {
                 if (data.event === 'order.created') {
                     toast.success(`New order #${data.payload.id} received!`);
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
-                    queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
+                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                    queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
+                    queryClient.invalidateQueries({ queryKey: ['tables'] });
                 } else if (data.event === 'order.updated') {
                     toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
                         icon: 'ℹ️',
                     });
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                    queryClient.invalidateQueries({ queryKey: ['tables'] });
+                } else if (data.event === 'bill.created') {
+                    toast.success(`Bill generated for Table ${data.payload.table_number || data.payload.session_id}`);
+                    queryClient.invalidateQueries({ queryKey: ['bills'] });
+                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                    queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
+                    queryClient.invalidateQueries({ queryKey: ['tables'] });
                 }
             } catch (err) {
                 console.error("Failed to parse websocket message", err);
@@ -66,5 +76,3 @@ export const WebSocketProvider = ({ children }) => {
         </WebSocketContext.Provider>
     );
 };
-
-export const useWebSocket = () => useContext(WebSocketContext);

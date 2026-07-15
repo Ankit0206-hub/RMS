@@ -23,8 +23,8 @@ const OperatorDashboard = () => {
     // --- DATA FETCHING ---
     const { data: operatorData } = useQuery({ queryKey: ['operator_me'], queryFn: async () => (await api.get('/operator/me')).data });
     const { data: tablesResponse } = useQuery({ queryKey: ['tables'], queryFn: async () => (await api.get('/admin/tables')).data });
-    const { data: sessions } = useQuery({ queryKey: ['sessions'], queryFn: async () => (await api.get('/admin/ordering/sessions')).data.data, refetchInterval: 10000 });
-    const { data: bills } = useQuery({ queryKey: ['bills'], queryFn: async () => (await api.get('/admin/billing/bills')).data.data, refetchInterval: 10000 });
+    const { data: sessions } = useQuery({ queryKey: ['sessions'], queryFn: async () => (await api.get('/admin/ordering/sessions')).data.data });
+    const { data: bills } = useQuery({ queryKey: ['bills'], queryFn: async () => (await api.get('/admin/billing/bills')).data.data });
     const { data: analyticsData } = useQuery({ queryKey: ['analytics_dashboard', 'today'], queryFn: async () => (await api.get('/admin/analytics/dashboard?timeframe=today')).data.data });
 
     const tables = tablesResponse?.data || [];
@@ -324,7 +324,11 @@ const OperatorDashboard = () => {
                                         <tr key={bill.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                                             <td className="py-3 font-medium text-gray-900 dark:text-white">{bill.bill_number}</td>
                                             <td className="py-3 text-gray-600 dark:text-slate-400">
-                                                {tables.find(t => t.id === bill.session_id)?.table_number || `S-${bill.session_id}`}
+                                                {(() => {
+                                                    const session = (sessions || []).find(s => s.id === bill.session_id);
+                                                    const tableNumber = session ? tables.find(t => t.id === session.table_id)?.table_number : null;
+                                                    return tableNumber || `S-${bill.session_id}`;
+                                                })()}
                                             </td>
                                             <td className="py-3 text-gray-900 dark:text-white font-medium">{parseFloat(bill.grand_total).toLocaleString()}</td>
                                             <td className="py-3">
