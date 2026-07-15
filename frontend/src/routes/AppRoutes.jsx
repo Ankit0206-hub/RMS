@@ -21,6 +21,9 @@ import OrderHistory from "../pages/customer/OrderHistory.jsx";
 import OrderDetails from "../pages/customer/OrderDetails.jsx";
 import Invoice from "../pages/customer/Invoice.jsx";
 import Review from "../pages/customer/Review.jsx";
+import AddMoreItems from "../pages/customer/AddMoreItems.jsx";
+import CurrentBill from "../pages/customer/CurrentBill.jsx";
+import RequestFinalBill from "../pages/customer/RequestFinalBill.jsx";
 import Profile from "../pages/customer/Profile.jsx";
 import EditProfile from "../pages/customer/EditProfile.jsx";
 import Settings from "../pages/customer/Settings.jsx";
@@ -60,6 +63,9 @@ export default function AppRoutes() {
         <Route path="favorites" element={<Favorites />} />
         <Route path="orders" element={<OrderHistory />} />
         <Route path="order-details" element={<OrderDetails />} />
+        <Route path="add-more-items" element={<AddMoreItems />} />
+        <Route path="current-bill" element={<CurrentBill />} />
+        <Route path="request-final-bill" element={<RequestFinalBill />} />
         <Route path="invoice" element={<Invoice />} />
         <Route path="review" element={<Review />} />
         <Route path="profile" element={<Profile />} />

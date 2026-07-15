@@ -6,14 +6,20 @@ import {
   User,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../../../context/AppContext";
+
 export default function BottomNav({ active = "home" }) {
   const navigate = useNavigate();
+  const { cartItems } = useApp();
+
+  const cartItemCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
   return (
     <div className="h-16 border-t border-black/5 bg-white flex items-center">
       {/* Home */}
       <button 
-         onClick={() => navigate("/customer/Home")}
-      className="flex flex-1 flex-col items-center  text-gray-400 justify-center">
+        onClick={() => navigate("/customer/home")}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "home" ? "text-orange-500" : "text-gray-400"}`}
+      >
         <Home size={18} />
         <span className="mt-1 text-xs font-medium">
           Home
@@ -23,24 +29,27 @@ export default function BottomNav({ active = "home" }) {
       {/* Categories */}
       <button
         onClick={() => navigate("/customer/categories")}
-        className={`flex flex-col items-center text-xs ${active === "categories"
-          ? "text-orange-500"
-          : "text-gray-400"
-          }`}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "categories" ? "text-orange-500" : "text-gray-400"}`}
       >
         <Grid2x2 size={18} />
         <span className="mt-1 text-xs font-medium">
           Categories
         </span>
-
       </button>
       {/* Cart */}
       <button
         onClick={() => navigate("/customer/cart")}
-        className={`flex flex-1 flex-col items-center justify-center ${active === "cart" ? "text-orange-500" : "text-gray-400"
+        className={`relative flex flex-1 flex-col items-center justify-center ${active === "cart" ? "text-orange-500" : "text-gray-400"
           }`}
       >
-        <ShoppingCart size={18} />
+        <div className="relative">
+          <ShoppingCart size={18} />
+          {cartItemCount > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
+              {cartItemCount}
+            </span>
+          )}
+        </div>
         <span className="mt-1 text-xs font-medium">
           Cart
         </span>
@@ -60,8 +69,10 @@ export default function BottomNav({ active = "home" }) {
         </span>
       </button>
       {/* Profile */}
-      <button    onClick={() => navigate("/customer/Profile")}
-       className="flex flex-1 flex-col items-center  text-gray-400 justify-center">
+      <button
+        onClick={() => navigate("/customer/profile")}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "profile" ? "text-orange-500" : "text-gray-400"}`}
+      >
         <User size={18} />
         <span className="mt-1 text-xs font-medium">Profile</span>
       </button>

@@ -1,80 +1,86 @@
 import { useNavigate } from "react-router-dom";
+import { ChefHat, Leaf, Clock, HeartHandshake } from "lucide-react";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
-import BottomNav from "../../components/customer/navigation/BottomNav";
+import heroFood from "../../assets/images/banners/hero-food.png";
 
 export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <PageLayout className="bg-white flex flex-col">
-
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-5 py-1">
-
-        <div className="w-full max-w-sm rounded-3xl bg-white px-6 py-8">
-
-          {/* Heading */}
-          <div className="text-center">
-            <p className="text-sm text-gray-500">
-              Welcome to
-            </p>
-
-            <h1 className="mt-1 text-4xl font-bold italic text-orange-500">
-              TastyBites
-            </h1>
-
-            <p className="mt-1 text-[10px] uppercase tracking-[4px] text-gray-400">
-              Restaurant
-            </p>
-          </div>
-
-          {/* QR Code */}
-          <div className="mt-8 flex justify-center">
-            <div className="rounded-2xl bg-white p-3 border border-gray-100 shadow-sm">
-
-              <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TastyBites"
-                alt="QR Code"
-                className="h-40 w-40"
-              />
-
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="mt-6 text-center text-sm leading-6 text-gray-500">
-            Scan the QR code on your table
-            <br />
-            to begin your dining experience
-          </p>
-
-          {/* Table Number */}
-          <div className="mt-7 text-center">
-            <p className="text-sm text-gray-500">
-              Table Number
-            </p>
-
-            <h2 className="mt-2 text-4xl font-bold text-orange-500">
-              12
-            </h2>
-          </div>
-
-          {/* Continue Button */}
-          <button
-            onClick={() => navigate("/customer/customer")}
-            className="mt-8 h-11 w-full rounded-xl bg-orange-500 text-sm font-semibold text-white transition hover:bg-orange-600"
-          >
-            Continue
-          </button>
-
-        </div>
-
+    <PageLayout className="relative bg-black overflow-hidden h-screen w-full">
+      {/* Background Image & Gradient */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={heroFood}
+          alt="Background Food"
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-orange-50/95 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/95 via-white/80 to-transparent opacity-90" />
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNav />
+      <div className="relative z-10 flex h-full flex-col p-6">
+        {/* Branding */}
+        <div className="mt-8 flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center">
+            <ChefHat size={56} strokeWidth={2} className="text-orange-500 mb-2" />
+            <h1 className="text-4xl font-bold tracking-tight">
+              <span className="text-[#0f172a]">Dine</span>
+              <span className="text-orange-500">Ops</span>
+            </h1>
+            <p className="mt-1 text-[13px] font-semibold text-[#334155]">
+              Restaurant Experience
+            </p>
+          </div>
+        </div>
 
+        {/* Hero Text */}
+        <div className="mt-16 text-center">
+          <h2 className="text-4xl font-extrabold text-[#0f172a] leading-tight">
+            Order. Enjoy.<br />Repeat.
+          </h2>
+          <p className="mt-4 text-[#475569] font-medium tracking-wide">
+            Scan &bull; Order &bull; Relax
+          </p>
+        </div>
+
+        {/* Features */}
+        <div className="mt-12 flex justify-between px-2 max-w-sm mx-auto w-full">
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm border border-green-50 text-green-500 mb-3">
+              <Leaf size={24} />
+            </div>
+            <span className="text-[11px] font-bold text-[#0f172a] text-center leading-tight">Fresh<br/>Food</span>
+          </div>
+          
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm border border-orange-50 text-orange-500 mb-3">
+              <Clock size={24} />
+            </div>
+            <span className="text-[11px] font-bold text-[#0f172a] text-center leading-tight">Quick<br/>Service</span>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm border border-blue-50 text-blue-500 mb-3">
+              <HeartHandshake size={24} />
+            </div>
+            <span className="text-[11px] font-bold text-[#0f172a] text-center leading-tight">Seamless<br/>Experience</span>
+          </div>
+        </div>
+
+        <div className="flex-1"></div>
+
+        {/* Action Button */}
+        <div className="pb-8 pt-4 w-full max-w-sm mx-auto">
+          <button
+            onClick={() => navigate("/customer/customer")}
+            className="w-full rounded-2xl bg-orange-500 py-4 text-[17px] font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 active:scale-[0.98]"
+          >
+            Get Started &rarr;
+          </button>
+        </div>
+      </div>
     </PageLayout>
   );
 }

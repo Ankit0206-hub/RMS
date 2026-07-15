@@ -1,32 +1,39 @@
 import { useState } from "react";
-import { ArrowLeft, Star } from "lucide-react";
+import { Star, Clock, IndianRupee } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import PageLayout from "../../components/customer/layout/PageLayout";
-import Button from "../../components/customer/ui/Button";
+import { useApp } from "../../context/AppContext";
 
 export default function Review() {
   const navigate = useNavigate();
+  const { cartItems } = useApp();
 
-  const [food, setFood] = useState(0);
-  const [service, setService] = useState(0);
-  const [ambience, setAmbience] = useState(0);
-
+  const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
+  // Assuming total is calculated from cart items for the mock
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const tax = Math.round(subtotal * 0.05);
+  const serviceCharge = cartItems.length ? 30 : 0;
+  const total = subtotal > 0 ? subtotal + tax + serviceCharge : 1580;
+
   const Rating = ({ value, onChange }) => (
-    <div className="flex gap-2 mt-3">
+    <div className="flex justify-center gap-3 my-6">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
           onClick={() => onChange(star)}
+          className="transition hover:scale-110 active:scale-95"
         >
           <Star
-            size={28}
+            size={40}
             className={
               star <= value
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-300"
+                ? "fill-orange-400 text-orange-400"
+                : "text-gray-200"
             }
           />
         </button>
@@ -35,119 +42,81 @@ export default function Review() {
   );
 
   return (
-    <PageLayout className="bg-gray-50">
-
-      <div className="flex h-full flex-col">
-
-        {/* Header */}
-
-        <div className="flex items-center bg-white px-5 py-4 shadow-sm">
-
-          <button onClick={() => navigate(-1)}>
-            <ArrowLeft size={22} />
-          </button>
-
-          <h1 className="flex-1 text-center text-lg font-semibold mr-6">
-            Review & Rating
+    <PageLayout className="bg-gray-50 flex flex-col">
+      <div className="flex-1 overflow-y-auto px-5 py-10 flex flex-col items-center">
+        
+        {/* Welcome Header */}
+        <div className="text-center mt-6 mb-8">
+          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">
+            Thank you, John!
+          </p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Session Complete
           </h1>
-
         </div>
 
-        {/* Content */}
-
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-
-            <h2 className="text-xl font-semibold">
-              How was your experience?
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Your feedback helps us improve.
+        {/* Stats Card */}
+        <div className="w-full rounded-[2rem] bg-white p-6 shadow-sm border border-gray-100 flex gap-4 mb-10">
+          <div className="flex-1 flex flex-col items-center justify-center border-r border-gray-100">
+            <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+              <Clock size={24} className="text-blue-500" />
+            </div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+              Visit Duration
             </p>
-
+            <p className="text-lg font-bold text-gray-900">
+              1h 45m
+            </p>
           </div>
 
-          {/* Food */}
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-
-            <h3 className="font-semibold">
-              Food Quality
-            </h3>
-
-            <Rating
-              value={food}
-              onChange={setFood}
-            />
-
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
+              <IndianRupee size={24} className="text-green-500" />
+            </div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+              Total Bill
+            </p>
+            <p className="text-lg font-bold text-gray-900">
+              ₹{total}
+            </p>
           </div>
+        </div>
 
-          {/* Service */}
+        {/* Rating Section */}
+        <div className="w-full bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex-1">
+          <h2 className="text-xl font-bold text-gray-900 text-center mt-2">
+            How was your experience?
+          </h2>
+          <p className="text-sm font-medium text-gray-500 text-center mt-2 mb-2">
+            Your feedback helps us improve.
+          </p>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
+          <Rating value={rating} onChange={setRating} />
 
-            <h3 className="font-semibold">
-              Service
-            </h3>
-
-            <Rating
-              value={service}
-              onChange={setService}
-            />
-
-          </div>
-
-          {/* Ambience */}
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-
-            <h3 className="font-semibold">
-              Ambience
-            </h3>
-
-            <Rating
-              value={ambience}
-              onChange={setAmbience}
-            />
-
-          </div>
-
-          {/* Comments */}
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-
-            <h3 className="font-semibold mb-3">
-              Your Comments
-            </h3>
-
+          <div className="mt-6">
             <textarea
-              rows={5}
+              rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Great food and service!"
-              className="w-full rounded-xl border border-gray-200 p-3 outline-none focus:border-orange-500 resize-none"
+              placeholder="Leave a comment (optional)..."
+              className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm font-medium text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
             />
-
           </div>
-
         </div>
-
-        {/* Submit */}
-
-        <div className="border-t bg-white p-5">
-
-          <Button
-            onClick={() => navigate("/customer/Profile")}
-          >
-            Submit Review
-          </Button>
-
-        </div>
-
       </div>
 
+      {/* Submit / Back Home */}
+      <div className="bg-white p-4 pb-6 border-t border-gray-100 z-10 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl">
+        <button
+          onClick={() => {
+            // Logic to clear cart and session
+            navigate("/customer/landing");
+          }}
+          className="flex h-14 w-full items-center justify-center rounded-2xl bg-orange-500 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+        >
+          Back to Home
+        </button>
+      </div>
     </PageLayout>
   );
 }
