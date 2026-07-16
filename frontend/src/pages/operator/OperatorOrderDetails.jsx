@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 import { 
     ArrowLeft, Printer, MoreHorizontal, User, ClipboardList, CheckCircle2, 
     Clock, IndianRupee, MessageSquare, AlertCircle, RefreshCcw, XCircle, FileText
@@ -20,6 +21,22 @@ const OperatorOrderDetails = () => {
         }
     });
 
+    const queryClient = useQueryClient();
+    const statusMutation = useMutation({
+        mutationFn: async (newStatus) => {
+            const response = await api.patch(`/admin/ordering/orders/${id}/status`, { status: newStatus });
+            return response.data;
+        },
+        onSuccess: () => {
+            toast.success("Order status updated!");
+            queryClient.invalidateQueries(['order', id]);
+            queryClient.invalidateQueries(['orders']);
+        },
+        onError: (error) => {
+            toast.error(error.response?.data?.message || "Failed to update status");
+        }
+    });
+
     const orderData = orderResponse?.data;
 
     const orderItems = orderData?.items?.map((item, idx) => ({
@@ -33,27 +50,60 @@ const OperatorOrderDetails = () => {
         img: item.menu_item_image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop'
     })) || [];
 
-    const mockTimeline = [
-        { title: 'Order Placed', desc: 'New Order Received', time: '10:25 AM', completed: true },
-        { title: 'Confirmed', desc: 'Order confirmed by Amit Verma', time: '10:26 AM', completed: true },
-        { title: 'Preparing', desc: 'Sent to kitchen', time: '10:27 AM', completed: true },
-        { title: 'Ready to Serve (Kitchen)', desc: 'Items are ready', time: '10:40 AM', completed: true },
-        { title: 'Served', desc: 'Order served to customer', time: '10:43 AM', completed: true },
-    ];
-
-    const mockActivityLog = [
-        { user: 'Amit Verma (Waiter)', action: 'Order confirmed', time: '10:26 AM', type: 'waiter' },
-        { user: 'Kitchen', action: 'Order is being prepared', time: '10:27 AM', type: 'kitchen' },
-        { user: 'Kitchen', action: 'Order ready to serve', time: '10:40 AM', type: 'kitchen' },
-        { user: 'Amit Verma (Waiter)', action: 'Order served', time: '10:43 AM', type: 'waiter' },
-    ];
-
     if (isLoading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter">Loading order details...</div>;
     if (!orderData) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter">Order not found.</div>;
 
     const dateObj = new Date(orderData.created_at);
     const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const timeline = (() => {
+        const status = orderData.status;
+        const steps = [
+            { id: 'Pending', title: 'Order Placed', desc: 'New Order Received' },
+            { id: 'Confirmed', title: 'Preparing', desc: 'Sent to kitchen' },
+            { id: 'Cooked', title: 'Ready to Serve', desc: 'Items are ready' },
+            { id: 'Served', title: 'Served / Completed', desc: 'Order served to customer' },
+        ];
+
+        let currentIdx = ['Pending', 'Confirmed', 'Cooked', 'Served'].indexOf(status);
+        if (status === 'Completed') currentIdx = 3;
+        
+        if (status === 'Cancelled') {
+            return [
+                { title: 'Order Placed', desc: 'New Order Received', time: timeStr, completed: true },
+                { title: 'Cancelled', desc: 'Order was cancelled', time: '--:--', completed: true, isError: true }
+            ];
+        }
+
+        return steps.map((step, idx) => ({
+            ...step,
+            completed: currentIdx >= idx,
+            isActive: currentIdx === idx,
+            time: idx === 0 ? timeStr : '--:--',
+        }));
+    })();
+
+    const activityLog = (() => {
+        const status = orderData.status;
+        let logs = [
+            { user: 'Customer/Waiter', action: 'Order placed', time: timeStr, type: 'waiter' }
+        ];
+        
+        let currentIdx = ['Pending', 'Confirmed', 'Cooked', 'Served'].indexOf(status);
+        if (status === 'Completed') currentIdx = 3;
+
+        if (status === 'Cancelled') {
+            logs.push({ user: 'System', action: 'Order cancelled', time: '--:--', type: 'kitchen' });
+            return logs.reverse();
+        }
+        
+        if (currentIdx >= 1) logs.push({ user: 'Kitchen', action: 'Order is being prepared', time: '--:--', type: 'kitchen' });
+        if (currentIdx >= 2) logs.push({ user: 'Kitchen', action: 'Order ready to serve', time: '--:--', type: 'kitchen' });
+        if (currentIdx >= 3) logs.push({ user: 'Waiter', action: 'Order served', time: '--:--', type: 'waiter' });
+        
+        return logs.reverse();
+    })();
 
     const subtotal = orderData.total_amount || 0;
     const serviceCharge = subtotal * 0.05;
@@ -109,7 +159,11 @@ const OperatorOrderDetails = () => {
                         <p className="text-[10px] font-bold text-gray-400 mb-0.5">Order ID</p>
                         <div className="flex items-center space-x-2">
                             <h2 className="text-sm font-black text-gray-900 dark:text-white">ORD{orderData.id}</h2>
-                            {orderData.status === 'New' && <span className="px-1.5 py-0.5 bg-green-50 text-green-600 font-bold text-[8px] rounded border border-green-100">New</span>}
+                            {orderData.status === 'Pending' && <span className="px-1.5 py-0.5 bg-green-50 text-green-600 font-bold text-[8px] rounded border border-green-100">New</span>}
+                            {orderData.status === 'Confirmed' && <span className="px-1.5 py-0.5 bg-indigo-50 text-[#5e5ce6] font-bold text-[8px] rounded border border-indigo-100">Preparing</span>}
+                            {orderData.status === 'Cooked' && <span className="px-1.5 py-0.5 bg-indigo-50 text-[#5e5ce6] font-bold text-[8px] rounded border border-indigo-100">Ready</span>}
+                            {orderData.status === 'Served' && <span className="px-1.5 py-0.5 bg-green-50 text-green-600 font-bold text-[8px] rounded border border-green-100">Served</span>}
+                            {orderData.status === 'Cancelled' && <span className="px-1.5 py-0.5 bg-red-50 text-red-600 font-bold text-[8px] rounded border border-red-100">Cancelled</span>}
                         </div>
                         <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mt-1">{orderData.order_type || 'QR Order'}</p>
                     </div>
@@ -274,7 +328,7 @@ const OperatorOrderDetails = () => {
                             Order Activity Log
                         </div>
                         <div className="p-5 space-y-4">
-                            {mockActivityLog.map((log, idx) => (
+                            {activityLog.map((log, idx) => (
                                 <div key={idx} className="flex items-center justify-between">
                                     <div className="flex items-center space-x-3 w-1/3">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${log.type === 'waiter' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
@@ -304,20 +358,21 @@ const OperatorOrderDetails = () => {
                             Order Timeline
                         </div>
                         <div className="p-6 relative">
-                            <div className="absolute left-[33px] top-8 bottom-8 w-px bg-green-200 z-0"></div>
+                            <div className="absolute left-[33px] top-8 bottom-8 w-px bg-gray-200 dark:bg-slate-700 z-0"></div>
                             
                             <div className="space-y-6 relative z-10">
-                                {mockTimeline.map((item, idx) => (
+                                {timeline.map((item, idx) => (
                                     <div key={idx} className="flex items-start">
-                                        <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center shrink-0 border-2 border-white shadow-sm mt-0.5">
-                                            <CheckCircle2 className="w-3 h-3" />
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 border-2 border-white shadow-sm mt-0.5 ${item.isError ? 'bg-red-500 text-white' : item.completed ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-slate-700 text-transparent'}`}>
+                                            {item.completed && !item.isError && <CheckCircle2 className="w-3 h-3" />}
+                                            {item.isError && <XCircle className="w-3 h-3" />}
                                         </div>
                                         <div className="ml-4 flex-1 flex justify-between items-start">
                                             <div>
-                                                <div className="text-[11px] font-bold text-gray-900 dark:text-white">{item.title}</div>
-                                                <div className="text-[10px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">{item.desc}</div>
+                                                <div className={`text-[11px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{item.title}</div>
+                                                <div className={`text-[10px] font-medium mt-0.5 ${item.completed ? 'text-gray-500 dark:text-slate-400' : 'text-gray-300 dark:text-slate-600'}`}>{item.desc}</div>
                                             </div>
-                                            <div className="text-[10px] font-bold text-gray-900 dark:text-white">{item.time}</div>
+                                            {item.time && <div className={`text-[10px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{item.time}</div>}
                                         </div>
                                     </div>
                                 ))}
@@ -376,30 +431,34 @@ const OperatorOrderDetails = () => {
 
                     {/* Action Buttons Grid */}
                     <div className="grid grid-cols-2 gap-3">
+                        {orderData.status === 'Pending' && (
+                            <button onClick={() => statusMutation.mutate('Confirmed')} className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-[#5e5ce6] text-[#5e5ce6] py-3 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm">
+                                <div className="flex items-center mb-1"><CheckCircle2 className="w-4 h-4 mr-1.5" /></div>
+                                Accept & Send to Kitchen
+                            </button>
+                        )}
+                        {orderData.status === 'Confirmed' && (
+                            <button onClick={() => statusMutation.mutate('Cooked')} className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-green-500 text-green-600 py-3 rounded-xl text-xs font-bold hover:bg-green-50 transition-colors shadow-sm">
+                                <div className="flex items-center mb-1"><CheckCircle2 className="w-4 h-4 mr-1.5" /></div>
+                                Mark as Cooked (Ready)
+                            </button>
+                        )}
+                        {orderData.status === 'Cooked' && (
+                            <button onClick={() => statusMutation.mutate('Served')} className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-green-500 text-green-600 py-3 rounded-xl text-xs font-bold hover:bg-green-50 transition-colors shadow-sm">
+                                <div className="flex items-center mb-1"><CheckCircle2 className="w-4 h-4 mr-1.5" /></div>
+                                Mark as Served
+                            </button>
+                        )}
                         <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                            <div className="flex items-center mb-1">
-                                <FileText className="w-4 h-4 mr-1.5" />
-                            </div>
-                            Send to Kitchen
-                        </button>
-                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                            <div className="flex items-center mb-1">
-                                <Printer className="w-4 h-4 mr-1.5" />
-                            </div>
+                            <div className="flex items-center mb-1"><Printer className="w-4 h-4 mr-1.5" /></div>
                             Reprint Bill
                         </button>
-                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                            <div className="flex items-center mb-1">
-                                <FileText className="w-4 h-4 mr-1.5" />
-                            </div>
-                            Generate Invoice
-                        </button>
-                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-red-200 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors shadow-sm">
-                            <div className="flex items-center mb-1">
-                                <XCircle className="w-4 h-4 mr-1.5" />
-                            </div>
-                            Cancel Order
-                        </button>
+                        {orderData.status !== 'Completed' && orderData.status !== 'Cancelled' && orderData.status !== 'Served' && (
+                            <button onClick={() => statusMutation.mutate('Cancelled')} className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-red-200 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors shadow-sm">
+                                <div className="flex items-center mb-1"><XCircle className="w-4 h-4 mr-1.5" /></div>
+                                Cancel Order
+                            </button>
+                        )}
                     </div>
 
                 </div>

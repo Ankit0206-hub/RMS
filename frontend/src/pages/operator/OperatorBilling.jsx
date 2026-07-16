@@ -1,32 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import { 
-    Search, 
-    ChevronDown, 
-    User, 
-    Users, 
-    Clock, 
-    Trash2, 
-    Info, 
-    CheckCircle2, 
-    Circle,
-    Banknote,
-    CreditCard,
-    Smartphone,
-    SplitSquareHorizontal,
-    FileText,
-    Receipt,
-    Plus
+    Search, ChevronDown, User, Users, Clock, Trash2, Info, CheckCircle2, Circle,
+    Banknote, CreditCard, Smartphone, SplitSquareHorizontal, Receipt, Plus,
+    ArrowRight, Check, Calendar, Coffee, FileText, Printer, PauseCircle, Download
 } from 'lucide-react';
 
-const Bills = () => {
+const OperatorBilling = () => {
     const queryClient = useQueryClient();
-    const [mainTab, setMainTab] = useState('Active Bill');
-    const [selectedBillId, setSelectedBillId] = useState(null);
+    const [mainTab, setMainTab] = useState('Active'); // 'Active' or 'Recent'
+    const [selectedId, setSelectedId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const { data: sessionsResponse } = useQuery({
+    // Fetch Active Sessions
+    const { data: sessionsResponse, isLoading: sessionsLoading } = useQuery({
         queryKey: ['operator-sessions'],
         queryFn: async () => {
             const res = await api.get('/admin/ordering/sessions?page_size=100');
@@ -34,602 +23,549 @@ const Bills = () => {
         }
     });
 
-    const { data: billsResponse } = useQuery({
-        queryKey: ['operator-bills'],
+    // Fetch Pending Bills (Generated but not paid)
+    const { data: pendingBillsResponse } = useQuery({
+        queryKey: ['operator-pending-bills'],
         queryFn: async () => {
             const res = await api.get('/admin/billing/bills?payment_status=Pending&page_size=100');
             return res.data.data;
         }
     });
 
-    const activeBills = (sessionsResponse || [])
-        .filter(s => s.status !== 'Completed')
-        .map(session => {
-            const startedAtDate = new Date(session.created_at);
-            const startedAt = startedAtDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            const diffMs = new Date() - startedAtDate;
-            const diffMins = Math.floor(diffMs / 60000);
-            
-            const matchingBill = (billsResponse || []).find(b => b.session_id === session.id);
-            const status = matchingBill ? 'Billed' : (session.status === 'Active' ? 'Active' : 'Preparing');
+    // Fetch Paid Bills (Recent)
+    const { data: paidBillsResponse, isLoading: paidBillsLoading } = useQuery({
+        queryKey: ['operator-paid-bills'],
+        queryFn: async () => {
+            const res = await api.get('/admin/billing/bills?payment_status=Paid&page_size=100');
+            return res.data.data;
+        }
+    });
 
-            return {
-                id: session.id,
-                status,
-                customer: session.customer_name || 'Walk-in',
-                pax: session.number_of_people || 1,
-                time: `${diffMins} min`,
-                orderType: session.table_id ? 'Dine In' : 'Takeaway',
-                startedAt,
-                originalSession: session,
-                billId: matchingBill?.id,
-                matchingBill
-            };
-        });
+    // Process Active Items
+    const activeItems = useMemo(() => {
+        return (sessionsResponse || [])
+            .filter(s => s.status !== 'Completed')
+            .map(session => {
+                const startedAtDate = new Date(session.created_at);
+                const startedAt = startedAtDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const diffMs = new Date() - startedAtDate;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                const matchingBill = (pendingBillsResponse || []).find(b => b.session_id === session.id);
+                const status = matchingBill ? 'Billed' : (session.status === 'Active' ? 'Active' : 'Preparing');
+
+                let total = 0;
+                if (matchingBill) {
+                    total = matchingBill.grand_total;
+                } else {
+                    session.orders.forEach(o => {
+                        if (o.status !== 'Cancelled') {
+                            o.items.forEach(i => total += (parseFloat(i.price_at_order) * i.quantity));
+                        }
+                    });
+                    total = total * 1.1; // approx tax
+                }
+
+                return {
+                    id: session.id,
+                    type: 'session',
+                    status,
+                    customer: session.customer_name || 'Walk-in',
+                    pax: session.number_of_people || 1,
+                    time: `${diffMins} min`,
+                    orderType: session.table_id ? 'Dine In' : 'Takeaway',
+                    table_id: session.table_id,
+                    startedAt,
+                    originalData: session,
+                    matchingBill,
+                    displayTotal: total
+                };
+            }).filter(item => item.id.toString().includes(searchQuery) || item.customer.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [sessionsResponse, pendingBillsResponse, searchQuery]);
+
+    // Process Recent Items
+    const recentItems = useMemo(() => {
+        return (paidBillsResponse || [])
+            .map(bill => {
+                const generatedAtDate = new Date(bill.generated_at);
+                const generatedAt = generatedAtDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                return {
+                    id: bill.id,
+                    type: 'bill',
+                    status: 'Paid',
+                    bill_number: bill.bill_number,
+                    customer: `Session ${bill.session_id}`,
+                    pax: '-',
+                    time: generatedAt,
+                    orderType: 'Completed',
+                    startedAt: generatedAt,
+                    originalData: bill,
+                    displayTotal: bill.grand_total
+                };
+            }).filter(item => item.id.toString().includes(searchQuery) || (item.bill_number && item.bill_number.toLowerCase().includes(searchQuery.toLowerCase())));
+    }, [paidBillsResponse, searchQuery]);
+
+    const displayedList = mainTab === 'Active' ? activeItems : recentItems;
 
     useEffect(() => {
-        if (!selectedBillId && activeBills.length > 0) {
-            setSelectedBillId(activeBills[0].id);
+        if (!selectedId && displayedList.length > 0) {
+            setSelectedId(displayedList[0].id);
         }
-    }, [activeBills, selectedBillId]);
+    }, [displayedList, selectedId, mainTab]);
 
-    const selectedBillData = activeBills.find(b => b.id === selectedBillId);
-    const selectedSession = selectedBillData?.originalSession;
+    const selectedItem = displayedList.find(i => i.id === selectedId);
+    
+    // Aggregate items for selected session/bill
+    const currentOrderItems = useMemo(() => {
+        const items = [];
+        if (!selectedItem) return items;
 
-    const currentItems = [];
-    if (selectedSession) {
-        selectedSession.orders.forEach(order => {
-            if (order.status !== 'Cancelled') {
-                order.items.forEach(item => {
-                    const existing = currentItems.find(i => i.id === item.menu_item_id);
-                    if (existing) {
-                        existing.qty += item.quantity;
-                    } else {
-                        currentItems.push({
-                            id: item.menu_item_id,
-                            name: item.menu_item_name,
-                            qty: item.quantity,
-                            price: parseFloat(item.price_at_order),
-                            img: item.menu_item_image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop'
-                        });
-                    }
-                });
-            }
-        });
-    }
+        if (selectedItem.type === 'session') {
+            selectedItem.originalData.orders.forEach(order => {
+                if (order.status !== 'Cancelled') {
+                    order.items.forEach(item => {
+                        const existing = items.find(i => i.id === item.menu_item_id);
+                        if (existing) existing.qty += item.quantity;
+                        else {
+                            items.push({
+                                id: item.menu_item_id,
+                                name: item.menu_item_name,
+                                qty: item.quantity,
+                                price: parseFloat(item.price_at_order),
+                                img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        return items;
+    }, [selectedItem]);
 
-    const handleQtyChange = (itemId, delta) => toast("Modify items in the Ordering page, not Billing", { icon: '⚠️' });
-    const handleRemoveItem = (itemId) => toast("Modify items in the Ordering page, not Billing", { icon: '⚠️' });
-    const handleAddWalkInBill = () => toast("Please start a new session from Dashboard/Tables", { icon: 'ℹ️' });
-
-    // Right Column Calculations
-    const matchingBill = selectedBillData?.matchingBill;
-    const subtotal = matchingBill ? matchingBill.subtotal : currentItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    // Calculations
+    const matchingBill = selectedItem?.matchingBill || (selectedItem?.type === 'bill' ? selectedItem.originalData : null);
+    const subtotal = matchingBill ? matchingBill.subtotal : currentOrderItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
     const serviceCharge = matchingBill ? matchingBill.service_charge : subtotal * 0.05;
     const cgst = matchingBill ? (matchingBill.total_tax / 2) : subtotal * 0.025;
     const sgst = matchingBill ? (matchingBill.total_tax / 2) : subtotal * 0.025;
     const totalAmount = matchingBill ? (matchingBill.subtotal + matchingBill.service_charge + matchingBill.total_tax) : subtotal + serviceCharge + cgst + sgst;
     
-    // Discount and Round off states per bill could be stored, but we use global for UI demo
     const [discountPercentage, setDiscountPercentage] = useState(0);
     const [isRoundOff, setIsRoundOff] = useState(false);
     
     const discountAmount = totalAmount * (discountPercentage / 100);
     const totalAfterDiscount = totalAmount - discountAmount;
-    
     const grandTotal = isRoundOff ? Math.round(totalAfterDiscount) : totalAfterDiscount;
     const roundOffDiff = isRoundOff ? (grandTotal - totalAfterDiscount) : 0;
 
-    // Payment states
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Cash');
     const [paymentReceived, setPaymentReceived] = useState(grandTotal);
 
-    // Keep payment received updated when total changes
-    useEffect(() => {
-        setPaymentReceived(grandTotal);
-    }, [grandTotal]);
+    useEffect(() => { setPaymentReceived(grandTotal); }, [grandTotal, selectedItem]);
 
-    const getStatusStyles = (status) => {
-        switch(status) {
-            case 'Active': return 'bg-green-100 text-green-700';
-            case 'Preparing': return 'bg-orange-100 text-orange-700';
-            case 'Billed': return 'bg-blue-100 text-blue-700';
-            default: return 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300';
-        }
-    };
-
+    // Mutations
     const generateBillMutation = useMutation({
-        mutationFn: async (sessionId) => {
-            const res = await api.post('/admin/billing/bills', { session_id: sessionId });
-            return res.data;
-        },
+        mutationFn: async (sessionId) => (await api.post('/admin/billing/bills', { session_id: sessionId })).data,
         onSuccess: () => {
-            toast.success('Bill generated successfully!');
-            queryClient.invalidateQueries({ queryKey: ['operator-bills'] });
+            toast.success('Bill generated successfully!', { icon: '🧾' });
+            queryClient.invalidateQueries({ queryKey: ['operator-pending-bills'] });
+            queryClient.invalidateQueries({ queryKey: ['operator-sessions'] });
         },
-        onError: (err) => {
-            toast.error(err.response?.data?.message || 'Error generating bill');
-        }
+        onError: (err) => toast.error(err.response?.data?.message || 'Error generating bill')
     });
 
     const recordPaymentMutation = useMutation({
-        mutationFn: async ({ billId, amount, method }) => {
-            const res = await api.post(`/admin/billing/bills/${billId}/payments`, {
-                amount,
-                payment_method: method
-            });
-            return res.data;
-        },
+        mutationFn: async ({ billId, amount, method }) => (await api.post(`/admin/billing/bills/${billId}/payments`, { amount, payment_method: method })).data,
         onSuccess: () => {
-            toast.success('Payment recorded and session completed!');
+            toast.success('Payment recorded successfully!', { icon: '🎉' });
             queryClient.invalidateQueries({ queryKey: ['operator-sessions'] });
-            queryClient.invalidateQueries({ queryKey: ['operator-bills'] });
-            setSelectedBillId(null);
+            queryClient.invalidateQueries({ queryKey: ['operator-pending-bills'] });
+            queryClient.invalidateQueries({ queryKey: ['operator-paid-bills'] });
+            if (mainTab === 'Active') setSelectedId(null);
         },
-        onError: (err) => {
-            toast.error(err.response?.data?.message || 'Error recording payment');
-        }
+        onError: (err) => toast.error(err.response?.data?.message || 'Error recording payment')
     });
 
-    // Button Handlers
     const handleGenerateBill = () => {
-        if (!selectedBillId) return;
-        generateBillMutation.mutate(selectedBillId);
+        if (!selectedItem || selectedItem.type !== 'session') return;
+        generateBillMutation.mutate(selectedItem.id);
     };
 
-    const handlePrintKOT = () => toast.success("KOT sent to Kitchen Printer!");
-    const handleHoldBill = () => toast("Bill placed on hold", { icon: '⏸️' });
-    
     const handleProceedToBill = () => {
-        if (!selectedBillData) return;
-        if (!selectedBillData.billId) {
+        if (!selectedItem) return;
+        const billId = selectedItem.matchingBill?.id;
+        if (!billId) {
             toast.error("Please generate the bill first!");
             return;
         }
-        
-        recordPaymentMutation.mutate({
-            billId: selectedBillData.billId,
-            amount: paymentReceived,
-            method: selectedPaymentMethod
-        });
+        recordPaymentMutation.mutate({ billId, amount: paymentReceived, method: selectedPaymentMethod });
     };
-    
-    const handleAddItem = () => toast("Opening menu catalog...", { icon: '📋' });
-    const handleChangeTable = () => toast("Select new table from Floor Plan", { icon: '🔀' });
+
+    const getStatusStyles = (status) => {
+        switch(status) {
+            case 'Active': return 'bg-emerald-500/10 text-emerald-600 border-emerald-200/50 dark:border-emerald-500/20';
+            case 'Preparing': return 'bg-amber-500/10 text-amber-600 border-amber-200/50 dark:border-amber-500/20';
+            case 'Billed': return 'bg-indigo-500/10 text-indigo-600 border-indigo-200/50 dark:border-indigo-500/20';
+            case 'Paid': return 'bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20';
+            default: return 'bg-gray-500/10 text-gray-600 border-gray-200/50 dark:border-gray-500/20';
+        }
+    };
 
     return (
-        <div className="-m-6 p-6 font-inter h-full">
-            <Toaster position="top-right" />
+        <div className="-m-6 p-6 font-inter h-full bg-slate-50/50 dark:bg-[#0B1120] min-h-screen">
+            <Toaster position="top-right" toastOptions={{
+                className: 'backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700 shadow-xl rounded-2xl',
+                style: { color: 'inherit' }
+            }} />
             
-            {/* Header Tabs Section */}
-            <div className="flex space-x-8 border-b border-gray-200 dark:border-slate-700 mb-6 px-2">
-                <button 
-                    onClick={() => setMainTab('Active Bill')}
-                    className={`pb-3 font-semibold text-sm transition-colors relative ${mainTab === 'Active Bill' ? 'text-indigo-600' : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200'}`}
-                >
-                    Active Bill
-                    {mainTab === 'Active Bill' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full"></span>}
-                </button>
-                <button 
-                    onClick={() => { setMainTab('Recent Bills'); toast("Recent Bills tab clicked"); }}
-                    className={`pb-3 font-semibold text-sm transition-colors relative ${mainTab === 'Recent Bills' ? 'text-indigo-600' : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200'}`}
-                >
-                    Recent Bills
-                    {mainTab === 'Recent Bills' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full"></span>}
-                </button>
+            {/* Header & Tabs */}
+            <div className="flex items-end justify-between mb-8 border-b border-gray-200 dark:border-slate-800 pb-4">
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Billing & Payments</h1>
+                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Process orders, generate bills, and collect payments</p>
+                </div>
+                <div className="flex space-x-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button 
+                        onClick={() => { setMainTab('Active'); setSelectedId(null); }}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mainTab === 'Active' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                    >
+                        Active Sessions
+                    </button>
+                    <button 
+                        onClick={() => { setMainTab('Recent'); setSelectedId(null); }}
+                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mainTab === 'Recent' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                    >
+                        Recent Bills
+                    </button>
+                </div>
             </div>
 
             {/* Main 3-Column Layout */}
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-180px)]">
                 
-                {/* ----------------- LEFT COLUMN: Active Bills ----------------- */}
-                <div className="w-full lg:w-1/4 flex flex-col space-y-4">
+                {/* ----------------- LEFT COLUMN: List ----------------- */}
+                <div className="w-full lg:w-[320px] flex flex-col space-y-4 shrink-0">
                     
                     {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <div className="relative group">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
                         <input 
                             type="text" 
-                            placeholder="Search table / order / customer..."
-                            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={mainTab === 'Active' ? "Search table or session..." : "Search bill number..."}
+                            className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
                         />
                     </div>
 
                     {/* Filter Dropdown */}
-                    <div className="relative hover:opacity-80 transition-opacity">
-                        <div className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 flex justify-between items-center cursor-pointer">
-                            <div className="flex items-center space-x-2 text-indigo-600">
-                                <Receipt className="w-4 h-4" />
-                                <span className="text-xs font-bold">Dine In</span>
-                            </div>
-                            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
+                    <div className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 flex justify-between items-center cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors shadow-sm">
+                        <div className="flex items-center space-x-2 text-indigo-600">
+                            <Receipt className="w-4 h-4" />
+                            <span className="text-xs font-bold uppercase tracking-wider">{mainTab} List</span>
                         </div>
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
                     </div>
 
                     {/* Bills List */}
-                    <div className="flex-1 overflow-y-auto space-y-3 pb-20 custom-scrollbar pr-1">
-                        {activeBills.map((bill) => {
-                            const isSelected = bill.id === selectedBillId;
-                            let billTotal = 0;
-                            if (bill.matchingBill) {
-                                billTotal = bill.matchingBill.subtotal;
-                            } else if (bill.originalSession) {
-                                bill.originalSession.orders.forEach(order => {
-                                    if (order.status !== 'Cancelled') {
-                                        order.items.forEach(item => {
-                                            billTotal += parseFloat(item.price_at_order) * item.quantity;
-                                        });
-                                    }
-                                });
-                            }
-                            // Add taxes approx for display
-                            const displayTotal = billTotal > 0 ? (billTotal * 1.1).toFixed(2) : '0.00';
-
-                            return (
-                                <div 
-                                    key={bill.id} 
-                                    onClick={() => setSelectedBillId(bill.id)}
-                                    className={`bg-white dark:bg-slate-900 rounded-xl p-4 border transition-all cursor-pointer ${isSelected ? 'border-indigo-500 shadow-sm ring-1 ring-indigo-500' : 'border-gray-200 dark:border-slate-700 hover:border-indigo-300 hover:shadow-sm'}`}
-                                >
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex items-center space-x-2">
-                                            <h3 className="font-extrabold text-gray-900 dark:text-white text-sm">{bill.id}</h3>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusStyles(bill.status)}`}>
-                                                {bill.status}
-                                            </span>
-                                        </div>
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">₹ {displayTotal}</p>
-                                    </div>
-                                    <div className="flex items-center space-x-1.5 text-gray-600 dark:text-slate-400 text-[11px] font-semibold mb-2">
-                                        <User className="w-3.5 h-3.5" />
-                                        <span>{bill.customer}</span>
-                                    </div>
-                                    <div className="flex items-center space-x-4 text-gray-500 dark:text-slate-400 text-[11px] font-semibold">
-                                        <div className="flex items-center space-x-1.5">
-                                            <Users className="w-3.5 h-3.5" />
-                                            <span>{bill.pax} People</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1.5">
-                                            <Clock className="w-3.5 h-3.5" />
-                                            <span>{bill.time}</span>
-                                        </div>
-                                    </div>
+                    <div className="flex-1 overflow-y-auto space-y-3 pb-4 custom-scrollbar pr-2">
+                        {displayedList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-40 text-center px-4">
+                                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
+                                    <FileText className="w-6 h-6 text-gray-400" />
                                 </div>
-                            );
-                        })}
+                                <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">No {mainTab.toLowerCase()} items found</p>
+                            </div>
+                        ) : (
+                            displayedList.map((item) => {
+                                const isSelected = item.id === selectedId;
+                                const displayTotal = item.displayTotal > 0 ? item.displayTotal.toFixed(2) : '0.00';
+
+                                return (
+                                    <div 
+                                        key={item.id} 
+                                        onClick={() => setSelectedId(item.id)}
+                                        className={`group relative overflow-hidden rounded-2xl p-4 border transition-all duration-300 cursor-pointer ${isSelected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 border-transparent shadow-lg shadow-indigo-500/25 scale-[1.02] transform' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md'}`}
+                                    >
+                                        <div className="flex justify-between items-start mb-3 relative z-10">
+                                            <div className="flex items-center space-x-2">
+                                                <h3 className={`font-extrabold text-sm ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                                                    {item.type === 'bill' ? item.bill_number || `Bill #${item.id}` : `Session #${item.id}`}
+                                                </h3>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${isSelected ? 'bg-white/20 text-white border-white/30 backdrop-blur-sm' : getStatusStyles(item.status)}`}>
+                                                    {item.status}
+                                                </span>
+                                            </div>
+                                            <p className={`font-bold text-sm tracking-tight ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>₹{displayTotal}</p>
+                                        </div>
+                                        <div className={`flex items-center space-x-1.5 text-[11px] font-semibold mb-2 ${isSelected ? 'text-indigo-100' : 'text-gray-500 dark:text-slate-400'}`}>
+                                            <User className="w-3.5 h-3.5" />
+                                            <span>{item.customer}</span>
+                                        </div>
+                                        <div className={`flex items-center space-x-4 text-[11px] font-semibold ${isSelected ? 'text-indigo-100' : 'text-gray-500 dark:text-slate-400'}`}>
+                                            {item.type === 'session' && (
+                                                <div className="flex items-center space-x-1.5">
+                                                    <Users className="w-3.5 h-3.5" />
+                                                    <span>{item.pax} Pax</span>
+                                                </div>
+                                            )}
+                                            <div className="flex items-center space-x-1.5">
+                                                <Clock className="w-3.5 h-3.5" />
+                                                <span>{item.time}</span>
+                                            </div>
+                                        </div>
+                                        {/* Decorative gradient orb for selected state */}
+                                        {isSelected && (
+                                            <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
                         
-                        {/* New Bill Button */}
-                        <button 
-                            onClick={handleAddWalkInBill}
-                            className="w-full mt-2 py-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-indigo-600 rounded-xl font-bold text-xs flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 active:bg-gray-100 dark:bg-slate-800 transition-colors shadow-sm"
-                        >
-                            <Plus className="w-4 h-4 mr-1.5" />
-                            New Walk-in Bill
-                        </button>
+                        {mainTab === 'Active' && (
+                            <button 
+                                onClick={() => toast("Please start a new session from Floor Plan")}
+                                className="w-full mt-4 py-3.5 bg-white dark:bg-slate-900/50 border border-dashed border-gray-300 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold text-xs flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                <Plus className="w-4 h-4 mr-1.5" />
+                                Walk-in Order
+                            </button>
+                        )}
                     </div>
 
                 </div>
 
                 {/* ----------------- MIDDLE COLUMN: Order Details ----------------- */}
-                {selectedBillData ? (
-                    <div className="w-full lg:w-2/4 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm flex flex-col">
-                        
-                        {/* Middle Header */}
-                        <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
-                            <div className="flex items-center space-x-3">
-                                <h2 className="font-bold text-gray-900 dark:text-white text-sm">Table / Order Details</h2>
-                                <span className="bg-green-50 text-green-700 px-2.5 py-0.5 rounded-md text-[10px] font-bold">{selectedBillData.orderType}</span>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <span className="font-bold text-gray-900 dark:text-white text-sm">Table {selectedBillData.id}</span>
-                                <button 
-                                    onClick={handleChangeTable}
-                                    className="px-3 py-1.5 border border-indigo-200 text-indigo-600 font-bold text-[11px] rounded-lg hover:bg-indigo-50 active:bg-indigo-100 transition-colors"
-                                >
-                                    Change Table
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Customer Info Meta */}
-                        <div className="p-5 border-b border-gray-100 dark:border-slate-800 grid grid-cols-4 gap-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1">Customer</p>
-                                <div className="flex items-center space-x-1.5 text-gray-900 dark:text-white font-semibold text-[11px]">
-                                    <User className="w-3.5 h-3.5 text-gray-400" />
-                                    <span>{selectedBillData.customer}</span>
+                <div className="flex-1 flex flex-col min-w-0">
+                    {selectedItem ? (
+                        <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-indigo-100/20 dark:shadow-none flex flex-col h-full overflow-hidden">
+                            
+                            {/* Middle Header */}
+                            <div className="p-6 border-b border-gray-100 dark:border-slate-800/80 flex justify-between items-center bg-white dark:bg-slate-900">
+                                <div className="flex items-center space-x-4">
+                                    <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-600 border border-indigo-100 dark:border-indigo-500/20">
+                                        <Coffee className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center space-x-3 mb-1">
+                                            <h2 className="font-bold text-gray-900 dark:text-white text-lg">Order Details</h2>
+                                            <span className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wide">{selectedItem.orderType}</span>
+                                        </div>
+                                        <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">
+                                            {selectedItem.type === 'session' ? `Table ${selectedItem.table_id || 'N/A'}` : `Ref: ${selectedItem.bill_number}`}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex space-x-3">
+                                    <button onClick={() => toast.success("KOT Printing...")} className="p-2.5 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Print KOT">
+                                        <Printer className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-white mb-1">Pax</p>
-                                <div className="flex items-center space-x-1.5 text-gray-900 dark:text-white font-semibold text-[11px]">
-                                    <Users className="w-3.5 h-3.5 text-gray-400" />
-                                    <span>{selectedBillData.pax} People</span>
+
+                            {/* Customer Info Meta */}
+                            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800/80 grid grid-cols-4 gap-4 bg-gray-50/50 dark:bg-slate-900/30">
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Customer</p>
+                                    <div className="flex items-center space-x-2 text-gray-900 dark:text-white font-bold text-xs">
+                                        <User className="w-4 h-4 text-indigo-500" />
+                                        <span>{selectedItem.customer}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Pax</p>
+                                    <div className="flex items-center space-x-2 text-gray-900 dark:text-white font-bold text-xs">
+                                        <Users className="w-4 h-4 text-indigo-500" />
+                                        <span>{selectedItem.pax}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Time</p>
+                                    <div className="flex items-center space-x-2 text-gray-900 dark:text-white font-bold text-xs">
+                                        <Clock className="w-4 h-4 text-indigo-500" />
+                                        <span>{selectedItem.startedAt}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Status</p>
+                                    <div className="flex items-center space-x-2 text-gray-900 dark:text-white font-bold text-xs">
+                                        <CheckCircle2 className="w-4 h-4 text-indigo-500" />
+                                        <span>{selectedItem.status}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1">Started At</p>
-                                <div className="text-gray-900 dark:text-white font-semibold text-[11px]">{selectedBillData.startedAt}</div>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1">Order Type</p>
-                                <div className="text-gray-900 dark:text-white font-semibold text-[11px]">{selectedBillData.orderType}</div>
-                            </div>
-                        </div>
 
-                        {/* Items List */}
-                        <div className="p-5 flex-1 overflow-y-auto">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-extrabold text-gray-900 dark:text-white text-sm">Ordered Items ({currentItems.length})</h3>
-                                <button 
-                                    onClick={handleAddItem}
-                                    className="flex items-center text-indigo-600 font-bold text-[11px] hover:text-indigo-800 transition-colors"
-                                >
-                                    <Plus className="w-3.5 h-3.5 mr-1" /> Add Item
-                                </button>
-                            </div>
+                            {/* Items List */}
+                            <div className="p-6 flex-1 overflow-y-auto">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="font-extrabold text-gray-900 dark:text-white text-base">Order Items ({currentOrderItems.length})</h3>
+                                    {selectedItem.type === 'session' && (
+                                        <button 
+                                            onClick={() => toast("Point of Sale (Add Item) coming soon", { icon: '🛒' })}
+                                            className="flex items-center text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:text-indigo-800 dark:hover:text-indigo-300 transition-all duration-200 active:scale-95 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg shrink-0 ml-2"
+                                        >
+                                            <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Item
+                                        </button>
+                                    )}
+                                </div>
 
-                            {/* List Header */}
-                            <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                                <div className="col-span-6">Item</div>
-                                <div className="col-span-2 text-center">Qty</div>
-                                <div className="col-span-2 text-right">Unit Price</div>
-                                <div className="col-span-2 text-right pr-4">Amount</div>
-                            </div>
+                                {/* List Header */}
+                                <div className="grid grid-cols-12 gap-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-2">
+                                    <div className="col-span-6">Item Name</div>
+                                    <div className="col-span-2 text-center">Qty</div>
+                                    <div className="col-span-2 text-right">Price</div>
+                                    <div className="col-span-2 text-right">Total</div>
+                                </div>
 
-                            {/* List Items */}
-                            <div className="space-y-4 min-h-[150px]">
-                                {currentItems.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-400 font-medium text-xs">No items ordered yet. Click "Add Item".</div>
-                                ) : (
-                                    currentItems.map((item) => (
-                                        <div key={item.id} className="grid grid-cols-12 gap-2 items-center border-b border-gray-50 dark:border-slate-800/50 pb-4 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors p-1 -mx-1 rounded-lg">
-                                            <div className="col-span-6 flex items-center space-x-3">
-                                                <img src={item.img} alt={item.name} className="w-8 h-8 rounded-md object-cover border border-gray-200 dark:border-slate-700" />
-                                                <span className="font-bold text-gray-900 dark:text-white text-[11px]">{item.name}</span>
-                                            </div>
-                                            <div className="col-span-2 flex justify-center">
-                                                <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
-                                                    <button 
-                                                        onClick={() => handleQtyChange(item.id, -1)}
-                                                        className="px-2 py-1 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 hover:text-indigo-600 font-bold text-[11px] transition-colors"
-                                                    >−</button>
-                                                    <span className="px-2 text-[11px] font-bold text-gray-900 dark:text-white min-w-[20px] text-center">{item.qty}</span>
-                                                    <button 
-                                                        onClick={() => handleQtyChange(item.id, 1)}
-                                                        className="px-2 py-1 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 hover:text-indigo-600 font-bold text-[11px] transition-colors"
-                                                    >+</button>
+                                {/* List Items */}
+                                <div className="space-y-2">
+                                    {currentOrderItems.length === 0 ? (
+                                        <div className="text-center py-12 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+                                            <Coffee className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                                            <p className="text-gray-500 dark:text-slate-400 font-semibold text-sm">No items ordered yet.</p>
+                                        </div>
+                                    ) : (
+                                        currentOrderItems.map((item) => (
+                                            <div key={item.id} className="grid grid-cols-12 gap-4 items-center bg-white dark:bg-slate-900 p-3 rounded-2xl border border-gray-100 dark:border-slate-800 hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-500/30 transition-all duration-300 group">
+                                                <div className="col-span-6 flex items-center space-x-4">
+                                                    <img src={item.img} alt={item.name} className="w-10 h-10 rounded-xl object-cover border border-gray-100 dark:border-slate-700 shadow-sm" />
+                                                    <span className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{item.name}</span>
+                                                </div>
+                                                <div className="col-span-2 flex justify-center">
+                                                    <div className="flex items-center bg-gray-50 dark:bg-slate-800 rounded-lg px-2 py-1 font-mono">
+                                                        <span className="px-3 text-xs font-bold text-gray-900 dark:text-white">{item.qty}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="col-span-2 text-right text-xs font-semibold text-gray-500 dark:text-slate-400">
+                                                    ₹{item.price.toFixed(2)}
+                                                </div>
+                                                <div className="col-span-2 text-right text-sm font-black text-gray-900 dark:text-white">
+                                                    ₹{(item.price * item.qty).toFixed(2)}
                                                 </div>
                                             </div>
-                                            <div className="col-span-2 text-right text-[11px] font-semibold text-gray-900 dark:text-white">
-                                                ₹ {(item.price).toFixed(2)}
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                        </div>
+                    ) : (
+                        <div className="h-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-sm flex flex-col items-center justify-center p-8 text-center">
+                            <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
+                                <Receipt className="w-10 h-10 text-indigo-300 dark:text-indigo-500/50" />
+                            </div>
+                            <h3 className="text-gray-900 dark:text-white font-black text-xl mb-3 tracking-tight">Select a Session</h3>
+                            <p className="text-gray-500 dark:text-slate-400 text-sm max-w-sm font-medium leading-relaxed">
+                                Choose an active session or a recent bill from the list to view detailed order information and process payments.
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* ----------------- RIGHT COLUMN: Bill Summary ----------------- */}
+                <div className="w-full lg:w-[380px] flex flex-col shrink-0">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl shadow-gray-200/40 dark:shadow-none flex flex-col h-full overflow-hidden relative">
+                        
+                        {/* Decorative Header */}
+                        <div className="h-2 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+
+                        <div className="p-6 flex-1 flex flex-col">
+                            <h2 className="font-black text-gray-900 dark:text-white text-lg mb-6 flex items-center">
+                                <FileText className="w-5 h-5 mr-2 text-indigo-500" />
+                                Payment Summary
+                            </h2>
+                            
+                            {/* Summary List */}
+                            <div className="space-y-4 mb-8 text-sm font-bold border-b border-gray-100 dark:border-slate-800 pb-8">
+                                <div className="flex justify-between text-gray-500 dark:text-slate-400">
+                                    <span>Subtotal ({currentOrderItems.length} items)</span>
+                                    <span className="text-gray-900 dark:text-white font-mono">₹ {subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-500 dark:text-slate-400">
+                                    <span>Service Charge (5%)</span>
+                                    <span className="text-gray-900 dark:text-white font-mono">₹ {serviceCharge.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-500 dark:text-slate-400">
+                                    <span>CGST (2.5%)</span>
+                                    <span className="text-gray-900 dark:text-white font-mono">₹ {cgst.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-500 dark:text-slate-400">
+                                    <span>SGST (2.5%)</span>
+                                    <span className="text-gray-900 dark:text-white font-mono">₹ {sgst.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-900 dark:text-white pt-4 mt-2 border-t border-gray-100 dark:border-slate-800 font-black text-base">
+                                    <span>Total Amount</span>
+                                    <span className="font-mono">₹ {totalAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            {/* Payment Methods */}
+                            {selectedItem?.status !== 'Paid' && (
+                                <div className="mb-8">
+                                    <h3 className="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider mb-4">Payment Method</h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { id: 'Cash', icon: Banknote },
+                                            { id: 'UPI', icon: Smartphone },
+                                            { id: 'Card', icon: CreditCard },
+                                            { id: 'Split', icon: SplitSquareHorizontal },
+                                        ].map(method => (
+                                            <div 
+                                                key={method.id}
+                                                onClick={() => setSelectedPaymentMethod(method.id)}
+                                                className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedPaymentMethod === method.id ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'border-gray-100 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-indigo-200 dark:hover:border-indigo-500/30'}`}
+                                            >
+                                                <method.icon className="w-4 h-4 mr-3" />
+                                                <span className="text-sm font-bold">{method.id}</span>
+                                                {selectedPaymentMethod === method.id && <Check className="w-4 h-4 ml-auto" />}
                                             </div>
-                                            <div className="col-span-2 flex justify-end items-center space-x-3">
-                                                <span className="text-[11px] font-bold text-gray-900 dark:text-white">₹ {(item.price * item.qty).toFixed(2)}</span>
-                                                <button 
-                                                    onClick={() => handleRemoveItem(item.id)}
-                                                    className="text-red-400 hover:text-red-600 bg-red-50 p-1.5 rounded-md transition-colors"
-                                                >
-                                                    <Trash2 className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Grand Total Banner */}
+                            <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 flex justify-between items-center mb-auto shadow-lg relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                                <div className="relative z-10">
+                                    <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">To Pay</span>
+                                    <span className="font-black text-white text-3xl tracking-tighter font-mono">₹ {grandTotal.toFixed(2)}</span>
+                                </div>
+                                {selectedItem?.status === 'Paid' && (
+                                    <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg">
+                                        <CheckCircle2 className="w-6 h-6" />
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Restaurant Note Input */}
-                            <div className="mt-6 border-b border-gray-100 dark:border-slate-800 pb-6">
-                                <label className="block text-[11px] font-bold text-gray-700 dark:text-slate-300 mb-2">Add Restaurant Note</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g. Extra spicy, no onion, etc..."
-                                    className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-[11px] font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 focus:bg-white dark:bg-slate-900 transition-all"
-                                />
-                            </div>
-
-                            {/* Order Timeline */}
-                            <div className="mt-6">
-                                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-6">KOT / Order Status</h3>
-                                
-                                <div className="relative flex justify-between items-start max-w-lg mx-auto">
-                                    {/* Connecting Line */}
-                                    <div className="absolute top-2.5 left-6 right-6 h-0.5 bg-gray-200 -z-10"></div>
-                                    <div className={`absolute top-2.5 left-6 h-0.5 bg-green-500 -z-10 transition-all duration-500 ${selectedBillData.status === 'Billed' ? 'w-full' : 'w-3/4'}`}></div>
-                                    
-                                    {/* Timeline Steps */}
-                                    {[
-                                        { status: 'Placed', time: selectedBillData.startedAt, done: true },
-                                        { status: 'Confirmed', time: '...', done: true },
-                                        { status: 'Preparing', time: '...', done: selectedBillData.status !== 'Active' },
-                                        { status: 'Ready to Serve', time: '...', done: selectedBillData.status === 'Billed' },
-                                        { status: 'Served', time: '', done: selectedBillData.status === 'Billed' },
-                                    ].map((step, idx) => (
-                                        <div key={idx} className="flex flex-col items-center bg-white dark:bg-slate-900 px-2 cursor-help" title={step.status}>
-                                            {step.done ? (
-                                                <div className="w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-sm">
-                                                    <CheckCircle2 className="w-5 h-5 text-green-500" fill="white" />
-                                                </div>
-                                            ) : (
-                                                <div className="w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
-                                                    <Circle className="w-5 h-5 text-gray-300" fill="#f3f4f6" />
-                                                </div>
-                                            )}
-                                            <p className={`text-[10px] font-bold mt-2 ${step.done ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>{step.status}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* Middle Column Footer Actions */}
-                        <div className="p-5 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50/50 rounded-b-2xl">
-                            <button 
-                                onClick={handlePrintKOT}
-                                className="px-6 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-900 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 active:bg-gray-100 dark:bg-slate-800 transition-colors shadow-sm"
-                            >
-                                Print KOT
-                            </button>
-                            <div className="flex space-x-3">
-                                <button 
-                                    onClick={handleHoldBill}
-                                    className="px-6 py-2.5 border border-indigo-200 text-indigo-600 bg-white dark:bg-slate-900 rounded-xl font-bold text-xs hover:bg-indigo-50 active:bg-indigo-100 transition-colors shadow-sm"
-                                >
-                                    Hold Bill
-                                </button>
-                                <button 
-                                    onClick={handleProceedToBill}
-                                    className="px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 active:bg-indigo-800 transition-colors shadow-sm"
-                                >
-                                    Proceed to Bill
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                ) : (
-                    <div className="w-full lg:w-2/4 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
-                        <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-                            <Receipt className="w-8 h-8 text-gray-300" />
-                        </div>
-                        <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-2">No Active Bill Selected</h3>
-                        <p className="text-gray-500 dark:text-slate-400 text-sm max-w-sm">
-                            Select an active session from the list on the left or start a new table session to view order details and process payments.
-                        </p>
-                    </div>
-                )}
-
-                {/* ----------------- RIGHT COLUMN: Bill Summary ----------------- */}
-                <div className="w-full lg:w-1/4 flex flex-col">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm flex flex-col flex-1 p-6">
-                        
-                        <h2 className="font-bold text-gray-900 dark:text-white text-sm mb-5">Bill Summary</h2>
-                        
-                        {/* Summary List */}
-                        <div className="space-y-3.5 mb-6 text-[11px] font-bold border-b border-gray-100 dark:border-slate-800 pb-6">
-                            <div className="flex justify-between text-gray-600 dark:text-slate-400">
-                                <span>Subtotal ({currentItems.length} Items)</span>
-                                <span className="text-gray-900 dark:text-white font-mono">₹ {subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-600 dark:text-slate-400 group cursor-help">
-                                <span className="flex items-center">Service Charge (5%) <Info className="w-3.5 h-3.5 ml-1.5 text-gray-400 group-hover:text-indigo-500 transition-colors" /></span>
-                                <span className="text-gray-900 dark:text-white font-mono">₹ {serviceCharge.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-600 dark:text-slate-400 group cursor-help">
-                                <span className="flex items-center">CGST (2.5%) <Info className="w-3.5 h-3.5 ml-1.5 text-gray-400 group-hover:text-indigo-500 transition-colors" /></span>
-                                <span className="text-gray-900 dark:text-white font-mono">₹ {cgst.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-600 dark:text-slate-400 group cursor-help">
-                                <span className="flex items-center">SGST (2.5%) <Info className="w-3.5 h-3.5 ml-1.5 text-gray-400 group-hover:text-indigo-500 transition-colors" /></span>
-                                <span className="text-gray-900 dark:text-white font-mono">₹ {sgst.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-gray-900 dark:text-white pt-2 font-extrabold text-sm">
-                                <span>Total Amount</span>
-                                <span className="font-mono">₹ {totalAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        {/* Apply Discount */}
-                        <div className="mb-4 text-[11px]">
-                            <div className="flex items-center text-indigo-600 font-bold mb-2 cursor-pointer hover:text-indigo-800 transition-colors">
-                                <div className="w-4 h-4 bg-indigo-50 flex items-center justify-center rounded-sm mr-2">
-                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M11 5L6 9H2v6h4l5 4V5z"></path></svg>
-                                </div>
-                                Apply Discount
-                            </div>
-                            <div className="flex space-x-2 items-center">
-                                <select className="flex-1 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-2 text-gray-700 dark:text-slate-300 font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                    <option>Percentage (%)</option>
-                                    <option>Flat Amount (₹)</option>
-                                </select>
-                                <input 
-                                    type="number" 
-                                    value={discountPercentage}
-                                    onChange={(e) => setDiscountPercentage(e.target.value)}
-                                    className="w-16 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-2 text-center text-gray-900 dark:text-white font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono"
-                                />
-                                <span className="text-green-600 font-bold w-16 text-right font-mono">- ₹ {discountAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        {/* Round Off Toggle */}
-                        <div className="flex justify-between items-center mb-6 text-[11px] font-bold">
-                            <span className="flex items-center text-gray-700 dark:text-slate-300">Round Off <Info className="w-3.5 h-3.5 ml-1.5 text-gray-400" /></span>
-                            <div className="flex items-center space-x-3">
-                                {/* Custom Toggle */}
-                                <div 
-                                    className={`w-8 h-4 flex items-center rounded-full p-0.5 cursor-pointer transition-colors ${isRoundOff ? 'bg-indigo-600' : 'bg-gray-300'}`}
-                                    onClick={() => setIsRoundOff(!isRoundOff)}
-                                >
-                                    <div className={`bg-white dark:bg-slate-900 w-3 h-3 rounded-full shadow-md transform transition-transform ${isRoundOff ? 'translate-x-4' : 'translate-x-0'}`}></div>
-                                </div>
-                                <span className="text-gray-900 dark:text-white font-bold min-w-[40px] text-right font-mono">{roundOffDiff > 0 ? '+' : ''}{roundOffDiff.toFixed(2)}</span>
-                            </div>
-                        </div>
-
-                        {/* Grand Total Banner */}
-                        <div className="bg-indigo-50 rounded-xl p-4 flex justify-between items-center mb-6 shadow-inner">
-                            <span className="font-extrabold text-indigo-900 text-sm">Grand Total</span>
-                            <span className="font-extrabold text-indigo-600 text-xl tracking-tight font-mono">₹ {grandTotal.toFixed(2)}</span>
-                        </div>
-
-                        {/* Payment Methods */}
-                        <div className="mb-6">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-[11px] mb-3">Payment Methods</h3>
-                            <div className="grid grid-cols-4 gap-2">
-                                {[
-                                    { id: 'Cash', icon: Banknote },
-                                    { id: 'UPI', icon: Smartphone },
-                                    { id: 'Card', icon: CreditCard },
-                                    { id: 'Split', icon: SplitSquareHorizontal },
-                                ].map(method => (
-                                    <div 
-                                        key={method.id}
-                                        onClick={() => setSelectedPaymentMethod(method.id)}
-                                        className={`flex flex-col items-center justify-center p-2 rounded-xl border cursor-pointer transition-all ${selectedPaymentMethod === method.id ? 'border-green-500 bg-green-50 text-green-700 shadow-sm ring-1 ring-green-500' : 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                            {/* Action Buttons */}
+                            <div className="mt-8 flex flex-col space-y-3">
+                                {selectedItem?.status === 'Paid' ? (
+                                    <button className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
+                                        <Download className="w-4 h-4 mr-2" /> Download Invoice
+                                    </button>
+                                ) : selectedItem?.status === 'Billed' ? (
+                                    <button 
+                                        onClick={handleProceedToBill}
+                                        disabled={recordPaymentMutation.isPending}
+                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
-                                        <method.icon className={`w-5 h-5 mb-1 ${selectedPaymentMethod === method.id ? 'text-green-600' : 'text-gray-400'}`} />
-                                        <span className={`text-[9px] font-bold ${selectedPaymentMethod === method.id ? 'text-green-700' : 'text-gray-600 dark:text-slate-400'}`}>{method.id}</span>
-                                    </div>
-                                ))}
+                                        <CheckCircle2 className="w-5 h-5 mr-2" /> 
+                                        {recordPaymentMutation.isPending ? "Processing..." : "Complete Payment"}
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={handleGenerateBill}
+                                        disabled={generateBillMutation.isPending}
+                                        className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:shadow-lg hover:shadow-indigo-500/40 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                                    >
+                                        <Receipt className="w-5 h-5 mr-2" /> 
+                                        {generateBillMutation.isPending ? "Generating Bill..." : "Generate Bill"}
+                                    </button>
+                                )}
                             </div>
                         </div>
-
-                        {/* Payment Received Input */}
-                        <div className="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-slate-800 pb-4">
-                            <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">Payment Received</span>
-                            <input 
-                                type="number" 
-                                value={paymentReceived}
-                                onChange={(e) => setPaymentReceived(Number(e.target.value))}
-                                className="w-24 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-right text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-all"
-                            />
-                        </div>
-
-                        {/* Change Amount */}
-                        <div className="flex items-center justify-between mb-6">
-                            <span className="text-[11px] font-bold text-gray-700 dark:text-slate-300">Change</span>
-                            <span className="text-[12px] font-bold text-green-600 font-mono">₹ {Math.max(0, paymentReceived - grandTotal).toFixed(2)}</span>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="mt-auto flex flex-col space-y-3">
-                            <button 
-                                onClick={handleGenerateBill}
-                                className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold text-xs flex items-center justify-center hover:bg-indigo-700 active:bg-indigo-800 transition-colors shadow-md"
-                            >
-                                <Receipt className="w-4 h-4 mr-2" />
-                                Generate Bill
-                            </button>
-                            <button 
-                                onClick={() => toast("Bill saved to drafts")}
-                                className="w-full py-3 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 font-bold text-xs hover:text-indigo-600 active:bg-gray-50 dark:bg-slate-800/50 rounded-xl transition-colors"
-                            >
-                                Save as Draft
-                            </button>
-                        </div>
-
                     </div>
                 </div>
 
@@ -638,4 +574,4 @@ const Bills = () => {
     );
 };
 
-export default Bills;
+export default OperatorBilling;

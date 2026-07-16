@@ -320,7 +320,10 @@ const OperatorDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {(bills || []).slice(0, 5).map(bill => (
+                                    {(bills || [])
+                                        .filter(bill => new Date(bill.generated_at).toDateString() === new Date().toDateString())
+                                        .slice(0, 5)
+                                        .map(bill => (
                                         <tr key={bill.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                                             <td className="py-3 font-medium text-gray-900 dark:text-white">{bill.bill_number}</td>
                                             <td className="py-3 text-gray-600 dark:text-slate-400">
@@ -345,7 +348,7 @@ const OperatorDashboard = () => {
                                                     {bill.payment_status}
                                                 </span>
                                             </td>
-                                            <td className="py-3 text-right text-gray-500 dark:text-slate-400 text-xs">{formatTime(bill.created_at)}</td>
+                                            <td className="py-3 text-right text-gray-500 dark:text-slate-400 text-xs">{formatTime(bill.generated_at)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -495,36 +498,6 @@ const OperatorDashboard = () => {
                         </div>
                     </div>
 
-                    {/* QUICK ACTIONS */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-                        <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <button onClick={() => navigate('/operator/orders')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><ShoppingCart size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">New Order</span>
-                            </button>
-                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><Receipt size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Generate Bill</span>
-                            </button>
-                            <button className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><UserPlus size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Assign Waiter</span>
-                            </button>
-                            <button onClick={() => navigate('/operator/tables')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><LayoutGrid size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">View Tables</span>
-                            </button>
-                            <button onClick={() => navigate('/operator/menu-items')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><UtensilsCrossed size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Menu Items</span>
-                            </button>
-                            <button onClick={() => navigate('/operator/billing')} className="flex items-center p-3 border border-gray-100 dark:border-slate-800 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors group">
-                                <div className="text-indigo-600 mr-2"><FileText size={18} /></div>
-                                <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 group-hover:text-indigo-700">Payments</span>
-                            </button>
-                        </div>
-                    </div>
 
                 </div>
             </div>
