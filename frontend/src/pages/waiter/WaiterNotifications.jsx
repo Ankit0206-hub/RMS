@@ -15,7 +15,7 @@ export default function WaiterNotifications() {
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100 mr-2"><ArrowLeft className="h-6 w-6" /></button>
                 <h1 className="text-lg font-bold text-gray-900">Notifications</h1>
             </div>
-            <div className="px-4 mt-4 flex-1 space-y-4 max-w-3xl mx-auto w-full pb-24">
+            <div className="px-4 mt-4 flex-1 space-y-4 max-w-md mx-auto w-full pb-24">
                 {notifications.map(notif => (
                     <div key={notif.id} className={`bg-white rounded-2xl p-4 shadow-sm border flex items-start ${notif.unread ? 'border-orange-200 bg-orange-50/30' : 'border-gray-100'}`}>
                         <div className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 ${notif.iconBg}`}><notif.icon className={`h-6 w-6 ${notif.iconColor}`} /></div>

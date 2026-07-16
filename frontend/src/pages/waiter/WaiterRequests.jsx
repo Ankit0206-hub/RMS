@@ -20,7 +20,7 @@ export default function WaiterRequests() {
                     <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
                 </button>
             </div>
-            <div className="px-4 mt-4 flex-1 space-y-6 max-w-4xl mx-auto w-full pb-24">
+            <div className="px-4 mt-4 flex-1 space-y-6 max-w-md mx-auto w-full pb-24">
                 <div className="flex space-x-2">
                     <button onClick={() => setActiveTab('Active')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm ${activeTab === 'Active' ? 'bg-[#ff5722] text-white' : 'bg-white text-gray-600 border border-gray-200'}`}>Active ({requests.filter(r => r.status === 'Active').length})</button>
                     <button onClick={() => setActiveTab('Resolved')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm ${activeTab === 'Resolved' ? 'bg-[#ff5722] text-white' : 'bg-white text-gray-600 border border-gray-200'}`}>Resolved ({requests.filter(r => r.status === 'Resolved').length})</button>

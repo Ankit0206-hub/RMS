@@ -17,7 +17,7 @@ export default function WaiterOrderDetails() {
                 <h1 className="text-lg font-bold text-gray-900">Order Details</h1>
                 <button className="text-sm font-bold text-[#ff5722] hover:underline">Help</button>
             </div>
-            <div className="px-4 mt-4 flex-1 space-y-6 max-w-3xl mx-auto w-full pb-24">
+            <div className="px-4 mt-4 flex-1 space-y-6 max-w-md mx-auto w-full pb-24">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
                         <div>

@@ -15,7 +15,7 @@ export default function WaiterCart() {
                 <div className="w-10"></div>
             </div>
 
-            <div className="px-4 py-6 max-w-4xl mx-auto w-full space-y-4 pb-32">
+            <div className="px-4 py-6 max-w-md mx-auto w-full space-y-4 pb-32">
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
                     <h2 className="font-bold text-gray-900 mb-4 text-lg">Items</h2>
                     {[1,2].map(i => (
@@ -47,7 +47,7 @@ export default function WaiterCart() {
             </div>
 
             <div className="absolute bottom-[4rem] left-0 right-0 p-4 bg-white z-40 border-t border-gray-100">
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
+                <div className="max-w-md mx-auto flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-gray-500">Total Amount</p>
                         <p className="text-xl font-bold text-gray-900">₹ 540</p>

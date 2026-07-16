@@ -18,7 +18,7 @@ export default function TableDetails() {
                 </div>
             </div>
 
-            <div className="px-4 py-6 max-w-4xl mx-auto w-full space-y-6 pb-24">
+            <div className="px-4 py-6 max-w-md mx-auto w-full space-y-6 pb-24">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-lg font-bold text-gray-900">Session Info</h2>
