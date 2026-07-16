@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function WaiterOrderHistory() {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function WaiterOrderHistory() {
             <div className="bg-white px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100"><ArrowLeft className="h-6 w-6" /></button>
                 <h1 className="text-lg font-bold text-gray-900">Order History</h1>
-                <button className="text-sm font-bold text-[#ff5722] hover:underline">Help</button>
+                <button onClick={() => toast('Support contact initiated')} className="text-sm font-bold text-[#ff5722] hover:underline">Help</button>
             </div>
             <div className="px-4 py-4 w-full space-y-6 pb-32">
                 <div className="bg-orange-50 text-orange-600 rounded-xl p-3 text-center font-bold text-[15px] border border-orange-100">Table {tableId || 'T01'} - Rahul Sharma</div>
@@ -48,7 +49,7 @@ export default function WaiterOrderHistory() {
             </div>
             <div className="absolute bottom-[4rem] left-0 right-0 p-4 bg-white z-40 border-t border-gray-100">
                 <div className="w-full space-y-3">
-                    <button className="w-full bg-white text-[#ff5722] border-2 border-[#ff5722] rounded-2xl py-4 font-bold text-[15px] shadow-sm hover:bg-orange-50 transition-colors">Request Bill</button>
+                    <button onClick={() => toast.success('Bill request sent to kitchen/operator!')} className="w-full bg-white text-[#ff5722] border-2 border-[#ff5722] rounded-2xl py-4 font-bold text-[15px] shadow-sm hover:bg-orange-50 transition-colors">Request Bill</button>
                 </div>
             </div>
         </div>

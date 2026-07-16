@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, Edit3 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function WaiterCart() {
     const navigate = useNavigate();
+
+    const [items, setItems] = useState([
+        { id: 1, name: 'Paneer Butter Masala', price: 240, qty: 2 },
+        { id: 2, name: 'Garlic Naan', price: 40, qty: 1 },
+    ]);
+
+    const updateQty = (id, delta) => {
+        setItems(items.map(item => {
+            if (item.id === id) {
+                return { ...item, qty: Math.max(0, item.qty + delta) };
+            }
+            return item;
+        }).filter(item => item.qty > 0));
+    };
+
+    const cartTotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     return (
         <div className="flex flex-col h-full bg-white font-inter">
@@ -18,21 +35,21 @@ export default function WaiterCart() {
             <div className="px-4 py-6 w-full space-y-4 pb-32">
                 <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
                     <h2 className="font-bold text-gray-900 mb-4 text-lg">Items</h2>
-                    {[1,2].map(i => (
-                        <div key={i} className="flex justify-between items-center py-4 border-b border-gray-50 last:border-0 last:pb-0">
+                    {items.map(item => (
+                        <div key={item.id} className="flex justify-between items-center py-4 border-b border-gray-50 last:border-0 last:pb-0">
                             <div>
-                                <h3 className="font-bold text-gray-900 text-sm">Paneer Butter Masala</h3>
-                                <p className="text-xs text-gray-500 mt-1 font-medium">₹ 240</p>
+                                <h3 className="font-bold text-gray-900 text-sm">{item.name}</h3>
+                                <p className="text-xs text-gray-500 mt-1 font-medium">₹ {item.price}</p>
                             </div>
                             <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                                <button className="p-1.5 bg-white rounded-md shadow-sm"><Minus className="h-3 w-3" /></button>
-                                <span className="w-8 text-center font-bold text-sm">2</span>
-                                <button className="p-1.5 bg-white rounded-md shadow-sm"><Plus className="h-3 w-3" /></button>
+                                <button onClick={() => updateQty(item.id, -1)} className="p-1.5 bg-white rounded-md shadow-sm"><Minus className="h-3 w-3" /></button>
+                                <span className="w-8 text-center font-bold text-sm">{item.qty}</span>
+                                <button onClick={() => updateQty(item.id, 1)} className="p-1.5 bg-white rounded-md shadow-sm"><Plus className="h-3 w-3" /></button>
                             </div>
                         </div>
                     ))}
                     
-                    <button className="w-full mt-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-orange-500 font-bold text-sm flex items-center justify-center hover:bg-gray-50">
+                    <button onClick={() => navigate('/waiter/take-order')} className="w-full mt-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-orange-500 font-bold text-sm flex items-center justify-center hover:bg-gray-50">
                         <Plus className="h-4 w-4 mr-2" /> Add More Items
                     </button>
                 </div>
@@ -50,9 +67,9 @@ export default function WaiterCart() {
                 <div className="w-full flex items-center justify-between">
                     <div>
                         <p className="text-xs font-bold text-gray-500">Total Amount</p>
-                        <p className="text-xl font-bold text-gray-900">₹ 540</p>
+                        <p className="text-xl font-bold text-gray-900">₹ {cartTotal}</p>
                     </div>
-                    <button onClick={() => navigate('/waiter/tables')} className="bg-[#ff5722] text-white rounded-2xl py-3.5 px-8 font-bold text-[15px] shadow-sm">
+                    <button onClick={() => { toast.success('Order sent to kitchen!'); navigate('/waiter/tables'); }} className="bg-[#ff5722] text-white rounded-2xl py-3.5 px-8 font-bold text-[15px] shadow-sm active:scale-95 transition-transform">
                         Send to Kitchen
                     </button>
                 </div>

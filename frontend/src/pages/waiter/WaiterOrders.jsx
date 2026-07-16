@@ -16,7 +16,7 @@ export default function WaiterOrders() {
         <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Orders</h1>
-                <button className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center relative">
+                <button onClick={() => navigate('/waiter/notifications')} className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center relative hover:bg-gray-100 transition-colors">
                     <Bell className="h-5 w-5 text-gray-600" />
                     <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
                 </button>
