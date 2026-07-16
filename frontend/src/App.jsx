@@ -28,7 +28,20 @@ import Waiters from './pages/operator/Waiters';
 import OperatorSettings from './pages/operator/OperatorSettings';
 import OperatorTables from './pages/operator/Tables';
 import OperatorFloorPlan from './pages/operator/FloorPlan';
-import WaiterDashboard from './pages/waiter/WaiterDashboard';
+
+// Waiter Imports
+import WaiterMyTables from './pages/waiter/MyTables';
+import WaiterTableDetails from './pages/waiter/TableDetails';
+import WaiterMenu from './pages/waiter/WaiterMenu';
+import WaiterCart from './pages/waiter/WaiterCart';
+import WaiterOrders from './pages/waiter/WaiterOrders';
+import WaiterOrderDetails from './pages/waiter/WaiterOrderDetails';
+import WaiterOrderHistory from './pages/waiter/WaiterOrderHistory';
+import WaiterReadyToServe from './pages/waiter/WaiterReadyToServe';
+import WaiterRequests from './pages/waiter/WaiterRequests';
+import WaiterNotifications from './pages/waiter/WaiterNotifications';
+import WaiterProfile from './pages/waiter/WaiterProfile';
+
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
 import AddCategoryWithItems from './pages/admin/AddCategoryWithItems';
@@ -156,9 +169,20 @@ const App = () => {
 
                         {/* Waiter Routes */}
                         <Route path="/waiter" element={<ProtectedRoute allowedRoles={['waiter', 'admin']}><WaiterLayout /></ProtectedRoute>}>
-                            <Route index element={<Navigate to="/waiter/dashboard" />} />
-                            <Route path="dashboard" element={<WaiterDashboard />} />
-                            <Route path="orders" element={<div className="text-white p-6">Serving Queue (Waiter)</div>} />
+                            <Route index element={<Navigate to="/waiter/tables" />} />
+                            <Route path="dashboard" element={<Navigate to="/waiter/tables" />} />
+                            <Route path="tables" element={<WaiterMyTables />} />
+                            <Route path="tables/:tableId" element={<WaiterTableDetails />} />
+                            <Route path="tables/:tableId/menu" element={<WaiterMenu />} />
+                            <Route path="tables/:tableId/cart" element={<WaiterCart />} />
+                            <Route path="tables/:tableId/history" element={<WaiterOrderHistory />} />
+                            <Route path="take-order" element={<WaiterMenu />} />
+                            <Route path="orders" element={<WaiterOrders />} />
+                            <Route path="orders/:orderId" element={<WaiterOrderDetails />} />
+                            <Route path="ready" element={<WaiterReadyToServe />} />
+                            <Route path="requests" element={<WaiterRequests />} />
+                            <Route path="notifications" element={<WaiterNotifications />} />
+                            <Route path="profile" element={<WaiterProfile />} />
                         </Route>
                     </Routes>
                 </BrowserRouter>
