@@ -66,20 +66,10 @@ const FloorPlan = () => {
 
     return (
         <div className="flex h-full font-inter overflow-hidden">
-            <div className="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto">
+            <div className="flex-1 flex flex-col overflow-y-auto">
                 
-                {/* Header */}
-                <div className="flex justify-between items-end mb-6">
-                    <div>
-                        <div className="flex items-center text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-2">
-                            <span>Dashboard</span>
-                            <ChevronRight size={14} className="mx-1" />
-                            <span>Restaurant</span>
-                            <ChevronRight size={14} className="mx-1" />
-                            <span className="text-gray-900 dark:text-white font-bold">Floor Plan</span>
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Restaurant / Floor Plan</h2>
-                    </div>
+                {/* Header Action Buttons */}
+                <div className="flex justify-end mb-4">
                     <div className="flex space-x-3">
                         <button className="bg-white dark:bg-slate-900 border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold flex items-center hover:bg-indigo-50 transition-colors">
                             <RefreshCcw size={16} className="mr-2" /> Edit Floor Plan

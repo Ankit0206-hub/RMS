@@ -46,30 +46,49 @@ async def seed():
         
         # Employees
         password_hash = get_password_hash("password123")
-        employees = [
-            Employee(employee_code="DUMMY_OP1", email="dummy_operator@dineops.com", phone="1000000001", hashed_password=password_hash, first_name="Dummy", last_name="Operator", role_id=operator_role.id),
-            Employee(employee_code="DUMMY_W1", email="dummy_waiter1@dineops.com", phone="1000000002", hashed_password=password_hash, first_name="John", last_name="Waiter", role_id=waiter_role.id),
-            Employee(employee_code="DUMMY_W2", email="dummy_waiter2@dineops.com", phone="1000000003", hashed_password=password_hash, first_name="Jane", last_name="Waiter", role_id=waiter_role.id)
-        ]
-        session.add_all(employees)
-        await session.commit()
+        employees = []
+        for emp_data in [
+            {"code": "DUMMY_OP1", "email": "dummy_operator@dineops.com", "phone": "1000000001", "fname": "Dummy", "lname": "Operator", "role_id": operator_role.id},
+            {"code": "DUMMY_W1", "email": "dummy_waiter1@dineops.com", "phone": "1000000002", "fname": "John", "lname": "Waiter", "role_id": waiter_role.id},
+            {"code": "DUMMY_W2", "email": "dummy_waiter2@dineops.com", "phone": "1000000003", "fname": "Jane", "lname": "Waiter", "role_id": waiter_role.id}
+        ]:
+            stmt = select(Employee).where(Employee.email == emp_data["email"])
+            res = await session.execute(stmt)
+            emp = res.scalars().first()
+            if not emp:
+                emp = Employee(employee_code=emp_data["code"], email=emp_data["email"], phone=emp_data["phone"], hashed_password=password_hash, first_name=emp_data["fname"], last_name=emp_data["lname"], role_id=emp_data["role_id"])
+                session.add(emp)
+                await session.commit()
+                await session.refresh(emp)
+            employees.append(emp)
         for e in employees: ids["Employee"].append(e.id)
         waiters = [employees[1], employees[2]]
         
-        # Tables
-        tables = [RestaurantTable(table_number=f"DUMMY_T{i}", capacity=random.choice([2, 4, 6]), status="Available") for i in range(1, 11)]
-        session.add_all(tables)
-        await session.commit()
+        tables = []
+        for i in range(1, 11):
+            stmt = select(RestaurantTable).where(RestaurantTable.table_number == f"DUMMY_T{i}")
+            res = await session.execute(stmt)
+            t = res.scalars().first()
+            if not t:
+                t = RestaurantTable(table_number=f"DUMMY_T{i}", capacity=random.choice([2, 4, 6]), status="Available")
+                session.add(t)
+                await session.commit()
+                await session.refresh(t)
+            tables.append(t)
         for t in tables: ids["RestaurantTable"].append(t.id)
 
-        # Categories
         cat_names = ["Starters", "Main Course", "Desserts", "Beverages"]
         categories = []
         for cn in cat_names:
-            c = MenuCategory(name=f"Dummy {cn}", description=f"Dummy {cn} items")
-            session.add(c)
+            stmt = select(MenuCategory).where(MenuCategory.name == f"Dummy {cn}")
+            res = await session.execute(stmt)
+            c = res.scalars().first()
+            if not c:
+                c = MenuCategory(name=f"Dummy {cn}", description=f"Dummy {cn} items")
+                session.add(c)
+                await session.commit()
+                await session.refresh(c)
             categories.append(c)
-        await session.commit()
         for c in categories: ids["MenuCategory"].append(c.id)
 
         # Items
@@ -85,14 +104,19 @@ async def seed():
         code_idx = 1
         for cat_name, item_name, price in items_data:
             cat = next(c for c in categories if c.name == f"Dummy {cat_name}")
-            mi = MenuItem(
-                category_id=cat.id, item_code=f"DUMMY_I{code_idx}", name=f"Dummy {item_name}", 
-                description=f"Delicious dummy {item_name}", price=price
-            )
-            session.add(mi)
+            stmt = select(MenuItem).where(MenuItem.item_code == f"DUMMY_I{code_idx}")
+            res = await session.execute(stmt)
+            mi = res.scalars().first()
+            if not mi:
+                mi = MenuItem(
+                    category_id=cat.id, item_code=f"DUMMY_I{code_idx}", name=f"Dummy {item_name}", 
+                    description=f"Delicious dummy {item_name}", price=price
+                )
+                session.add(mi)
+                await session.commit()
+                await session.refresh(mi)
             menu_items.append(mi)
             code_idx += 1
-        await session.commit()
         for mi in menu_items: ids["MenuItem"].append(mi.id)
 
         # Sessions, Orders, Bills

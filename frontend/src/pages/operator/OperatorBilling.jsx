@@ -7,9 +7,12 @@ import {
     Banknote, CreditCard, Smartphone, SplitSquareHorizontal, Receipt, Plus,
     ArrowRight, Check, Calendar, Coffee, FileText, Printer, PauseCircle, Download
 } from 'lucide-react';
+import ThermalReceipt from '../../components/ThermalReceipt';
 
 const OperatorBilling = () => {
     const queryClient = useQueryClient();
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [mainTab, setMainTab] = useState('Active'); // 'Active' or 'Recent'
     const [selectedId, setSelectedId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -52,7 +55,7 @@ const OperatorBilling = () => {
                 const diffMins = Math.floor(diffMs / 60000);
                 
                 const matchingBill = (pendingBillsResponse || []).find(b => b.session_id === session.id);
-                const status = matchingBill ? 'Billed' : (session.status === 'Active' ? 'Active' : 'Preparing');
+                const status = matchingBill ? 'Pending Billing' : (session.status === 'Active' ? 'Active' : 'Preparing');
 
                 let total = 0;
                 if (matchingBill) {
@@ -87,12 +90,13 @@ const OperatorBilling = () => {
     const recentItems = useMemo(() => {
         return (paidBillsResponse || [])
             .map(bill => {
-                const generatedAtDate = new Date(bill.generated_at);
-                const generatedAt = generatedAtDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const lastPayment = bill.payments && bill.payments.length > 0 ? bill.payments[bill.payments.length - 1] : null;
+                const completedDate = lastPayment ? new Date(lastPayment.created_at) : new Date(bill.generated_at || bill.created_at);
+                const generatedAt = completedDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 return {
                     id: bill.id,
                     type: 'bill',
-                    status: 'Paid',
+                    status: 'Billed',
                     bill_number: bill.bill_number,
                     customer: `Session ${bill.session_id}`,
                     pax: '-',
@@ -100,9 +104,12 @@ const OperatorBilling = () => {
                     orderType: 'Completed',
                     startedAt: generatedAt,
                     originalData: bill,
-                    displayTotal: bill.grand_total
+                    displayTotal: bill.grand_total,
+                    completedTimestamp: completedDate.getTime()
                 };
-            }).filter(item => item.id.toString().includes(searchQuery) || (item.bill_number && item.bill_number.toLowerCase().includes(searchQuery.toLowerCase())));
+            })
+            .filter(item => item.id.toString().includes(searchQuery) || (item.bill_number && item.bill_number.toLowerCase().includes(searchQuery.toLowerCase())))
+            .sort((a, b) => b.completedTimestamp - a.completedTimestamp);
     }, [paidBillsResponse, searchQuery]);
 
     const displayedList = mainTab === 'Active' ? activeItems : recentItems;
@@ -138,6 +145,16 @@ const OperatorBilling = () => {
                     });
                 }
             });
+        } else if (selectedItem.type === 'bill') {
+            (selectedItem.originalData.items || []).forEach(item => {
+                items.push({
+                    id: item.menu_item_id,
+                    name: item.item_name,
+                    qty: item.quantity,
+                    price: parseFloat(item.price),
+                    img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop'
+                });
+            });
         }
         return items;
     }, [selectedItem]);
@@ -170,6 +187,7 @@ const OperatorBilling = () => {
             toast.success('Bill generated successfully!', { icon: '🧾' });
             queryClient.invalidateQueries({ queryKey: ['operator-pending-bills'] });
             queryClient.invalidateQueries({ queryKey: ['operator-sessions'] });
+            setIsReceiptOpen(true);
         },
         onError: (err) => toast.error(err.response?.data?.message || 'Error generating bill')
     });
@@ -205,8 +223,8 @@ const OperatorBilling = () => {
         switch(status) {
             case 'Active': return 'bg-emerald-500/10 text-emerald-600 border-emerald-200/50 dark:border-emerald-500/20';
             case 'Preparing': return 'bg-amber-500/10 text-amber-600 border-amber-200/50 dark:border-amber-500/20';
-            case 'Billed': return 'bg-indigo-500/10 text-indigo-600 border-indigo-200/50 dark:border-indigo-500/20';
-            case 'Paid': return 'bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20';
+            case 'Pending Billing': return 'bg-orange-500/10 text-orange-600 border-orange-200/50 dark:border-orange-500/20';
+            case 'Billed': return 'bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20';
             default: return 'bg-gray-500/10 text-gray-600 border-gray-200/50 dark:border-gray-500/20';
         }
     };
@@ -219,24 +237,9 @@ const OperatorBilling = () => {
             }} />
             
             {/* Header & Tabs */}
-            <div className="flex items-end justify-between mb-8 border-b border-gray-200 dark:border-slate-800 pb-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-gray-900 dark:text-white mb-2">Billing & Payments</h1>
-                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Process orders, generate bills, and collect payments</p>
-                </div>
-                <div className="flex space-x-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-xl">
-                    <button 
-                        onClick={() => { setMainTab('Active'); setSelectedId(null); }}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mainTab === 'Active' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
-                    >
-                        Active Sessions
-                    </button>
-                    <button 
-                        onClick={() => { setMainTab('Recent'); setSelectedId(null); }}
-                        className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${mainTab === 'Recent' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
-                    >
-                        Recent Bills
-                    </button>
+            <div className="flex items-end justify-between mb-1">
+                <div className="flex-1">
+                    {/* Header text removed */}
                 </div>
             </div>
 
@@ -259,12 +262,33 @@ const OperatorBilling = () => {
                     </div>
 
                     {/* Filter Dropdown */}
-                    <div className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-xl px-4 py-3 flex justify-between items-center cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors shadow-sm">
-                        <div className="flex items-center space-x-2 text-indigo-600">
-                            <Receipt className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-wider">{mainTab} List</span>
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <div className="relative">
+                        <button 
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full flex items-center justify-between bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center">
+                                <SplitSquareHorizontal className="w-4 h-4 mr-2" /> {mainTab === 'Active' ? 'ACTIVE SESSIONS' : 'RECENT BILLS'}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {isDropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-10 overflow-hidden">
+                                <button 
+                                    onClick={() => { setMainTab('Active'); setIsDropdownOpen(false); setSelectedId(null); }}
+                                    className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${mainTab === 'Active' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-gray-600 dark:text-slate-300'}`}
+                                >
+                                    ACTIVE SESSIONS
+                                </button>
+                                <button 
+                                    onClick={() => { setMainTab('Recent'); setIsDropdownOpen(false); setSelectedId(null); }}
+                                    className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${mainTab === 'Recent' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10' : 'text-gray-600 dark:text-slate-300'}`}
+                                >
+                                    RECENT BILLS
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Bills List */}
@@ -358,7 +382,13 @@ const OperatorBilling = () => {
                                     </div>
                                 </div>
                                 <div className="flex space-x-3">
-                                    <button onClick={() => toast.success("KOT Printing...")} className="p-2.5 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Print KOT">
+                                    <button onClick={() => {
+                                        if (selectedItem?.status === 'Active' || selectedItem?.status === 'Preparing') {
+                                            toast.error("Generate the bill first to print it.");
+                                        } else {
+                                            setIsReceiptOpen(true);
+                                        }
+                                    }} className="p-2.5 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Print Bill">
                                         <Printer className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -501,7 +531,7 @@ const OperatorBilling = () => {
                             </div>
 
                             {/* Payment Methods */}
-                            {selectedItem?.status !== 'Paid' && (
+                            {selectedItem?.status !== 'Billed' && (
                                 <div className="mb-8">
                                     <h3 className="font-bold text-gray-900 dark:text-white text-xs uppercase tracking-wider mb-4">Payment Method</h3>
                                     <div className="grid grid-cols-2 gap-3">
@@ -532,7 +562,7 @@ const OperatorBilling = () => {
                                     <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">To Pay</span>
                                     <span className="font-black text-white text-3xl tracking-tighter font-mono">₹ {grandTotal.toFixed(2)}</span>
                                 </div>
-                                {selectedItem?.status === 'Paid' && (
+                                {selectedItem?.status === 'Billed' && (
                                     <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg">
                                         <CheckCircle2 className="w-6 h-6" />
                                     </div>
@@ -541,11 +571,11 @@ const OperatorBilling = () => {
 
                             {/* Action Buttons */}
                             <div className="mt-8 flex flex-col space-y-3">
-                                {selectedItem?.status === 'Paid' ? (
+                                {selectedItem?.status === 'Billed' ? (
                                     <button className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
                                         <Download className="w-4 h-4 mr-2" /> Download Invoice
                                     </button>
-                                ) : selectedItem?.status === 'Billed' ? (
+                                ) : selectedItem?.status === 'Pending Billing' ? (
                                     <button 
                                         onClick={handleProceedToBill}
                                         disabled={recordPaymentMutation.isPending}
@@ -570,6 +600,23 @@ const OperatorBilling = () => {
                 </div>
 
             </div>
+            
+            {/* Thermal Receipt Modal */}
+            <ThermalReceipt 
+                isOpen={isReceiptOpen} 
+                onClose={() => setIsReceiptOpen(false)} 
+                data={{
+                    bill_number: matchingBill?.bill_number,
+                    session_id: selectedItem?.id,
+                    table: selectedItem?.table_id ? `T-${selectedItem.table_id}` : null,
+                    subtotal: subtotal,
+                    service_charge: serviceCharge,
+                    cgst: cgst,
+                    sgst: sgst,
+                    grand_total: totalAmount
+                }}
+                items={currentOrderItems}
+            />
         </div>
     );
 };

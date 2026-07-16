@@ -129,15 +129,8 @@ const AddCategoryWithItems = () => {
         <div className="space-y-6 pb-10 font-inter">
             {/* Header */}
             <div className="flex items-center space-x-4">
-                <button 
-                    onClick={() => navigate(returnPath)}
-                    className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg transition-colors border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </button>
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Menu Items</h2>
-                    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Create a new category or add items to an existing one</p>
+                <div className="flex-1">
+                    {/* Header text removed */}
                 </div>
             </div>
 

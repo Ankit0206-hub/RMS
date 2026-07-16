@@ -42,7 +42,19 @@ async def seed_dashboard():
             print("Missing required base data (Tables, Menu Items, Waiters, Operator). Please run dummy_data.py first.")
             return
 
-        now = datetime.utcnow()
+        now_utc = datetime.utcnow()
+        # IST is UTC+5:30
+        now_ist = now_utc + timedelta(hours=5, minutes=30)
+        
+        # Start at 8:00 AM IST today
+        start_ist = datetime(now_ist.year, now_ist.month, now_ist.day, 8, 0, 0)
+        start_utc = start_ist - timedelta(hours=5, minutes=30)
+        
+        # If it's before 8 AM IST, we just generate from midnight to now as fallback
+        if now_utc < start_utc:
+            start_utc = datetime(now_utc.year, now_utc.month, now_utc.day, 0, 0, 0)
+
+        total_seconds = int((now_utc - start_utc).total_seconds())
         
         for i in range(25): # 25 live sessions
             table = random.choice(tables)
@@ -51,10 +63,9 @@ async def seed_dashboard():
             is_active = random.random() < 0.5
             session_status = "Active" if is_active else "Completed"
             
-            # Spread times across the last 8 hours
-            hours_ago = random.randint(0, 7)
-            minutes_ago = random.randint(0, 59)
-            created_time = now - timedelta(hours=hours_ago, minutes=minutes_ago)
+            # Pick a random second between start_utc and now_utc
+            random_second = random.randint(0, total_seconds)
+            created_time = start_utc + timedelta(seconds=random_second)
             
             session_obj = CustomerSession(
                 table_id=table.id,
@@ -131,7 +142,8 @@ async def seed_dashboard():
                     service_charge=0,
                     grand_total=session_total * 1.1,
                     payment_status=bill_status,
-                    created_at=bill_time
+                    created_at=bill_time,
+                    generated_at=bill_time
                 )
                 session.add(bill)
                 await session.commit()

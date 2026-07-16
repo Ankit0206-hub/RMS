@@ -46,19 +46,8 @@ const Tables = () => {
         <div className="flex h-full font-inter overflow-hidden">
             <div className={`flex-1 flex flex-col transition-all duration-300 ${selectedTable ? 'lg:mr-[380px]' : ''}`}>
                 <div className="overflow-y-auto flex-1 scrollbar-hide space-y-4">
-                    
-                    {/* Header */}
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <div className="flex items-center text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-2">
-                                <span>Dashboard</span>
-                                <ChevronRight size={14} className="mx-1" />
-                                <span>Restaurant</span>
-                                <ChevronRight size={14} className="mx-1" />
-                                <span className="text-gray-900 dark:text-white font-bold">Tables</span>
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Restaurant / Tables</h2>
-                        </div>
+                    {/* Header Action Buttons */}
+                    <div className="flex justify-end mb-4">
                         <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors">
                             <span className="text-lg mr-1">+</span> Add Table
                         </button>

@@ -127,17 +127,7 @@ const Waiters = () => {
         <div className="font-inter min-h-[calc(100vh-64px)] md:-m-8 flex flex-col">
             <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${selectedWaiter ? 'lg:mr-[380px]' : ''}`}>
                 <div className="flex-1 p-4 md:p-8 space-y-4">
-                    {/* Header Section */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex-wrap">
-                        <div>
-                            <div className="flex items-center text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-2">
-                                <span>Dashboard</span>
-                                <ChevronRight size={14} className="mx-1" />
-                                <span className="text-gray-900 dark:text-white font-bold">Waiters</span>
-                            </div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Waiters</h1>
-                        </div>
-                    </div>
+                    {/* Header Section Removed */}
 
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

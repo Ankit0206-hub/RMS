@@ -78,13 +78,7 @@ const OperatorDashboard = () => {
     return (
         <div className="space-y-6 animate-fade-in pb-12">
             
-            {/* Top Header - Kept existing style shell mostly, but adapted */}
-            <div className="flex justify-between items-center mb-2">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h2>
-                    <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">Welcome back, {operatorData?.first_name || 'Operator'}!</p>
-                </div>
-            </div>
+            {/* Top Header Removed */}
 
             {/* TOP METRICS ROW (6 Cards) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4">

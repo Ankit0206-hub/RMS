@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 import {
   Search,
   Filter,
@@ -25,7 +26,23 @@ const OperatorOrders = () => {
   const [filterTable, setFilterTable] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }) => {
+      const response = await api.patch(`/admin/ordering/orders/${id}/status`, { status });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Order status updated!");
+      queryClient.invalidateQueries(["orders"]);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update status");
+    },
+  });
 
   const { data: ordersResponse, isLoading } = useQuery({
     queryKey: ["orders"],
@@ -208,9 +225,9 @@ const OperatorOrders = () => {
     {
       header: "Action",
       className: "text-center",
-      cellClassName: "text-center",
+      cellClassName: "text-center overflow-visible",
       cell: (row) => (
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-2 relative">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -220,9 +237,80 @@ const OperatorOrders = () => {
           >
             <Eye className="h-3.5 w-3.5" />
           </button>
-          <button className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400 transition-colors">
-            <MoreVertical className="h-3.5 w-3.5" />
-          </button>
+          <div className="relative">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveDropdown(activeDropdown === row.rawId ? null : row.rawId);
+              }}
+              className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400 transition-colors"
+            >
+              <MoreVertical className="h-3.5 w-3.5" />
+            </button>
+
+            {activeDropdown === row.rawId && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveDropdown(null);
+                  }}
+                ></div>
+                <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg shadow-lg z-50 py-1 overflow-hidden">
+                  <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-slate-800/50">Update Status</div>
+                  {row.status === 'Pending' && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        statusMutation.mutate({ id: row.rawId, status: 'Confirmed' });
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-[#5e5ce6]"
+                    >
+                      Preparing
+                    </button>
+                  )}
+                  {(row.status === 'Pending' || row.status === 'Confirmed') && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        statusMutation.mutate({ id: row.rawId, status: 'Cooked' });
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-[#5e5ce6]"
+                    >
+                      Ready (Cooked)
+                    </button>
+                  )}
+                  {(row.status === 'Pending' || row.status === 'Confirmed' || row.status === 'Cooked') && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        statusMutation.mutate({ id: row.rawId, status: 'Served' });
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300 hover:bg-green-50 hover:text-green-600"
+                    >
+                      Served
+                    </button>
+                  )}
+                  {row.status !== 'Completed' && row.status !== 'Cancelled' && row.status !== 'Served' && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        statusMutation.mutate({ id: row.rawId, status: 'Cancelled' });
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-600"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       ),
     },
