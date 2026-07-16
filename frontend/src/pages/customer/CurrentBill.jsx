@@ -10,7 +10,7 @@ export default function CurrentBill() {
 
   // For this mock screen, we will just display cartItems as if they were ordered
   // In a real app, this would come from an "active orders" endpoint.
-  const { cartItems } = useApp();
+  const { user, cartItems } = useApp();
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -32,7 +32,7 @@ export default function CurrentBill() {
           <h1 className="text-xl font-bold text-gray-900">Current Bill</h1>
         </div>
         <img
-          src="https://i.pravatar.cc/100"
+          src={user?.image || "https://i.pravatar.cc/100"}
           alt="profile"
           className="w-10 h-10 rounded-full object-cover border border-gray-100"
         />

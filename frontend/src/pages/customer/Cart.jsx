@@ -1,19 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ArrowLeft,
   Minus,
   Plus,
   Trash2,
+  Edit2,
+  ChevronDown,
+  ArrowRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import CustomizationModal from "../../components/customer/common/CustomizationModal";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const [editingItem, setEditingItem] = useState(null);
+  const [expandedItems, setExpandedItems] = useState({});
+
+  const toggleExpand = (id) => {
+    setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const {
+    user,
     cartItems,
     increaseQuantity,
     decreaseQuantity,
@@ -32,9 +43,12 @@ export default function Cart() {
   return (
     <PageLayout className="bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10 relative">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-1">
+          <button 
+            onClick={() => navigate("/customer/home")} 
+            className="p-2 -ml-2 rounded-full hover:bg-gray-50 active:scale-95 transition-transform z-20"
+          >
             <ArrowLeft size={24} className="text-gray-900" />
           </button>
           <h1 className="text-xl font-bold text-gray-900">Cart</h1>
@@ -44,7 +58,7 @@ export default function Cart() {
             <span className="text-sm font-semibold text-gray-700">Table 07</span>
           </div>
           <img
-            src="https://i.pravatar.cc/100"
+            src={user.image || "https://i.pravatar.cc/150?img=12"}
             alt="profile"
             className="w-10 h-10 rounded-full object-cover border border-gray-100"
           />
@@ -52,7 +66,7 @@ export default function Cart() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-32 sm:pb-40 space-y-6 max-w-4xl mx-auto w-full">
 
         {cartItems.length === 0 ? (
           <div className="h-[50vh] flex flex-col items-center justify-center">
@@ -85,11 +99,45 @@ export default function Cart() {
                     <h2 className="font-bold text-gray-900 leading-tight pr-8">
                       {item.name}
                     </h2>
-                    
-                    {item.instructions && (
-                      <p className="text-xs font-medium text-orange-500 mt-0.5 line-clamp-1">
-                        {item.instructions}
-                      </p>
+
+                    {(item.portion || item.spiceLevel || item.instructions) && (
+                      <div className="mt-2">
+                        <button 
+                          onClick={() => toggleExpand(item.id)}
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-md hover:bg-gray-100 transition"
+                        >
+                          Customization
+                          <ChevronDown size={12} className={`transition-transform duration-200 ${expandedItems[item.id] ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {expandedItems[item.id] && (
+                          <div className="mt-2 pl-5 p-2 bg-gray-50 rounded-lg border border-gray-100 animate-in fade-in slide-in-from-top-2">
+                            <div className="flex justify-between items-start gap-2">
+                              <div className="flex flex-col gap-1">
+                                <p className="text-[11px] font-semibold text-gray-600 leading-snug">
+                                  {item.portion && `• ${item.portion} Plate`}
+                                </p>
+                                <p className="text-[11px] font-semibold text-gray-600 leading-snug">
+                                  {item.spiceLevel && `• ${item.spiceLevel}`}
+                                  {(!item.portion && !item.spiceLevel) && "• Customise"}
+                                </p>
+                              </div>
+                              <button 
+                                onClick={() => setEditingItem(item)}
+                                className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded flex-shrink-0"
+                              >
+                                <Edit2 size={10} /> Edit
+                              </button>
+                            </div>
+                            
+                            {item.instructions && (
+                              <p className="text-[11px] font-medium text-gray-500 mt-2 italic border-l-2 border-orange-200 pl-2 leading-relaxed">
+                                {item.instructions}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     <div className="mt-3 flex items-center justify-between">
@@ -171,18 +219,37 @@ export default function Cart() {
         )}
       </div>
 
-      {/* Bottom Floating CTA */}
+      {/* Bottom Fixed Checkout Bar */}
       {cartItems.length > 0 && (
-        <div className="border-t border-gray-100 bg-white p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
-          <button
-            onClick={() => navigate("/customer/order-success")}
-            className="flex h-14 w-full items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
-          >
-            <span>Place Order</span>
-            <span>₹{total}</span>
-          </button>
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/85 backdrop-blur-xl border-t border-gray-100 shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
+          <div className="max-w-4xl mx-auto w-full px-5 sm:px-8 py-5 pb-8 sm:pb-10 flex items-center justify-between gap-6">
+            
+            {/* Price Info */}
+            <div className="flex flex-col">
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Total Pay</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">₹{total}</span>
+              </div>
+            </div>
+
+            {/* Order Button */}
+            <button
+              onClick={() => navigate("/customer/order-success")}
+              className="flex-1 max-w-[220px] sm:max-w-[300px] flex items-center justify-center gap-2 h-14 sm:h-16 rounded-2xl bg-orange-500 text-white font-bold text-lg shadow-[0_8px_25px_rgba(249,115,22,0.3)] active:scale-[0.97] transition-transform"
+            >
+              Place Order
+              <ArrowRight size={20} strokeWidth={2.5} />
+            </button>
+            
+          </div>
         </div>
       )}
+
+      <CustomizationModal 
+        isOpen={!!editingItem} 
+        onClose={() => setEditingItem(null)} 
+        food={editingItem} 
+      />
     </PageLayout>
   );
 }

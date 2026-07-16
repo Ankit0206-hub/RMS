@@ -23,6 +23,16 @@ export default function FoodDetails() {
   const [quantity, setQuantity] = useState(1);
   const [showQuantity, setShowQuantity] = useState(false);
   const [instructions, setInstructions] = useState("");
+  const [portion, setPortion] = useState("Full");
+  const [spiceLevel, setSpiceLevel] = useState("Medium Spicy");
+
+  // Mock admin flags for customization availability if not present in data
+  const hasPortions = food?.hasPortions ?? true; // Defaulting to true for demo purposes
+  const customizableSpice = food?.customizableSpice ?? true; // Defaulting to true for demo purposes
+  
+  // Calculate dynamic price based on portion
+  const basePrice = food?.price || 0;
+  const currentPrice = portion === "Half" ? Math.round(basePrice * 0.6) : basePrice;
 
   if (!food) {
     return (
@@ -90,7 +100,7 @@ export default function FoodDetails() {
 
             <div className="text-right">
               <p className="text-2xl font-bold text-gray-900">
-                ₹{food.price}
+                ₹{currentPrice}
               </p>
             </div>
           </div>
@@ -101,8 +111,45 @@ export default function FoodDetails() {
               `A rich and creamy dish of paneer (cottage cheese) in a tomato, butter and cashew sauce (known as makhani gravy).`}
           </p>
 
+          {/* Customization: Portion */}
+          {hasPortions && (
+            <div className="mt-8">
+              <h3 className="text-base font-bold text-gray-900 mb-3">Portion</h3>
+              <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                {['Half', 'Full'].map((p) => (
+                  <label key={p} onClick={() => setPortion(p)} className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${portion === p ? 'border-orange-500' : 'border-gray-300'}`}>
+                        {portion === p && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{p} Plate</span>
+                    </div>
+                    <span className="text-sm font-bold text-gray-700">₹{p === 'Half' ? Math.round(basePrice * 0.6) : basePrice}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Customization: Preparation Type */}
+          {customizableSpice && (
+            <div className="mt-6">
+              <h3 className="text-base font-bold text-gray-900 mb-3">Preparation Type</h3>
+              <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                {['Low Spicy', 'Medium Spicy', 'Extra Spicy'].map((level) => (
+                  <label key={level} onClick={() => setSpiceLevel(level)} className="flex items-center gap-3 cursor-pointer">
+                    <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${spiceLevel === level ? 'border-orange-500' : 'border-gray-300'}`}>
+                      {spiceLevel === level && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{level}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Special Instructions */}
-          <div className="mt-8">
+          <div className="mt-6">
             <h3 className="text-base font-bold text-gray-900 mb-3">
               Special Instructions (Optional)
             </h3>
@@ -114,6 +161,7 @@ export default function FoodDetails() {
               className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
             />
           </div>
+
         </div>
 
         {/* Floating Bottom Bar */}
@@ -122,7 +170,7 @@ export default function FoodDetails() {
             <div className="flex w-full items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Price</p>
-                <p className="text-xl font-bold text-gray-900">₹{food.price}</p>
+                <p className="text-xl font-bold text-gray-900">₹{currentPrice}</p>
               </div>
               <button
                 onClick={() => setShowQuantity(true)}
@@ -162,14 +210,21 @@ export default function FoodDetails() {
                 onClick={() => {
                   // Add multiple items based on quantity
                   for (let i = 0; i < quantity; i++) {
-                    addToCart({ ...food, instructions });
+                    addToCart({ 
+                      ...food, 
+                      instructions,
+                      portion,
+                      spiceLevel,
+                      price: currentPrice,
+                      basePrice: basePrice
+                    });
                   }
                   navigate("/customer/cart");
                 }}
-                className="flex h-14 items-center gap-2 rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+                className="flex h-14 flex-1 items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
               >
                 <span>Add Item</span>
-                <span>(₹{food.price * quantity})</span>
+                <span>(₹{currentPrice * quantity})</span>
               </button>
             </div>
           )}

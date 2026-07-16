@@ -33,9 +33,13 @@ export const AppProvider = ({ children }) => {
     image: "https://i.pravatar.cc/150?img=12",
   });
   const addToCart = (food) => {
+    // Generate a unique ID for the cart item based on customizations so they don't merge incorrectly
+    const customId = `${food.id || food.name}-${food.portion || 'Full'}-${food.spiceLevel || 'Normal'}`;
     const item = {
       ...food,
-      id: food.id || food.name,
+      cartItemId: customId,
+      id: customId,
+      originalId: food.id || food.name,
     };
 
     const existing = cartItems.find((cartItem) => cartItem.id === item.id);
@@ -57,6 +61,35 @@ export const AppProvider = ({ children }) => {
       }
 
       return [...prev, { ...item, quantity: 1 }];
+    });
+  };
+
+  const editCartItem = (oldId, newFoodObj, quantity) => {
+    const customId = `${newFoodObj.originalId || newFoodObj.id || newFoodObj.name}-${newFoodObj.portion || 'Full'}-${newFoodObj.spiceLevel || 'Normal'}`;
+    
+    // Perform side effects outside the state updater
+    toast.success(`Updated ${newFoodObj.name}`);
+
+    setCartItems((prev) => {
+      const filtered = prev.filter(item => item.id !== oldId);
+      const existing = filtered.find(item => item.id === customId);
+      
+      if (existing) {
+        return filtered.map(item => 
+          item.id === customId 
+            ? { ...item, quantity: item.quantity + quantity, instructions: newFoodObj.instructions }
+            : item
+        );
+      } else {
+        const itemToAdd = {
+          ...newFoodObj,
+          cartItemId: customId,
+          id: customId,
+          originalId: newFoodObj.originalId || newFoodObj.id || newFoodObj.name,
+          quantity
+        };
+        return [...filtered, itemToAdd];
+      }
     });
   };
 
@@ -151,6 +184,7 @@ export const AppProvider = ({ children }) => {
       value={{
         cartItems,
         addToCart,
+        editCartItem,
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
