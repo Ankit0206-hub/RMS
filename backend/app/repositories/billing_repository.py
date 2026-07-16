@@ -18,7 +18,7 @@ class BillingRepository:
         await db.commit()
         await db.refresh(db_bill)
         
-        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments)).where(Bill.id == db_bill.id)
+        stmt = select(Bill).options(selectinload(Bill.items), selectinload(Bill.payments), selectinload(Bill.session)).where(Bill.id == db_bill.id)
         result = await db.execute(stmt)
         return result.scalars().first()
 

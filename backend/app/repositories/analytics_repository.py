@@ -217,24 +217,21 @@ class AnalyticsRepository:
         return data
 
     async def get_hourly_sales(self, db: AsyncSession, start_date: datetime = None) -> List[Dict[str, Any]]:
-        stmt = select(
-                func.extract('hour', Bill.generated_at).label("hour"),
-                func.sum(Bill.grand_total).label("sales")
-            ) \
-            .where(Bill.payment_status == 'Paid')
+        stmt = select(Bill.generated_at, Bill.grand_total).where(Bill.payment_status == 'Paid')
             
         if start_date:
             stmt = stmt.where(Bill.generated_at >= start_date)
             
-        stmt = stmt.group_by(func.extract('hour', Bill.generated_at)).order_by(func.extract('hour', Bill.generated_at))
         result = await db.execute(stmt)
         
-        # Format the data (0 to 23 hours)
+        # Format the data (0 to 23 hours in local IST time +5:30)
         hourly_data = {f"{i:02d}": 0.0 for i in range(24)}
         for row in result.all():
-            if row.hour is not None:
-                hour_str = f"{int(row.hour):02d}"
-                hourly_data[hour_str] = float(row.sales)
+            if row.generated_at:
+                # Convert UTC to IST (+5:30)
+                local_time = row.generated_at + timedelta(hours=5, minutes=30)
+                hour_str = f"{local_time.hour:02d}"
+                hourly_data[hour_str] += float(row.grand_total)
                 
         # Group into time blocks like the UI (6 AM, 8 AM, etc.)
         return [

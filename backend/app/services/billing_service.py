@@ -90,6 +90,13 @@ class BillingService:
             session = await self.ordering_repository.get_session_by_id(db, bill.session_id)
             if session:
                 session.status = "Completed"
+                
+                # Also free up the table
+                from app.models.restaurant import RestaurantTable
+                table = await db.get(RestaurantTable, session.table_id)
+                if table:
+                    table.status = "Available"
+                    
                 await db.commit()
                 
         return payment

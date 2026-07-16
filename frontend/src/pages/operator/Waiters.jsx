@@ -137,16 +137,6 @@ const Waiters = () => {
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Waiters</h1>
                         </div>
-                        <div className="flex items-center space-x-2 md:space-x-4 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
-                            <div className="flex items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 shadow-sm text-[13px] font-bold text-gray-700 dark:text-slate-300 whitespace-nowrap shrink-0">
-                                <Calendar size={14} className="mr-2 text-indigo-600" />
-                                May 20, 2025
-                                <ChevronDown size={14} className="ml-2 text-gray-400" />
-                            </div>
-                            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-sm transition-colors whitespace-nowrap shrink-0">
-                                <Plus size={16} className="mr-1.5" /> Add Waiter
-                            </button>
-                        </div>
                     </div>
 
                     {/* KPI Cards */}
@@ -170,20 +160,22 @@ const Waiters = () => {
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center">
-                            <div className="p-2.5 md:p-3 bg-orange-50 rounded-lg md:rounded-xl text-orange-500 mb-2 md:mb-0 md:mr-4 shrink-0"><Bell size={20} className="md:w-5 md:h-5"/></div>
-                            <div className="flex-1 min-w-0 w-full">
-                                <p className="text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Serving</p>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-1">{servingWaiters}</h3>
-                                <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 dark:text-slate-400 truncate">{servingPct}% of total</p>
-                            </div>
-                        </div>
-                        <div className="bg-white dark:bg-slate-900 p-3 md:p-5 rounded-xl md:rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center">
                             <div className="p-2.5 md:p-3 bg-blue-50 rounded-lg md:rounded-xl text-blue-500 mb-2 md:mb-0 md:mr-4 shrink-0"><ClipboardList size={20} className="md:w-5 md:h-5"/></div>
                             <div className="flex-1 min-w-0 w-full">
                                 <p className="text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-0.5 md:mb-1 truncate">Today's Orders</p>
                                 <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white leading-tight mb-1">{totalOrders}</h3>
                                 <p className="text-[9px] md:text-[10px] font-semibold text-gray-500 dark:text-slate-400 truncate">Handled by waiters</p>
                             </div>
+                        </div>
+                        <div className="flex flex-col gap-3 md:gap-4 h-full">
+                            <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm rounded-xl md:rounded-2xl text-[13px] font-bold text-gray-700 dark:text-slate-300 w-full min-h-[44px]">
+                                <Calendar size={14} className="mr-2 text-indigo-600" />
+                                May 20, 2025
+                                <ChevronDown size={14} className="ml-2 text-gray-400" />
+                            </div>
+                            <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl text-[13px] font-bold flex items-center justify-center shadow-sm transition-colors w-full min-h-[44px]">
+                                <Plus size={16} className="mr-1.5" /> Add Waiter
+                            </button>
                         </div>
                     </div>
 

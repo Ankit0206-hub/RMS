@@ -23,13 +23,26 @@ class OrderingService:
         if active_session:
             raise BusinessRuleException("Table already has an active session")
             
-        return await self.repository.create_session(db, session_in.model_dump())
+        table.status = "Occupied"
+        db.add(table)
+        
+        session = await self.repository.create_session(db, session_in.model_dump())
+        return session
 
     async def get_sessions(self, db: AsyncSession, page: int, page_size: int, status: str = None):
         sessions, total = await self.repository.get_sessions(db, page, page_size, status)
         for session in sessions:
             for order in session.orders:
                 order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
+                for item in order.items:
+                    if getattr(item, 'menu_item', None):
+                        item.menu_item_name = item.menu_item.name
+                        item.menu_item_category = item.menu_item.category.name if getattr(item.menu_item, 'category', None) else "Uncategorized"
+                        if getattr(item.menu_item, 'images', None) and len(item.menu_item.images) > 0:
+                            primary_img = next((img for img in item.menu_item.images if img.is_primary), item.menu_item.images[0])
+                            item.menu_item_image = primary_img.image_url
+                        else:
+                            item.menu_item_image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
         return sessions, total
 
     async def get_session(self, db: AsyncSession, session_id: int):
@@ -38,6 +51,15 @@ class OrderingService:
             raise NotFoundException("Session not found")
         for order in session.orders:
             order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
+            for item in order.items:
+                if getattr(item, 'menu_item', None):
+                    item.menu_item_name = item.menu_item.name
+                    item.menu_item_category = item.menu_item.category.name if getattr(item.menu_item, 'category', None) else "Uncategorized"
+                    if getattr(item.menu_item, 'images', None) and len(item.menu_item.images) > 0:
+                        primary_img = next((img for img in item.menu_item.images if img.is_primary), item.menu_item.images[0])
+                        item.menu_item_image = primary_img.image_url
+                    else:
+                        item.menu_item_image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
         return session
 
     async def create_order(self, db: AsyncSession, order_in: OrderCreate, waiter_id: int = None):
