@@ -30,7 +30,6 @@ import OperatorTables from './pages/operator/Tables';
 import OperatorFloorPlan from './pages/operator/FloorPlan';
 
 // Waiter Imports
-import WaiterDashboard from './pages/waiter/WaiterDashboard';
 import WaiterMyTables from './pages/waiter/MyTables';
 import WaiterTableDetails from './pages/waiter/TableDetails';
 import WaiterMenu from './pages/waiter/WaiterMenu';
