@@ -6,10 +6,36 @@ from app.repositories.admin.employee_repository import employee_repo
 from app.models.security import Employee
 
 class EmployeeService:
+    async def get_next_employee_code(self, db: AsyncSession, role_id: int) -> str:
+        from app.services.admin.settings_service import settings_service
+        import re
+        
+        settings = await settings_service.get_settings(db)
+        restaurant_name = settings.restaurant_name.replace(' ', '') if settings and settings.restaurant_name else 'KVON'
+        
+        employees = await employee_repo.get_all(db, limit=10000)
+        max_id = 0
+        for e in employees:
+            if e.employee_code:
+                digits = re.sub(r'\D', '', e.employee_code)
+                if digits:
+                    num = int(digits)
+                    if num > max_id:
+                        max_id = num
+            elif getattr(e, 'id', None) and e.id > max_id:
+                max_id = e.id
+                
+        role_str = 'waiter' if role_id == 2 else 'operator'
+        return f"{restaurant_name}_{role_str}_{max_id + 1}"
+
     async def create_employee(self, db: AsyncSession, employee_in: EmployeeCreate) -> Employee:
         existing = await employee_repo.get_by_email(db, employee_in.email)
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
+            
+        if not employee_in.employee_code:
+            employee_in.employee_code = await self.get_next_employee_code(db, employee_in.role_id)
+            
         existing_code = await employee_repo.get_by_code(db, employee_in.employee_code)
         if existing_code:
             raise HTTPException(status_code=400, detail="Employee code already registered")

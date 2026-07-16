@@ -12,7 +12,7 @@ class EmployeeBase(BaseModel):
 
 class EmployeeCreate(EmployeeBase):
     password: str
-    employee_code: str
+    employee_code: Optional[str] = None
 
 class EmployeeUpdate(BaseModel):
     email: Optional[EmailStr] = None

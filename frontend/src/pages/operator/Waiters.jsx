@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { 
     Users, UserCheck, Bell, ClipboardList, Wallet, 
@@ -7,6 +8,7 @@ import {
     MoreVertical, X, Phone, Mail, MapPin, Clock, Calendar, Star,
     ChevronLeft, ChevronDown
 } from 'lucide-react';
+import { Modal, Input } from '../../components/ui';
 
 const Waiters = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +17,18 @@ const Waiters = () => {
     const [selectedSection, setSelectedSection] = useState('All Sections');
     const [selectedWaiter, setSelectedWaiter] = useState(null);
 
+    const [isAddWaiterModalOpen, setIsAddWaiterModalOpen] = useState(false);
+    const [newWaiterData, setNewWaiterData] = useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        employee_code: '',
+        password: '',
+        role_id: 2, // Waiter
+        is_active: true
+    });
+
     const { data: employeesData, isLoading: employeesLoading } = useQuery({
         queryKey: ['adminEmployees'],
         queryFn: async () => {
@@ -22,6 +36,18 @@ const Waiters = () => {
             return res.data.data || [];
         }
     });
+
+    const { data: nextCodeResponse } = useQuery({
+        queryKey: ['nextEmployeeCode', 2],
+        queryFn: async () => {
+            const res = await api.get('/admin/employees/next-code', { params: { role_id: 2 } });
+            return res.data;
+        },
+        enabled: isAddWaiterModalOpen
+    });
+    const nextCode = nextCodeResponse?.data || '';
+
+    const queryClient = useQueryClient();
 
     const { data: analyticsResponse } = useQuery({
         queryKey: ['operator-analytics-today'],
@@ -39,6 +65,48 @@ const Waiters = () => {
             return res.data.data || [];
         }
     });
+
+    useEffect(() => {
+        if (nextCode && !newWaiterData.employee_code) {
+            setNewWaiterData(prev => ({ ...prev, employee_code: nextCode }));
+        }
+    }, [nextCode, newWaiterData.employee_code]);
+
+    const addWaiterMutation = useMutation({
+        mutationFn: async (newWaiter) => {
+            const response = await api.post('/admin/employees/', newWaiter);
+            return response.data;
+        },
+        onSuccess: () => {
+            toast.success('Waiter added successfully');
+            queryClient.invalidateQueries(['adminEmployees']);
+            setIsAddWaiterModalOpen(false);
+            setNewWaiterData({
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
+                employee_code: '',
+                password: '',
+                role_id: 2,
+                is_active: true
+            });
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || 'Failed to add waiter';
+            toast.error(message);
+        }
+    });
+
+    const handleAddWaiterChange = (e) => {
+        const { name, value } = e.target;
+        setNewWaiterData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAddWaiterSubmit = (e) => {
+        e.preventDefault();
+        addWaiterMutation.mutate(newWaiterData);
+    };
 
     // Process Waiters Data
     const waiters = useMemo(() => {
@@ -77,6 +145,9 @@ const Waiters = () => {
             });
     }, [employeesData, tablesData, analyticsData]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
     const filteredWaiters = useMemo(() => {
         return waiters.filter(w => {
             const matchesSearch = (w.first_name + ' ' + w.last_name).toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -92,6 +163,19 @@ const Waiters = () => {
             return matchesSearch && matchesStatus && matchesAvailability && matchesSection;
         });
     }, [waiters, searchTerm, selectedStatus, selectedAvailability, selectedSection]);
+
+    // Update current page if filtered results change and page goes out of bounds
+    useEffect(() => {
+        const maxPage = Math.max(1, Math.ceil(filteredWaiters.length / rowsPerPage));
+        if (currentPage > maxPage) {
+            setCurrentPage(1);
+        }
+    }, [filteredWaiters.length, rowsPerPage, currentPage]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredWaiters.length / rowsPerPage));
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, filteredWaiters.length);
+    const paginatedWaiters = filteredWaiters.slice(startIndex, endIndex);
 
     // KPIs
     const totalWaiters = waiters.length;
@@ -163,7 +247,10 @@ const Waiters = () => {
                                 May 20, 2025
                                 <ChevronDown size={14} className="ml-2 text-gray-400" />
                             </div>
-                            <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl text-[13px] font-bold flex items-center justify-center shadow-sm transition-colors w-full min-h-[44px]">
+                            <button 
+                                onClick={() => setIsAddWaiterModalOpen(true)}
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl text-[13px] font-bold flex items-center justify-center shadow-sm transition-colors w-full min-h-[44px]"
+                            >
                                 <Plus size={16} className="mr-1.5" /> Add Waiter
                             </button>
                         </div>
@@ -251,7 +338,7 @@ const Waiters = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredWaiters.length > 0 ? filteredWaiters.map((waiter) => (
+                                    {paginatedWaiters.length > 0 ? paginatedWaiters.map((waiter) => (
                                         <tr 
                                             key={waiter.id} 
                                             onClick={() => setSelectedWaiter(waiter)}
@@ -301,21 +388,53 @@ const Waiters = () => {
                         {/* Pagination Area */}
                         <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 rounded-b-2xl">
                             <span className="text-[12px] font-semibold text-gray-500 dark:text-slate-400">
-                                Showing 1 to {Math.min(10, filteredWaiters.length)} of {filteredWaiters.length} waiters
+                                Showing {filteredWaiters.length > 0 ? startIndex + 1 : 0} to {endIndex} of {filteredWaiters.length} waiters
                             </span>
                             <div className="flex items-center space-x-4">
                                 <div className="flex items-center space-x-1">
-                                    <button className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"><ChevronLeft size={16}/></button>
-                                    <button className="w-8 h-8 rounded-lg bg-indigo-600 text-white text-[13px] font-bold">1</button>
-                                    <button className="w-8 h-8 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 text-[13px] font-bold hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50">2</button>
-                                    <button className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"><ChevronRight size={16}/></button>
+                                    <button 
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                                    >
+                                        <ChevronLeft size={16}/>
+                                    </button>
+                                    
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <button 
+                                            key={i + 1}
+                                            onClick={() => setCurrentPage(i + 1)}
+                                            className={`w-8 h-8 rounded-lg text-[13px] font-bold transition-colors ${
+                                                currentPage === i + 1 
+                                                    ? 'bg-indigo-600 text-white' 
+                                                    : 'border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+                                            }`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+
+                                    <button 
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                                    >
+                                        <ChevronRight size={16}/>
+                                    </button>
                                 </div>
                                 <div className="flex items-center text-[12px] font-semibold text-gray-500 dark:text-slate-400">
                                     Rows per page: 
-                                    <select className="ml-2 bg-transparent font-bold text-gray-700 dark:text-slate-300 outline-none">
-                                        <option>10</option>
-                                        <option>20</option>
-                                        <option>50</option>
+                                    <select 
+                                        value={rowsPerPage}
+                                        onChange={(e) => {
+                                            setRowsPerPage(Number(e.target.value));
+                                            setCurrentPage(1);
+                                        }}
+                                        className="ml-2 bg-transparent font-bold text-gray-700 dark:text-slate-300 outline-none"
+                                    >
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
                                     </select>
                                 </div>
                             </div>
@@ -455,6 +574,84 @@ const Waiters = () => {
                     onClick={() => setSelectedWaiter(null)}
                 />
             )}
+
+            {/* Add Waiter Modal */}
+            <Modal
+                isOpen={isAddWaiterModalOpen}
+                onClose={() => setIsAddWaiterModalOpen(false)}
+                title="Add New Waiter"
+            >
+                <form onSubmit={handleAddWaiterSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                            label="Employee Code"
+                            name="employee_code"
+                            value={newWaiterData.employee_code}
+                            placeholder="Auto-generated"
+                            readOnly
+                            disabled
+                        />
+                        <Input
+                            label="First Name"
+                            name="first_name"
+                            value={newWaiterData.first_name}
+                            onChange={handleAddWaiterChange}
+                            placeholder="First Name"
+                            required
+                        />
+                        <Input
+                            label="Last Name"
+                            name="last_name"
+                            value={newWaiterData.last_name}
+                            onChange={handleAddWaiterChange}
+                            placeholder="Last Name"
+                            required
+                        />
+                        <Input
+                            label="Phone Number"
+                            name="phone"
+                            value={newWaiterData.phone}
+                            onChange={handleAddWaiterChange}
+                            placeholder="10-digit number"
+                            required
+                        />
+                        <Input
+                            label="Email Address"
+                            type="email"
+                            name="email"
+                            value={newWaiterData.email}
+                            onChange={handleAddWaiterChange}
+                            placeholder="email@example.com"
+                            required
+                        />
+                        <Input
+                            label="Password"
+                            type="password"
+                            name="password"
+                            value={newWaiterData.password}
+                            onChange={handleAddWaiterChange}
+                            placeholder="••••••••"
+                            required
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
+                        <button
+                            type="button"
+                            onClick={() => setIsAddWaiterModalOpen(false)}
+                            className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={addWaiterMutation.isPending}
+                            className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            {addWaiterMutation.isPending ? 'Adding...' : 'Add Waiter'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Save, User, Shield, Key, Plus } from 'lucide-react';
 import api from '../../services/api';
@@ -22,6 +22,29 @@ const AddEmployee = () => {
         is_active: true
     });
 
+    const { data: employeesData } = useQuery({
+        queryKey: ['adminEmployees'],
+        queryFn: async () => {
+            const res = await api.get('/admin/employees', { params: { page: 1, page_size: 100 } });
+            return res.data.data || [];
+        }
+    });
+
+    const { data: nextCodeResponse } = useQuery({
+        queryKey: ['nextEmployeeCode', formData.role_id],
+        queryFn: async () => {
+            const res = await api.get('/admin/employees/next-code', { params: { role_id: formData.role_id } });
+            return res.data;
+        }
+    });
+    const nextCode = nextCodeResponse?.data || '';
+
+    useEffect(() => {
+        if (nextCode && formData.employee_code !== nextCode) {
+            setFormData(prev => ({ ...prev, employee_code: nextCode }));
+        }
+    }, [nextCode, formData.employee_code]);
+
     const mutation = useMutation({
         mutationFn: async (newEmployee) => {
             const response = await api.post('/admin/employees/', newEmployee);
@@ -29,7 +52,7 @@ const AddEmployee = () => {
         },
         onSuccess: () => {
             toast.success('Employee created successfully');
-            queryClient.invalidateQueries(['employees']);
+            queryClient.invalidateQueries(['employees', 'adminEmployees']);
             navigate('/admin/employees');
         },
         onError: (error) => {
@@ -115,9 +138,9 @@ const AddEmployee = () => {
                                 label="Employee ID"
                                 name="employee_code"
                                 value={formData.employee_code}
-                                onChange={handleChange}
-                                placeholder="e.g. EX010"
-                                required
+                                placeholder="Auto-generated"
+                                readOnly
+                                disabled
                             />
                             <Input
                                 label="First Name"

@@ -15,10 +15,19 @@ router = APIRouter()
 async def create_employee(
     employee_in: EmployeeCreate, 
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_user = Depends(get_current_admin_or_operator)
 ):
     data = await employee_service.create_employee(db, employee_in)
     return StandardResponse(data=data)
+    
+@router.get("/next-code", response_model=StandardResponse[str])
+async def get_next_employee_code(
+    role_id: int = Query(2, ge=1, le=2),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    code = await employee_service.get_next_employee_code(db, role_id)
+    return StandardResponse(data=code)
     
 @router.get("/kpis", response_model=StandardResponse[Any])
 async def get_employee_kpis(

@@ -38,8 +38,10 @@ class EmployeeRepository:
         )
         db.add(db_obj)
         await db.commit()
-        await db.refresh(db_obj)
-        return db_obj
+        
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(select(Employee).options(selectinload(Employee.role)).filter(Employee.id == db_obj.id))
+        return result.scalar_one()
 
     async def update(self, db: AsyncSession, db_obj: Employee, obj_in: EmployeeUpdate) -> Employee:
         update_data = obj_in.model_dump(exclude_unset=True)
