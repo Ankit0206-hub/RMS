@@ -251,8 +251,12 @@ const TableAssignment = () => {
                                 const statusText = isBusy ? "Busy" : "Available";
 
                                 return (
-                                    <div key={waiter.id} className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 rounded-xl cursor-grab transition-colors border border-transparent hover:border-gray-100 dark:border-slate-800">
-                                        <div className="text-gray-300 cursor-grab mr-2"><MoreVertical size={16} /></div>
+                                    <div 
+                                        key={waiter.id} 
+                                        onClick={() => setSelectedWaiter(waiter.id.toString())}
+                                        className={`flex items-center p-3 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 rounded-xl cursor-pointer transition-colors border ${selectedWaiter === waiter.id.toString() ? 'border-indigo-500 bg-indigo-50/30' : 'border-transparent hover:border-gray-100 dark:border-slate-800'}`}
+                                    >
+                                        <div className="text-gray-300 mr-2"><MoreVertical size={16} /></div>
                                         <img src={`https://ui-avatars.com/api/?name=${waiter.full_name}&background=random`} alt={waiter.full_name} className="w-10 h-10 rounded-full mr-3 border border-gray-200 dark:border-slate-700" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
@@ -294,7 +298,6 @@ const TableAssignment = () => {
                                 className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500"
                                 value={selectedWaiter}
                                 onChange={(e) => setSelectedWaiter(e.target.value)}
-                                disabled={!selectedTable}
                             >
                                 <option value="">Select waiter...</option>
                                 {waiters.map(w => (
@@ -306,15 +309,15 @@ const TableAssignment = () => {
                         <div className="mt-auto space-y-2">
                             <button 
                                 onClick={handleAssign}
-                                disabled={!selectedTable || !selectedWaiter || assignMutation.isLoading}
+                                disabled={!selectedTable || !selectedWaiter || assignMutation.isPending}
                                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:text-gray-500 dark:text-slate-400 text-white font-bold text-[13px] py-2.5 rounded-xl transition-colors"
                             >
-                                {assignMutation.isLoading ? 'Assigning...' : 'Assign Table'}
+                                {assignMutation.isPending ? 'Assigning...' : 'Assign Table'}
                             </button>
                             {selectedTable?.assigned_waiter_id && (
                                 <button 
                                     onClick={() => handleUnassign(selectedTable.id)}
-                                    disabled={unassignMutation.isLoading}
+                                    disabled={unassignMutation.isPending}
                                     className="w-full border border-red-200 bg-white dark:bg-slate-900 hover:bg-red-50 text-red-600 font-bold text-[13px] py-2.5 rounded-xl transition-colors"
                                 >
                                     Remove Assignment

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Utensils, ConciergeBell, CheckSquare, LogOut, Bell, Menu } from 'lucide-react';
+import { Utensils, Grid, ClipboardList, Bell, User, LogOut, Menu } from 'lucide-react';
 
 const WaiterLayout = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const location = useLocation();
 
     const handleLogout = () => {
         logout();
@@ -14,78 +14,53 @@ const WaiterLayout = () => {
     };
 
     const navItems = [
-        { path: '/waiter/dashboard', label: 'My Tables', icon: ConciergeBell },
-        { path: '/waiter/orders', label: 'Serving Queue', icon: CheckSquare },
+        { path: '/waiter/tables', label: 'Tables', icon: Grid },
+        { path: '/waiter/take-order', label: 'Take Order', icon: Utensils },
+        { path: '/waiter/orders', label: 'Orders', icon: ClipboardList },
+        { path: '/waiter/requests', label: 'Requests', icon: Bell },
+        { path: '/waiter/profile', label: 'Profile', icon: User },
     ];
 
+    // Check if a path is active (including sub-routes)
+    const isActivePath = (path) => {
+        if (path === '/waiter/tables' && (location.pathname === '/waiter/tables' || location.pathname.match(/^\/waiter\/tables\/\d+$/))) return true;
+        if (path === '/waiter/take-order' && location.pathname.includes('/menu')) return true;
+        if (path === '/waiter/orders' && location.pathname.includes('/orders')) return true;
+        if (path === '/waiter/requests' && location.pathname.includes('/requests')) return true;
+        if (path === '/waiter/profile' && location.pathname.includes('/profile')) return true;
+        return location.pathname === path;
+    };
+
     return (
-        <div className="flex h-screen bg-gray-50 text-gray-900 font-inter overflow-hidden">
-            {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} shrink-0 bg-white border-r border-gray-200 flex flex-col shadow-sm transition-all duration-300`}>
-                <div className={`h-16 flex items-center border-b border-gray-200 ${isSidebarOpen ? 'px-6' : 'justify-center px-0'}`}>
-                    <Utensils className={`h-6 w-6 shrink-0 text-cyan-600 ${isSidebarOpen ? 'mr-2' : ''}`} />
-                    {isSidebarOpen && <span className="text-xl font-bold tracking-tight text-gray-900 whitespace-nowrap">DineOps <span className="text-cyan-500">Waiter</span></span>}
-                </div>
-
-                <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.path}
-                            to={item.path}
-                            title={!isSidebarOpen ? item.label : undefined}
-                            className={({ isActive }) =>
-                                `flex items-center px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                                    isActive 
-                                    ? 'bg-cyan-50 text-cyan-600' 
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                                } ${!isSidebarOpen && 'justify-center'}`
-                            }
-                        >
-                            <item.icon className={`h-5 w-5 shrink-0 ${isSidebarOpen ? 'mr-3' : ''} ${window.location.pathname.startsWith(item.path) ? 'text-cyan-600' : 'text-gray-400'}`} />
-                            {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
-                        </NavLink>
-                    ))}
-                </nav>
-
-                <div className="p-4 border-t border-gray-200">
-                    <button 
-                        onClick={handleLogout}
-                        title={!isSidebarOpen ? 'Sign out' : undefined}
-                        className={`flex items-center w-full px-3 py-2 text-sm font-semibold text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors ${!isSidebarOpen ? 'justify-center w-full' : 'w-full'}`}
-                    >
-                        <LogOut className={`h-5 w-5 shrink-0 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                        {isSidebarOpen && <span className="whitespace-nowrap">Sign out</span>}
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Topbar */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm shrink-0">
-                    <div className="flex items-center space-x-4">
-                        <button 
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="text-gray-500 hover:text-gray-900 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
-                        >
-                            <Menu className="h-5 w-5" />
-                        </button>
-                        <h1 className="text-lg font-bold text-gray-900">Waiter Portal</h1>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <button className="text-gray-400 hover:text-cyan-600 transition-colors relative">
-                            <Bell className="h-5 w-5" />
-                        </button>
-                        <div className="h-8 w-8 rounded-full bg-cyan-100 flex items-center justify-center text-sm font-bold text-cyan-700 border border-cyan-200">
-                            W
-                        </div>
-                    </div>
-                </header>
-
-                <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+        <div className="flex h-screen w-full justify-center bg-gray-50 dark:bg-slate-900 font-inter">
+            <div className="relative h-full w-full max-w-7xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm sm:border-x border-gray-100 dark:border-slate-800 flex flex-col">
+                
+                {/* Main Content Area */}
+                <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gray-50 pb-16">
                     <Outlet />
-                </div>
-            </main>
+                </main>
+
+                {/* Universal Bottom Navigation */}
+                <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 px-2 z-50 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+                    {navItems.map((item) => {
+                        const active = isActivePath(item.path);
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${
+                                    active ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'
+                                }`}
+                            >
+                                <item.icon className={`h-6 w-6 ${active ? 'fill-orange-50 stroke-orange-500' : ''}`} strokeWidth={active ? 2.5 : 2} />
+                                <span className={`text-[10px] font-medium ${active ? 'text-orange-500' : 'text-gray-500'}`}>
+                                    {item.label}
+                                </span>
+                            </NavLink>
+                        );
+                    })}
+                </nav>
+            </div>
         </div>
     );
 };

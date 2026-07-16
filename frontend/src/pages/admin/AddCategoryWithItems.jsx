@@ -165,7 +165,7 @@ const AddCategoryWithItems = () => {
                     </div>
                     
                     {isNewCategory ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Category Name *</label>
                                 <input 
@@ -187,6 +187,14 @@ const AddCategoryWithItems = () => {
                                     onChange={handleCategoryChange}
                                     className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     placeholder="Optional category description"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Category Image</label>
+                                <input 
+                                    type="file"
+                                    accept="image/*"
+                                    className="w-full px-4 py-1.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 />
                             </div>
                         </div>
@@ -229,6 +237,7 @@ const AddCategoryWithItems = () => {
                                     <th className="px-4 py-3 font-bold">Description</th>
                                     <th className="px-4 py-3 font-bold w-28">Full Price (₹) *</th>
                                     <th className="px-4 py-3 font-bold w-28">Half Price (₹)</th>
+                                    <th className="px-4 py-3 font-bold w-32">Image</th>
                                     <th className="px-4 py-3 font-bold w-20 text-center">Is Veg?</th>
                                     <th className="px-4 py-3 font-bold w-32 text-center">In Stock?</th>
                                     <th className="px-4 py-3 font-bold w-16 text-center"></th>
@@ -290,6 +299,13 @@ const AddCategoryWithItems = () => {
                                                 onChange={(e) => handleItemChange(index, e)}
                                                 className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="0.00"
+                                            />
+                                        </td>
+                                        <td className="px-2 py-3">
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-slate-700 dark:file:text-slate-300"
                                             />
                                         </td>
                                         <td className="px-2 py-3 text-center">
