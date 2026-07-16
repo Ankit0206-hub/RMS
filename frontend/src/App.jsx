@@ -32,8 +32,9 @@ import OperatorFloorPlan from './pages/operator/FloorPlan';
 // Waiter Imports
 import WaiterMyTables from './pages/waiter/MyTables';
 import WaiterTableDetails from './pages/waiter/TableDetails';
-import WaiterMenu from './pages/waiter/WaiterMenu';
-import WaiterCart from './pages/waiter/WaiterCart';
+import WaiterMenu from "./pages/waiter/WaiterMenu.jsx";
+import WaiterCart from "./pages/waiter/WaiterCart.jsx";
+import WaiterStartSession from "./pages/waiter/WaiterStartSession.jsx";
 import WaiterOrders from './pages/waiter/WaiterOrders';
 import WaiterOrderDetails from './pages/waiter/WaiterOrderDetails';
 import WaiterOrderHistory from './pages/waiter/WaiterOrderHistory';
@@ -173,10 +174,13 @@ const App = () => {
                             <Route path="dashboard" element={<Navigate to="/waiter/tables" />} />
                             <Route path="tables" element={<WaiterMyTables />} />
                             <Route path="tables/:tableId" element={<WaiterTableDetails />} />
+                            <Route path="tables/:tableId/start" element={<WaiterStartSession />} />
                             <Route path="tables/:tableId/menu" element={<WaiterMenu />} />
                             <Route path="tables/:tableId/cart" element={<WaiterCart />} />
                             <Route path="tables/:tableId/history" element={<WaiterOrderHistory />} />
                             <Route path="take-order" element={<WaiterMenu />} />
+                            <Route path="menu" element={<WaiterMenu />} />
+                            <Route path="cart" element={<WaiterCart />} />
                             <Route path="orders" element={<WaiterOrders />} />
                             <Route path="orders/:orderId" element={<WaiterOrderDetails />} />
                             <Route path="ready" element={<WaiterReadyToServe />} />

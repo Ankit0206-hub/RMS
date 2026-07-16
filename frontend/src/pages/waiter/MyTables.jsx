@@ -45,7 +45,7 @@ export default function MyTables() {
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
                     {tables.map(table => (
-                        <div key={table.id} onClick={() => navigate('/waiter/tables/'+table.id)} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:border-orange-200 transition-colors">
+                        <div key={table.id} onClick={() => navigate(table.status === 'Empty' ? `/waiter/tables/${table.id}/start` : `/waiter/tables/${table.id}`)} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:border-orange-200 transition-colors">
                             <div className="flex justify-between items-start mb-2">
                                 <span className="text-xl font-bold text-gray-900">{table.id}</span>
                                 {table.guests > 0 && (

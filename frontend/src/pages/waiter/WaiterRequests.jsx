@@ -1,21 +1,35 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Clock, Info } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function WaiterRequests() {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Active');
-    const requests = [
+    const [requests, setRequests] = useState([
         { id: 1, type: 'Water Refill', table: 'T01', time: 'Just Now', message: 'Please bring 2 extra glasses', status: 'Active' },
         { id: 2, type: 'Bill Request', table: 'T04', time: '2 mins ago', message: '', status: 'Active' },
         { id: 3, type: 'Call Waiter', table: 'T02', time: '5 mins ago', message: 'Need help with menu', status: 'Active' },
         { id: 4, type: 'Cutlery', table: 'T03', time: '1 hour ago', message: 'Extra spoons', status: 'Resolved' }
-    ];
+    ]);
+    
     const filteredRequests = activeTab === 'Active' ? requests.filter(r => r.status === 'Active') : requests.filter(r => r.status === 'Resolved');
+
+    const handleResolve = (id) => {
+        setRequests(requests.map(r => r.id === id ? { ...r, status: 'Resolved' } : r));
+        toast.success('Request marked as resolved!');
+    };
+
+    const handleGenerateBill = (id) => {
+        toast.success('Bill generated!');
+        handleResolve(id);
+    };
 
     return (
         <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Requests</h1>
-                <button className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center relative">
+                <button onClick={() => navigate('/waiter/notifications')} className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center relative hover:bg-gray-100 transition-colors">
                     <Bell className="h-5 w-5 text-gray-600" />
                     <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
                 </button>
@@ -46,9 +60,9 @@ export default function WaiterRequests() {
                             {request.status === 'Active' && (
                                 <div className="border-t border-gray-50 pt-4">
                                     {request.type === 'Bill Request' ? (
-                                        <button className="w-full bg-[#ff5722] text-white rounded-xl py-3 font-bold text-sm shadow-sm hover:bg-orange-600 transition-colors">Generate Bill</button>
+                                        <button onClick={() => handleGenerateBill(request.id)} className="w-full bg-[#ff5722] text-white rounded-xl py-3 font-bold text-sm shadow-sm hover:bg-orange-600 transition-colors">Generate Bill</button>
                                     ) : (
-                                        <button className="w-full bg-white text-[#ff5722] border-2 border-orange-100 rounded-xl py-3 font-bold text-sm shadow-sm hover:bg-orange-50 transition-colors">Mark Resolved</button>
+                                        <button onClick={() => handleResolve(request.id)} className="w-full bg-white text-[#ff5722] border-2 border-orange-100 rounded-xl py-3 font-bold text-sm shadow-sm hover:bg-orange-50 transition-colors">Mark Resolved</button>
                                     )}
                                 </div>
                             )}
