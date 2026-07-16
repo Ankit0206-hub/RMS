@@ -15,11 +15,11 @@ export default function WaiterProfile() {
     ];
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Profile</h1>
             </div>
-            <div className="px-4 mt-6 flex-1 space-y-6 max-w-2xl mx-auto w-full pb-24">
+            <div className="px-4 mt-6 flex-1 space-y-6 w-full pb-24">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center">
                     <div className="relative">
                         <div className="h-24 w-24 rounded-full bg-orange-100 flex items-center justify-center text-3xl font-bold text-[#ff5722] border-4 border-white shadow-md">AK</div>

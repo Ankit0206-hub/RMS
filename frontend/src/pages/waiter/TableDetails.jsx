@@ -7,7 +7,7 @@ export default function TableDetails() {
     const { id } = useParams();
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-4 py-4 flex items-center shadow-sm sticky top-0 z-10">
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100 mr-2">
                     <ArrowLeft className="h-6 w-6" />
@@ -18,7 +18,7 @@ export default function TableDetails() {
                 </div>
             </div>
 
-            <div className="px-4 py-6 max-w-4xl mx-auto w-full space-y-6 pb-24">
+            <div className="px-4 py-6 w-full space-y-6 pb-24">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-lg font-bold text-gray-900">Session Info</h2>
