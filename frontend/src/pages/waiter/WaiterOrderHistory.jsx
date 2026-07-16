@@ -12,13 +12,13 @@ export default function WaiterOrderHistory() {
     const totalAmount = orders.reduce((sum, order) => sum + order.total, 0);
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100"><ArrowLeft className="h-6 w-6" /></button>
                 <h1 className="text-lg font-bold text-gray-900">Order History</h1>
                 <button className="text-sm font-bold text-[#ff5722] hover:underline">Help</button>
             </div>
-            <div className="px-4 py-4 max-w-md mx-auto space-y-6 pb-32">
+            <div className="px-4 py-4 w-full space-y-6 pb-32">
                 <div className="bg-orange-50 text-orange-600 rounded-xl p-3 text-center font-bold text-[15px] border border-orange-100">Table {tableId || 'T01'} - Rahul Sharma</div>
                 <div className="space-y-4">
                     {orders.map((order, index) => (
@@ -47,7 +47,7 @@ export default function WaiterOrderHistory() {
                 </div>
             </div>
             <div className="absolute bottom-[4rem] left-0 right-0 p-4 bg-white z-40 border-t border-gray-100">
-                <div className="max-w-md mx-auto space-y-3">
+                <div className="w-full space-y-3">
                     <button className="w-full bg-white text-[#ff5722] border-2 border-[#ff5722] rounded-2xl py-4 font-bold text-[15px] shadow-sm hover:bg-orange-50 transition-colors">Request Bill</button>
                 </div>
             </div>

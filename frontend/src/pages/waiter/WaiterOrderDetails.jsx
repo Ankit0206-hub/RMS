@@ -11,13 +11,13 @@ export default function WaiterOrderDetails() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100"><ArrowLeft className="h-6 w-6" /></button>
                 <h1 className="text-lg font-bold text-gray-900">Order Details</h1>
                 <button className="text-sm font-bold text-[#ff5722] hover:underline">Help</button>
             </div>
-            <div className="px-4 mt-4 flex-1 space-y-6 max-w-md mx-auto w-full pb-24">
+            <div className="px-4 mt-4 flex-1 space-y-6 w-full pb-24">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
                         <div>

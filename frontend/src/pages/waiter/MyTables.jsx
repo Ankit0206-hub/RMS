@@ -24,12 +24,12 @@ export default function MyTables() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Tables</h1>
             </div>
             
-            <div className="px-4 mt-4 space-y-4 max-w-md mx-auto w-full pb-24">
+            <div className="px-4 mt-4 space-y-4 w-full pb-24">
                 <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input type="text" placeholder="Search tables..." className="w-full bg-white border border-gray-200 rounded-2xl py-3 pl-12 pr-4 font-medium text-[15px] focus:outline-none focus:border-orange-500 shadow-sm" />
@@ -43,7 +43,7 @@ export default function MyTables() {
                     ))}
                 </div>
                 
-                <div className="grid grid-cols-2 grid-cols-2 gap-3 mt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-2">
                     {tables.map(table => (
                         <div key={table.id} onClick={() => navigate('/waiter/tables/'+table.id)} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 cursor-pointer hover:border-orange-200 transition-colors">
                             <div className="flex justify-between items-start mb-2">

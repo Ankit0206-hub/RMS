@@ -32,11 +32,11 @@ const WaiterLayout = () => {
     };
 
     return (
-        <div className="flex h-screen w-full justify-center bg-gray-50 dark:bg-slate-900 font-inter">
-            <div className="relative h-full w-full max-w-md overflow-hidden bg-white dark:bg-slate-900 shadow-sm sm:border-x border-gray-100 dark:border-slate-800 flex flex-col">
+        <div className="flex h-screen w-full justify-center bg-white dark:bg-slate-900 font-inter">
+            <div className="relative h-full w-full max-w-7xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm sm:border-x border-gray-100 dark:border-slate-800 flex flex-col">
                 
                 {/* Main Content Area */}
-                <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gray-50 pb-16">
+                <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-white pb-16">
                     <Outlet />
                 </main>
 
