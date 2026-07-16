@@ -1,4 +1,4 @@
-import { ChevronDown, ChefHat, User } from "lucide-react";
+import { ChefHat, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
@@ -18,10 +18,9 @@ export default function Header() {
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">
-        {/* Table Selector */}
-        <div className="flex items-center gap-2 rounded-full bg-white px-4 py-1.5 shadow-sm border border-gray-100 cursor-pointer">
-          <span className="text-sm font-semibold text-gray-700">Table 07</span>
-          <ChevronDown size={16} className="text-gray-400" />
+        {/* Table Indicator */}
+        <div className="flex items-center rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-1.5 shadow-md shadow-orange-200/50">
+          <span className="text-sm font-bold tracking-wide text-white">Table 07</span>
         </div>
 
         {/* User Profile */}

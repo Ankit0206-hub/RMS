@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Heart, Plus, Minus, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
+import CustomizationModal from "../../customer/common/CustomizationModal";
 
 const popularDishes = [
     {
@@ -43,6 +44,7 @@ export default function PopularDishes() {
     const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
 
     const [favorites, setFavorites] = useState([]);
+    const [customizationFood, setCustomizationFood] = useState(null);
 
     // On desktop we might as well show all 4, on mobile it wraps anyway
     const featuredDishes = popularDishes;
@@ -128,7 +130,7 @@ export default function PopularDishes() {
                                     const cartItem = cartItems.find((item) => item.id === dish.id);
                                     if (cartItem) {
                                         return (
-                                            <div className="flex items-center gap-3 rounded-full bg-orange-500 px-2 py-1 text-white">
+                                            <div className="flex items-center gap-1 sm:gap-3 rounded-full bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -136,9 +138,9 @@ export default function PopularDishes() {
                                                     }}
                                                     className="p-1"
                                                 >
-                                                    <Minus size={14} />
+                                                    <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                                 </button>
-                                                <span className="text-sm font-semibold">{cartItem.quantity}</span>
+                                                <span className="text-xs sm:text-sm font-semibold">{cartItem.quantity}</span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -146,7 +148,7 @@ export default function PopularDishes() {
                                                     }}
                                                     className="p-1"
                                                 >
-                                                    <Plus size={14} />
+                                                    <Plus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                                 </button>
                                             </div>
                                         );
@@ -155,7 +157,12 @@ export default function PopularDishes() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                addToCart(dish);
+                                                // Assuming all items might have customizations, default is true in modal
+                                                if (dish.hasPortions !== false || dish.customizableSpice !== false) {
+                                                    setCustomizationFood(dish);
+                                                } else {
+                                                    addToCart(dish);
+                                                }
                                             }}
                                             className="rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600"
                                         >
@@ -168,6 +175,12 @@ export default function PopularDishes() {
                     </div>
                 ))}
             </div>
+
+            <CustomizationModal 
+                isOpen={!!customizationFood} 
+                onClose={() => setCustomizationFood(null)} 
+                food={customizationFood} 
+            />
         </section>
     );
 }

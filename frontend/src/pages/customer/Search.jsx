@@ -140,7 +140,7 @@ export default function SearchPage() {
                           const cartItem = cartItems.find((item) => item.id === food.id);
                           if (cartItem) {
                             return (
-                              <div className="flex items-center gap-2 rounded-full bg-orange-500 px-2 py-1 text-white">
+                              <div className="flex items-center gap-1 sm:gap-2 rounded-full bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -148,9 +148,9 @@ export default function SearchPage() {
                                   }}
                                   className="p-1"
                                 >
-                                  <Minus size={14} />
+                                  <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                 </button>
-                                <span className="text-sm font-semibold w-3 text-center">{cartItem.quantity}</span>
+                                <span className="text-xs sm:text-sm font-semibold text-center">{cartItem.quantity}</span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -158,7 +158,7 @@ export default function SearchPage() {
                                   }}
                                   className="p-1"
                                 >
-                                  <Plus size={14} />
+                                  <Plus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                 </button>
                               </div>
                             );
