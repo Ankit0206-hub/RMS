@@ -8,13 +8,13 @@ export default function WaiterReadyToServe() {
     const order = { id: `#${orderId || '129'}`, table: 'T02', time: '07:42 PM', status: 'Ready', total: 120, items: [{ name: 'Cold Drink', qty: 3, price: 40 }] };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 font-inter">
+        <div className="flex flex-col h-full bg-white font-inter">
             <div className="bg-white px-4 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
                 <button onClick={() => navigate(-1)} className="p-2 text-gray-900 rounded-full hover:bg-gray-100"><ArrowLeft className="h-6 w-6" /></button>
                 <h1 className="text-lg font-bold text-gray-900">Orders</h1>
                 <div className="w-10"></div>
             </div>
-            <div className="px-4 mt-4 flex-1 space-y-6 max-w-3xl mx-auto w-full pb-32">
+            <div className="px-4 mt-4 flex-1 space-y-6 w-full pb-32">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
                         <div>
@@ -43,7 +43,7 @@ export default function WaiterReadyToServe() {
                 </div>
             </div>
             <div className="absolute bottom-[4rem] left-0 right-0 p-4 bg-white z-40 border-t border-gray-100">
-                <div className="max-w-4xl mx-auto space-y-3">
+                <div className="w-full space-y-3">
                     <button onClick={() => navigate(-1)} className="w-full bg-[#ff5722] text-white rounded-2xl py-4 font-bold text-[15px] shadow-sm hover:bg-orange-600 transition-colors">Mark as Served</button>
                 </div>
             </div>
