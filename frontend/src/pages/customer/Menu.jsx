@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import customerApi from '../../services/customerApi';
 import { ShoppingCart, Utensils, CheckCircle } from 'lucide-react';
 import { Button, Card, Modal } from '../../components/ui';
 import { toast, Toaster } from 'react-hot-toast';
@@ -56,8 +57,15 @@ const CustomerMenu = () => {
     const { data: menuData, isLoading } = useQuery({
         queryKey: ['public_menu'],
         queryFn: async () => {
-            const res = await api.get('/admin/menu/items');
-            return res.data.data;
+            const res = await customerApi.getMenu();
+            // Flatten categories to get items
+            const items = [];
+            res.forEach(cat => {
+                if (cat.items) {
+                    items.push(...cat.items);
+                }
+            });
+            return items;
         }
     });
 

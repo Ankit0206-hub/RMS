@@ -1,8 +1,10 @@
 import { ChefHat, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../../../context/AppContext";
 
 export default function Header() {
   const navigate = useNavigate();
+  const { customerSession } = useApp();
 
   return (
     <div className="flex items-center justify-between pb-2">
@@ -20,7 +22,13 @@ export default function Header() {
       <div className="flex items-center gap-3">
         {/* Table Indicator */}
         <div className="flex items-center rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-4 py-1.5 shadow-md shadow-orange-200/50">
-          <span className="text-sm font-bold tracking-wide text-white">Table 07</span>
+          <span className="text-sm font-bold tracking-wide text-white">
+            {customerSession?.tableId 
+              ? (customerSession.tableId.toLowerCase().includes('table') 
+                  ? customerSession.tableId 
+                  : `Table ${customerSession.tableId}`) 
+              : "No Table"}
+          </span>
         </div>
 
         {/* User Profile */}

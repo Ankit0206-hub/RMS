@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
 import CustomizationModal from "../../components/customer/common/CustomizationModal";
+import customerApi from "../../services/customerApi";
+import toast from "react-hot-toast";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -29,7 +31,11 @@ export default function Cart() {
     increaseQuantity,
     decreaseQuantity,
     removeFromCart,
+    customerSession,
+    setCartItems
   } = useApp();
+  
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -55,7 +61,7 @@ export default function Cart() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 rounded-full bg-white px-4 py-1.5 shadow-sm border border-gray-100">
-            <span className="text-sm font-semibold text-gray-700">Table 07</span>
+            <span className="text-sm font-semibold text-gray-700">{customerSession?.tableId || "No Table"}</span>
           </div>
           <img
             src={user.image || "https://i.pravatar.cc/150?img=12"}
@@ -234,11 +240,40 @@ export default function Cart() {
 
             {/* Order Button */}
             <button
-              onClick={() => navigate("/customer/order-success")}
-              className="flex-1 max-w-[220px] sm:max-w-[300px] flex items-center justify-center gap-2 h-14 sm:h-16 rounded-2xl bg-orange-500 text-white font-bold text-lg shadow-[0_8px_25px_rgba(249,115,22,0.3)] active:scale-[0.97] transition-transform"
+              onClick={async () => {
+                if (!customerSession) {
+                  toast.error("No active session found. Please start a session first.");
+                  return;
+                }
+                
+                setIsPlacingOrder(true);
+                try {
+                  const itemsForApi = cartItems.map(item => ({
+                    menu_item_id: item.originalId || item.id, // Ensure we send the backend ID
+                    quantity: item.quantity,
+                    notes: [item.portion ? `Portion: ${item.portion}` : "", item.spiceLevel ? `Spice: ${item.spiceLevel}` : "", item.instructions || ""].filter(Boolean).join(" | ")
+                  }));
+                  
+                  await customerApi.createOrder(customerSession.sessionId, {
+                    items: itemsForApi,
+                    special_instructions: "" // Or add a field for it
+                  });
+                  
+                  // Handle success
+                  setCartItems([]);
+                  toast.success("Order placed successfully!");
+                  navigate("/customer/order-success");
+                } catch (err) {
+                  toast.error(err.response?.data?.detail || "Failed to place order");
+                } finally {
+                  setIsPlacingOrder(false);
+                }
+              }}
+              disabled={isPlacingOrder}
+              className="flex-1 max-w-[220px] sm:max-w-[300px] flex items-center justify-center gap-2 h-14 sm:h-16 rounded-2xl bg-orange-500 text-white font-bold text-lg shadow-[0_8px_25px_rgba(249,115,22,0.3)] active:scale-[0.97] transition-transform disabled:opacity-70"
             >
-              Place Order
-              <ArrowRight size={20} strokeWidth={2.5} />
+              {isPlacingOrder ? "Placing..." : "Place Order"}
+              {!isPlacingOrder && <ArrowRight size={20} strokeWidth={2.5} />}
             </button>
             
           </div>

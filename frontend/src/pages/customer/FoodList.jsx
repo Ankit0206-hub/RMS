@@ -4,21 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
 import CustomizationModal from "../../components/customer/common/CustomizationModal";
+import { useEffect } from "react";
+import customerApi from "../../services/customerApi";
 
-// Updated data structure to include rating, description, and veg status for the design
-const foodData = {
-  "main-course": [
-    { name: "Paneer Butter Masala", price: 280, rating: "4.8", desc: "Rich creamy tomato gravy", isVeg: true, isSpicy: false, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800" },
-    { name: "Kadai Paneer", price: 260, rating: "4.6", desc: "Spicy & delicious", isVeg: true, isSpicy: true, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800" },
-    { name: "Chicken Tikka Masala", price: 340, rating: "4.9", desc: "Classic spicy chicken curry", isVeg: false, isSpicy: true, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800" },
-    { name: "Dal Tadka", price: 180, rating: "4.5", desc: "Yellow dal with tadka", isVeg: true, isSpicy: false, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800" },
-    { name: "Chicken Biryani", price: 290, rating: "4.8", desc: "Authentic dum biryani", isVeg: false, isSpicy: false, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800" },
-    { name: "Veg Biryani", price: 240, rating: "4.7", desc: "Aromatic basmati rice", isVeg: true, isSpicy: false, hasPortions: true, customizableSpice: true, image: "https://images.unsplash.com/photo-1701579231349-d7459c40919b?w=800" },
-  ],
-  starters: [
-    { name: "Spring Rolls", price: 169, rating: "4.4", desc: "Crispy fried rolls", isVeg: true, isSpicy: false, hasPortions: false, customizableSpice: false, image: "https://images.unsplash.com/photo-1516684732162-798a0062be99?w=800" },
-  ]
-};
+
 
 export default function FoodList() {
   const navigate = useNavigate();
@@ -27,10 +16,35 @@ export default function FoodList() {
   const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'veg', 'non-veg', 'spicy'
   const [searchQuery, setSearchQuery] = useState("");
   const [customizationFood, setCustomizationFood] = useState(null);
+  const [currentData, setCurrentData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // If we don't have the specific category mocked, fallback to main-course
-  const currentData = foodData[category] || foodData["main-course"];
   const title = category ? category.replace("-", " ") : "Main Course";
+
+  useEffect(() => {
+    customerApi.getMenu().then(data => {
+      const catData = data.find(c => c.name.toLowerCase().replace(/\s+/g, "-") === category);
+      if (catData) {
+        const mappedItems = catData.items.map(dish => ({
+          id: dish.id,
+          name: dish.name,
+          price: dish.price,
+          rating: 4.8,
+          desc: dish.description,
+          isVeg: dish.is_veg,
+          isSpicy: dish.customizable_spice,
+          hasPortions: dish.has_portions,
+          customizableSpice: dish.customizable_spice,
+          image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800"
+        }));
+        setCurrentData(mappedItems);
+      }
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, [category]);
 
   const toggleFilter = (filterName) => {
     setActiveFilter(activeFilter === filterName ? "all" : filterName);

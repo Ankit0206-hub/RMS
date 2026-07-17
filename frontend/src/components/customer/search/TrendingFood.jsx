@@ -1,45 +1,41 @@
 import { Star, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
+import { useEffect, useState } from "react";
+import customerApi from "../../../services/customerApi";
 
-const foods = [
-  {
-    id: 1,
-    name: "Butter Chicken",
-    price: 299,
-    rating: 4.8,
-    image:
-      "https://images.pexels.com/photos/7625056/pexels-photo-7625056.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-  {
-    id: 2,
-    name: "Veg Biryani",
-    price: 229,
-    rating: 4.7,
-    image:
-      "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-  {
-    id: 3,
-    name: "Cheese Burger",
-    price: 199,
-    rating: 4.6,
-    image:
-      "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-  {
-    id: 7,
-    name: "Pasta Alfredo",
-    price: 249,
-    rating: 4.9,
-    image:
-      "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-];
+
 
 export default function TrendingFood() {
   const navigate = useNavigate();
   const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
+  const [foods, setFoods] = useState([]);
+
+  useEffect(() => {
+    customerApi.getMenu().then(data => {
+      const allItems = [];
+      data.forEach(cat => {
+        if (cat.items) {
+          cat.items.forEach(dish => {
+            allItems.push({
+              id: dish.id,
+              name: dish.name,
+              price: dish.price,
+              rating: 4.8,
+              desc: dish.description,
+              isVeg: dish.is_veg,
+              isSpicy: dish.customizable_spice,
+              hasPortions: dish.has_portions,
+              customizableSpice: dish.customizable_spice,
+              image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80"
+            });
+          });
+        }
+      });
+      // Just take a few random/first items as trending
+      setFoods(allItems.slice(0, 4));
+    }).catch(console.error);
+  }, []);
 
   return (
     <div className="mt-6">

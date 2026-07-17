@@ -7,70 +7,41 @@ import { useApp } from "../../context/AppContext";
 
 import RecentSearch from "../../components/customer/search/RecentSearch";
 import TrendingFood from "../../components/customer/search/TrendingFood";
+import { useEffect } from "react";
+import customerApi from "../../services/customerApi";
 
-const allDishes = [
-    {
-        id: 1,
-        name: "Paneer Butter Masala",
-        price: 239,
-        rating: 4.8,
-        image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
-    },
-    {
-        id: 2,
-        name: "Veg Biryani",
-        price: 199,
-        rating: 4.7,
-        image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&q=80",
-    },
-    {
-        id: 3,
-        name: "Margherita Pizza",
-        price: 249,
-        rating: 4.9,
-        image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=600&q=80",
-    },
-    {
-        id: 4,
-        name: "Veg Burger",
-        price: 179,
-        rating: 4.6,
-        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
-    },
-    {
-        id: 5,
-        name: "Butter Chicken",
-        price: 299,
-        rating: 4.8,
-        image: "https://images.pexels.com/photos/7625056/pexels-photo-7625056.jpeg?auto=compress&cs=tinysrgb&w=800",
-    },
-    {
-        id: 6,
-        name: "Cheese Burger",
-        price: 199,
-        rating: 4.6,
-        image: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=800",
-    },
-    {
-        id: 7,
-        name: "Pasta Alfredo",
-        price: 249,
-        rating: 4.9,
-        image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg?auto=compress&cs=tinysrgb&w=800",
-    },
-    {
-        id: 8,
-        name: "Cheese Pizza",
-        price: 320,
-        rating: 4.5,
-        image: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=200&q=80"
-    }
-];
+
 
 export default function SearchPage() {
   const navigate = useNavigate();
   const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
+  const [allDishes, setAllDishes] = useState([]);
+
+  useEffect(() => {
+    customerApi.getMenu().then(data => {
+        const items = [];
+        data.forEach(cat => {
+            if (cat.items) {
+                cat.items.forEach(dish => {
+                    items.push({
+                        id: dish.id,
+                        name: dish.name,
+                        price: dish.price,
+                        rating: 4.8,
+                        desc: dish.description,
+                        isVeg: dish.is_veg,
+                        isSpicy: dish.customizable_spice,
+                        hasPortions: dish.has_portions,
+                        customizableSpice: dish.customizable_spice,
+                        image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80"
+                    });
+                });
+            }
+        });
+        setAllDishes(items);
+    }).catch(console.error);
+  }, []);
 
   const filteredDishes = allDishes.filter(dish => 
     dish.name.toLowerCase().includes(searchQuery.toLowerCase())

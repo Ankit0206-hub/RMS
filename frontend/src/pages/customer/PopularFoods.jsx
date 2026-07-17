@@ -3,61 +3,41 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import MobileContainer from "../../components/customer/layout/MobileContainer";
+import { useEffect } from "react";
+import customerApi from "../../services/customerApi";
 
-const foods = [
-    {
-        id: 1,
-        name: "Paneer Butter Masala",
-        price: 239,
-        rating: 4.8,
-        image:
-            "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
-    },
-    {
-        id: 2,
-        name: "Veg Biryani",
-        price: 199,
-        rating: 4.7,
-        image:
-            "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&q=80",
-    },
-    {
-        id: 3,
-        name: "Margherita Pizza",
-        price: 249,
-        rating: 4.9,
-        image:
-            "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=600&q=80",
-    },
-    {
-        id: 4,
-        name: "Veg Burger",
-        price: 179,
-        rating: 4.6,
-        image:
-            "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
-    },
-    {
-        id: 5,
-        name: "Creamy Alfredo Pasta",
-        price: 269,
-        rating: 4.8,
-        image:
-            "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80",
-    },
-    {
-        id: 6,
-        name: "Dal Makhani",
-        price: 189,
-        rating: 4.7,
-        image:
-            "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80",
-    },
-];
+
 
 export default function PopularFoods() {
     const navigate = useNavigate();
     const [favorites, setFavorites] = useState([]);
+    const [foods, setFoods] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    useEffect(() => {
+        customerApi.getMenu().then(data => {
+            const allItems = [];
+            data.forEach(cat => {
+                if (cat.items) {
+                    cat.items.forEach(dish => {
+                        allItems.push({
+                            id: dish.id,
+                            name: dish.name,
+                            price: dish.price,
+                            rating: 4.8,
+                            desc: dish.description,
+                            isVeg: dish.is_veg,
+                            isSpicy: dish.customizable_spice,
+                            hasPortions: dish.has_portions,
+                            customizableSpice: dish.customizable_spice,
+                            image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80"
+                        });
+                    });
+                }
+            });
+            setFoods(allItems);
+        }).catch(console.error);
+    }, []);
 
     const toggleFavorite = (id) => {
         setFavorites((prev) =>
@@ -90,6 +70,8 @@ export default function PopularFoods() {
                             <input
                                 type="text"
                                 placeholder="Search food..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="ml-3 w-full bg-transparent outline-none"
                             />
                         </div>
@@ -98,7 +80,7 @@ export default function PopularFoods() {
 
                 {/* Food Grid */}
                 <div className="grid grid-cols-2 gap-4 p-5">
-                    {foods.map((food) => (
+                    {foods.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).map((food) => (
                         <div
                             key={food.id}
                             onClick={() => navigate("/customer/food-details")}

@@ -94,8 +94,10 @@ const OperatorOrders = () => {
     return ["All", ...Array.from(tables).sort()];
   }, [ordersData]);
 
-  const getStatusPill = (status) => {
+    const getStatusPill = (status) => {
     switch (status) {
+      case "Verification Pending":
+        return "text-purple-600 bg-purple-50";
       case "Completed":
       case "Served":
         return "text-green-600 bg-green-50";
@@ -123,11 +125,16 @@ const OperatorOrders = () => {
         <div>
           <div className="flex items-center space-x-2">
             <div
-              className={`w-1.5 h-1.5 rounded-full ${row.status === "Pending" ? "bg-orange-500" : row.status === "Confirmed" ? "bg-[#5e5ce6]" : row.status === "Completed" || row.status === "Served" ? "bg-green-500" : row.status === "Cooked" ? "bg-[#5e5ce6]" : "bg-red-500"}`}
+              className={`w-1.5 h-1.5 rounded-full ${row.status === "Verification Pending" ? "bg-purple-500" : row.status === "Pending" ? "bg-orange-500" : row.status === "Confirmed" ? "bg-[#5e5ce6]" : row.status === "Completed" || row.status === "Served" ? "bg-green-500" : row.status === "Cooked" ? "bg-[#5e5ce6]" : "bg-red-500"}`}
             ></div>
             <span className="font-bold text-gray-900 dark:text-white text-[11px]">
               {row.id}
             </span>
+            {row.status === "Verification Pending" && (
+              <span className="px-1.5 py-0.5 bg-purple-50 text-purple-600 font-bold text-[8px] rounded">
+                Verify
+              </span>
+            )}
             {row.status === "Pending" && (
               <span className="px-1.5 py-0.5 bg-green-50 text-green-600 font-bold text-[8px] rounded">
                 New
@@ -210,7 +217,7 @@ const OperatorOrders = () => {
         <span
           className={`px-2 py-1 rounded text-[9px] font-bold ${getStatusPill(row.status)}`}
         >
-          {row.status === "Pending" ? "New" : row.status === "Confirmed" ? "Preparing" : row.status === "Cooked" ? "Ready" : row.status}
+          {row.status === "Verification Pending" ? "To Verify" : row.status === "Pending" ? "New" : row.status === "Confirmed" ? "Preparing" : row.status === "Cooked" ? "Ready" : row.status}
         </span>
       ),
     },
@@ -259,6 +266,18 @@ const OperatorOrders = () => {
                 ></div>
                 <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg shadow-lg z-50 py-1 overflow-hidden">
                   <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-slate-800/50">Update Status</div>
+                  {row.status === 'Verification Pending' && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        statusMutation.mutate({ id: row.rawId, status: 'Pending' });
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-gray-700 dark:text-slate-300 hover:bg-orange-50 hover:text-orange-500"
+                    >
+                      Verify Order
+                    </button>
+                  )}
                   {row.status === 'Pending' && (
                     <button 
                       onClick={(e) => {
@@ -317,7 +336,7 @@ const OperatorOrders = () => {
   ];
 
   const totalOrders = ordersData.length;
-  const newOrders = ordersData.filter((o) => o.status === "Pending").length;
+  const newOrders = ordersData.filter((o) => o.status === "Pending" || o.status === "Verification Pending").length;
   const preparingOrders = ordersData.filter((o) => o.status === "Confirmed").length;
   const readyOrders = ordersData.filter((o) => o.status === "Cooked").length;
   const servedOrders = ordersData.filter(
@@ -535,6 +554,7 @@ const OperatorOrders = () => {
                   className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 text-xs font-semibold rounded-lg px-3 h-[38px] outline-none focus:border-[#5e5ce6] focus:ring-1 focus:ring-[#5e5ce6]"
                 >
                   <option value="All">All</option>
+                  <option value="Verification Pending">To Verify</option>
                   <option value="Pending">New</option>
                   <option value="Confirmed">Preparing</option>
                   <option value="Cooked">Ready</option>
