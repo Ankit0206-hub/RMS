@@ -43,6 +43,16 @@ import WaiterRequests from './pages/waiter/WaiterRequests';
 import WaiterNotifications from './pages/waiter/WaiterNotifications';
 import WaiterProfile from './pages/waiter/WaiterProfile';
 
+// Kitchen Imports
+import KitchenLayout from './layouts/KitchenLayout';
+import KitchenNewOrders from './pages/kitchen/NewOrders';
+import KitchenPreparing from './pages/kitchen/Preparing';
+import KitchenReady from './pages/kitchen/Ready';
+import KitchenHistory from './pages/kitchen/History';
+import KitchenOrderDetails from './pages/kitchen/OrderDetails';
+import KitchenNotifications from './pages/kitchen/Notifications';
+import KitchenProfile from './pages/kitchen/Profile';
+
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
 import AddCategoryWithItems from './pages/admin/AddCategoryWithItems';
@@ -187,6 +197,17 @@ const App = () => {
                             <Route path="requests" element={<WaiterRequests />} />
                             <Route path="notifications" element={<WaiterNotifications />} />
                             <Route path="profile" element={<WaiterProfile />} />
+                        </Route>
+
+                        <Route path="/kitchen" element={<ProtectedRoute allowedRoles={['kitchen', 'admin']}><KitchenLayout /></ProtectedRoute>}>
+                            <Route index element={<Navigate to="/kitchen/new" />} />
+                            <Route path="new" element={<KitchenNewOrders />} />
+                            <Route path="preparing" element={<KitchenPreparing />} />
+                            <Route path="ready" element={<KitchenReady />} />
+                            <Route path="history" element={<KitchenHistory />} />
+                            <Route path="orders/:id" element={<KitchenOrderDetails />} />
+                            <Route path="notifications" element={<KitchenNotifications />} />
+                            <Route path="profile" element={<KitchenProfile />} />
                         </Route>
                     </Routes>
                 </BrowserRouter>

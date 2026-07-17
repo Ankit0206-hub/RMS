@@ -11,8 +11,9 @@ async def seed_employees():
         admin_role = (await db.execute(select(Role).filter(Role.name == "Admin"))).scalar_one_or_none()
         operator_role = (await db.execute(select(Role).filter(Role.name == "Operator"))).scalar_one_or_none()
         waiter_role = (await db.execute(select(Role).filter(Role.name == "Waiter"))).scalar_one_or_none()
+        kitchen_role = (await db.execute(select(Role).filter(Role.name == "Kitchen"))).scalar_one_or_none()
 
-        if not operator_role or not waiter_role:
+        if not operator_role or not waiter_role or not kitchen_role:
             print("Roles not found. Run seed.py first.")
             return
 
@@ -47,6 +48,22 @@ async def seed_employees():
             )
             db.add(waiter)
             print("Created waiter@dineops.com / waiter123")
+
+        # Check kitchen
+        kitchen = (await db.execute(select(Employee).filter(Employee.email == "kitchen@dineops.com"))).scalar_one_or_none()
+        if not kitchen:
+            kitchen = Employee(
+                employee_code="EMP003",
+                email="kitchen@dineops.com",
+                phone="1122334455",
+                hashed_password=get_password_hash("kitchen123"),
+                first_name="Test",
+                last_name="Kitchen",
+                role_id=kitchen_role.id,
+                is_active=True
+            )
+            db.add(kitchen)
+            print("Created kitchen@dineops.com / kitchen123")
 
         await db.commit()
         print("Done.")
