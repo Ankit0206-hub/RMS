@@ -84,3 +84,13 @@ async def get_current_waiter(current_user: dict = Depends(get_current_user)) -> 
             detail="Requires Waiter privileges"
         )
     return current_user["user"]
+
+async def get_current_kitchen(current_user: dict = Depends(get_current_user)) -> Employee:
+    if current_user["role"] != "employee" or not current_user["user"].role or current_user["user"].role.name.lower() != "kitchen":
+        if current_user["role"] == "admin":
+            return current_user["user"]
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requires Kitchen privileges"
+        )
+    return current_user["user"]

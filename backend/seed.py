@@ -14,7 +14,8 @@ async def seed_admin():
             # Create standard roles
             operator_role = Role(name="Operator", description="Restaurant Operator")
             waiter_role = Role(name="Waiter", description="Restaurant Waiter")
-            db.add_all([operator_role, waiter_role])
+            kitchen_role = Role(name="Kitchen", description="Kitchen Staff")
+            db.add_all([operator_role, waiter_role, kitchen_role])
             await db.commit()
             print("Admin and roles created.")
         else:

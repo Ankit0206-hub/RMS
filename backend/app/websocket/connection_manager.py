@@ -10,6 +10,7 @@ class ConnectionManager:
             "admin": [],
             "operator": [],
             "waiter": [],
+            "kitchen": [],
             "customer": [] # For customers, we might want to store by session_id in the future, but a flat list works for MVP broadcasts
         }
         
@@ -32,7 +33,7 @@ class ConnectionManager:
     async def broadcast(self, event: str, payload: Any, target_roles: List[str] = None):
         message = json.dumps({"event": event, "payload": payload})
         
-        roles_to_notify = target_roles if target_roles else ["admin", "operator", "waiter"]
+        roles_to_notify = target_roles if target_roles else ["admin", "operator", "waiter", "kitchen"]
         
         for role in roles_to_notify:
             if role in self.active_connections:
