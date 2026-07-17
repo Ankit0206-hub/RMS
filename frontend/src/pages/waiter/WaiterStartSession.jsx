@@ -14,12 +14,23 @@ const TableIcon = ({className}) => (
 
 export default function WaiterStartSession() {
  const navigate = useNavigate();
- const {tableId} = useParams();
- 
- const [name, setName] = useState('');
- const [phone, setPhone] = useState('');
- const [guests, setGuests] = useState(4);
- const [notes, setNotes] = useState('');
+    const {tableId} = useParams();
+    
+    // Dummy tables data to fetch capacity
+    const tables = [
+        {id:'T01', capacity: 4},
+        {id:'T02', capacity: 2},
+        {id:'T03', capacity: 4},
+        {id:'T04', capacity: 4},
+        {id:'T05', capacity: 6},
+    ];
+    const currentTable = tables.find(t => t.id === tableId) || { capacity: 4 };
+    const tableCapacity = currentTable.capacity;
+    
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [guests, setGuests] = useState(Math.min(2, tableCapacity));
+    const [notes, setNotes] = useState('');
 
  const handleStartSession = (e) => {
  e.preventDefault();
@@ -95,7 +106,7 @@ export default function WaiterStartSession() {
  
  {/* Name Row */}
  <div className="flex items-start space-x-4">
- <div className="bg-white/30 text-rose-500 p-2.5 md:p-3 rounded-2xl shrink-0 mt-1 border border-white/50 backdrop-blur-md">
+ <div className="bg-white/30 text-rose-500 p-2.5 md:p-3 rounded-2xl shrink-strokeWidth0 mt-1 border border-white/50 backdrop-blur-md">
  <User className="h-5 w-5 md:h-6 md:w-6"strokeWidth={2} />
  </div>
  <div className="flex-1">
@@ -134,21 +145,23 @@ export default function WaiterStartSession() {
  </div>
  <div className="flex-1">
  <label className="text-[11px] md:text-xs font-bold text-gray-700 mb-1.5 block">Number of People <span className="text-rose-500">*</span></label>
- <div className="flex items-center justify-between border border-white/50 rounded-2xl p-1 bg-white/30 backdrop-blur-md">
+ <div className="flex items-center max-w-25 max-h-8 rounded-md justify-between border border-gray-300 rounded-2xl p-1 bg-gray-100 backdrop-blur-md">
  <button 
  type="button"
  onClick={() => setGuests(Math.max(1, guests - 1))} 
- className="p-2 md:p-3 bg-white/40 rounded-xl active:scale-95 text-gray-600 transition-all border border-white/30"
+ className={`p-2 md:p-3  rounded-xl transition-all  ${guests <= 1 ? 'opacity-50 cursor-not-allowed text-gray-400' : 'active:scale-95 text-gray-600'}`}
+ disabled={guests <= 1}
  >
- <Minus className="h-4 w-4 md:h-5 md:w-5"strokeWidth={2.5} />
+ <Minus className="" size={18} strokeWidth={1.5} />
  </button>
  <span className="font-black text-[17px] md:text-xl w-12 text-center text-gray-800">{guests}</span>
  <button 
  type="button"
- onClick={() => setGuests(guests + 1)} 
- className="p-2 md:p-3 bg-white/40 rounded-xl active:scale-95 text-gray-600 transition-all border border-white/30"
+ onClick={() => setGuests(Math.min(tableCapacity, guests + 1))} 
+ className={`p-2 md:p-3  rounded-xl transition-all  ${guests >= tableCapacity ? 'opacity-50 cursor-not-allowed text-gray-400' : 'active:scale-95 text-gray-600'}`}
+ disabled={guests >= tableCapacity}
  >
- <Plus className="h-4 w-4 md:h-5 md:w-5"strokeWidth={2.5} />
+ <Plus className="" size={18} strokeWidth={1.5} />
  </button>
  </div>
  <p className="text-[10px] md:text-xs text-gray-500 mt-1.5 font-medium">Number of adults / guests</p>

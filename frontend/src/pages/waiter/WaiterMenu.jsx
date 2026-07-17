@@ -6,14 +6,14 @@ import toast from 'react-hot-toast';
 export default function WaiterMenu() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [activeCat, setActiveCat] = useState('Main Course');
-    const categories = ['Starters', 'Main Course', 'Breads', 'Desserts', 'Beverages'];
+    const [activeCat, setActiveCat] = useState('All');
+    const categories = ['All', 'Starters', 'Main Course', 'Breads', 'Desserts', 'Beverages'];
     
     const [items, setItems] = useState(() => {
         const defaultItems = [
-            { id: 1, name: 'Paneer Butter Masala', price: 240, qty: 0, img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80' },
-            { id: 2, name: 'Garlic Naan', price: 40, qty: 0, img: 'https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=100&q=80' },
-            { id: 3, name: 'Dal Makhani', price: 220, qty: 0, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=100&q=80' }
+            { id: 1, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, qty: 0, img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80' },
+            { id: 2, name: 'Garlic Naan', category: 'Breads', price: 40, qty: 0, img: 'https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=100&q=80' },
+            { id: 3, name: 'Dal Makhani', category: 'Main Course', price: 220, qty: 0, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=100&q=80' }
         ];
         
         if (location.state?.cartItems) {
@@ -106,7 +106,7 @@ export default function WaiterMenu() {
 
                 <div className="px-4 md:px-8 py-6 w-full pb-32 max-w-7xl mx-auto flex-1">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {items.map(item => (
+                        {items.filter(item => activeCat === 'All' || item.category === activeCat).map(item => (
                             <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
                                 <div className="flex items-center space-x-4">
                                     <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />
