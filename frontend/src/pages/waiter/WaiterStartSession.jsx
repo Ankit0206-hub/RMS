@@ -1,7 +1,8 @@
-import React, {useState} from'react';
-import {useNavigate, useParams} from'react-router-dom';
-import {ArrowLeft, User, Phone, Users, Minus, Plus, FileText, Info, UserPlus, HelpCircle} from'lucide-react';
-import toast from'react-hot-toast';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, User, Phone, Users, Minus, Plus, FileText, Info, UserPlus, HelpCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
+import waiterApi from '../../services/waiterApi';
 
 const TableIcon = ({className}) => (
  <svg className={className} viewBox="0 0 24 24"fill="none"stroke="currentColor"strokeWidth="2"strokeLinecap="round"strokeLinejoin="round">
@@ -32,24 +33,29 @@ export default function WaiterStartSession() {
     const [guests, setGuests] = useState(Math.min(2, tableCapacity));
     const [notes, setNotes] = useState('');
 
- const handleStartSession = (e) => {
- e.preventDefault();
- if(!name) {
- toast.error('Please enter customer name');
- return;
-}
- toast.success(`Session created for ${name}!`);
- navigate(`/waiter/tables/${tableId}`, {
- state: {
- customerName: name,
- guests: guests,
- isNewSession: true
-}
-});
-};
+  const handleStartSession = async (e) => {
+      e.preventDefault();
+      try {
+          // The backend currently only needs 'guests'. 
+          // We can expand the backend to accept name/phone if needed later.
+          const res = await waiterApi.startSession(tableId, { guests });
+          toast.success(`Session created for ${name || 'Customer'}!`);
+          navigate(`/waiter/tables/${tableId}`, {
+              state: {
+                  customerName: name,
+                  guests: guests,
+                  sessionId: res.session_id,
+                  isNewSession: true
+              }
+          });
+      } catch (err) {
+          toast.error('Failed to create session');
+          console.error(err);
+      }
+  };
 
  return (
- <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
+ <div className="flex flex-col w-full h-full relative font-inter">
  {/* Decorative Glassmorphism Blobs Container */}
  <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
  <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
@@ -57,7 +63,7 @@ export default function WaiterStartSession() {
  <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
  </div>
 
- <div className="relative z-10 flex flex-col min-h-screen">
+ <div className="relative z-10 flex flex-col h-full w-full">
  {/* Header */}
  <div className="bg-white/10 backdrop-blur-xl px-4 md:px-6 py-4 flex items-center shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
  <div className="max-w-4xl mx-auto w-full flex items-center">
@@ -75,8 +81,8 @@ export default function WaiterStartSession() {
  </div>
 
  {/* Scrollable Content */}
- <div className="flex-1 overflow-y-auto w-full hide-scrollbar pb-16 md:pb-24">
- <div className="max-w-4xl mx-auto w-full px-4 md:px-6">
+ <div className="w-full pb-8 md:pb-12">
+ <div className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-16">
  
  {/* Selected Table Card */}
  <div className="bg-white/20 backdrop-blur-xl border border-white/40 shadow-sm rounded-3xl p-4 md:p-6 flex items-center justify-between mt-5 md:mt-8">
