@@ -59,4 +59,8 @@ class TablesRepository:
         await db.execute(update(TableAssignment).where(TableAssignment.table_id == table_id).values(is_active=False))
         await db.commit()
 
+    async def clear_all_assignments(self, db: AsyncSession) -> None:
+        await db.execute(update(TableAssignment).where(TableAssignment.is_active == True).values(is_active=False))
+        await db.commit()
+
 tables_repo = TablesRepository()

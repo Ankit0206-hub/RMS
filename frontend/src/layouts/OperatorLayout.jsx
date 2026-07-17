@@ -24,7 +24,8 @@ import {
     ChevronUp,
     Moon,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    X
 } from 'lucide-react';
 
 const OperatorLayout = () => {
@@ -133,7 +134,7 @@ const OperatorLayout = () => {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full w-[260px] lg:translate-x-0 lg:w-20'} lg:static lg:block shrink-0 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col transition-all duration-300 relative`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full w-[260px] lg:translate-x-0 lg:w-20'} lg:relative lg:block shrink-0 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col transition-all duration-300`}>
                 
                 {/* Interactive Toggle Button */}
                 <button
@@ -148,7 +149,7 @@ const OperatorLayout = () => {
                 </button>
 
                 {/* Logo Area */}
-                <div className={`h-16 flex items-center ${isSidebarOpen ? 'px-6' : 'justify-center px-0'} border-b border-gray-50 dark:border-slate-800/50/50`}>
+                <div className={`h-16 flex items-center justify-between ${isSidebarOpen ? 'px-6' : 'justify-center px-0'} border-b border-gray-50 dark:border-slate-800/50/50`}>
                     <div className="flex items-center overflow-hidden">
                         <Utensils className={`h-6 w-6 shrink-0 text-cyan-600 ${isSidebarOpen ? 'mr-2' : ''}`} />
                         {isSidebarOpen && (
@@ -157,6 +158,14 @@ const OperatorLayout = () => {
                             </span>
                         )}
                     </div>
+                    {isSidebarOpen && (
+                        <button 
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="lg:hidden p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Profile Card */}
@@ -272,6 +281,12 @@ const OperatorLayout = () => {
                 <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 shrink-0">
                     
                     <div className="flex items-center">
+                        <button 
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="mr-3 p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors lg:hidden"
+                        >
+                            <Menu size={20} />
+                        </button>
                         <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white capitalize">
                             {getPageTitle()}
                         </h1>

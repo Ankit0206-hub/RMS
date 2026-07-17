@@ -71,6 +71,14 @@ async def assign_waiter(
     data = await tables_service.assign_waiter(db, table_id, obj_in.employee_id)
     return StandardResponse(data=data, message="Waiter assigned to table")
 
+@router.delete("/assignments/clear-all", response_model=StandardResponse[dict])
+async def clear_all_assignments(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    await tables_service.clear_all_assignments(db)
+    return StandardResponse(data={"deleted": True}, message="All table assignments cleared")
+
 @router.delete("/{table_id}/assign", response_model=StandardResponse[dict])
 async def unassign_waiter(
     table_id: int,

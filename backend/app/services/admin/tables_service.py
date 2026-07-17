@@ -109,4 +109,7 @@ class TablesService:
         table = await self.get_table(db, table_id)
         await tables_repo.unassign_waiter(db, table.id)
 
+    async def clear_all_assignments(self, db: AsyncSession):
+        await tables_repo.clear_all_assignments(db)
+
 tables_service = TablesService()

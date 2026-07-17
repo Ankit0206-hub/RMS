@@ -1,20 +1,25 @@
 # Frontend
 frontend/node_modules/
+frontend/.DS_Store
 frontend/dist/
 frontend/.env
-frontend/.DS_Store
 
 # Backend
+backend/.env
 backend/venv/
 backend/.venv/
 backend/__pycache__/
 backend/.pytest_cache/
-backend/.env
 backend/restaurant.db
+dummy_data_log.json
+seed_dashboard.py
+fill_live_data.py
+clear_tables.py
+dummy_data.py
 *.pyc
 *.pyo
 
 # IDE
+.DS_Store
 .vscode/
 .idea/
-.DS_Store
