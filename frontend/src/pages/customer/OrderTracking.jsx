@@ -1,35 +1,77 @@
 import { ArrowLeft, Check, ChefHat, Clock3, Utensils, Coffee, Bell, ReceiptText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
+import { useEffect, useState } from "react";
+import customerApi from "../../services/customerApi";
+import { useApp } from "../../context/AppContext";
 
 export default function OrderTracking() {
   const navigate = useNavigate();
+  const { customerSession } = useApp();
+  const [sessionData, setSessionData] = useState(null);
+
+  useEffect(() => {
+    if (customerSession?.sessionId) {
+      customerApi.getSessionDetails(customerSession.sessionId)
+        .then(data => setSessionData(data))
+        .catch(console.error);
+    }
+  }, [customerSession]);
+
+  // Determine overall status based on latest order
+  let currentStatus = "Verification Pending";
+  if (sessionData?.orders?.length > 0) {
+      const latestOrder = sessionData.orders[sessionData.orders.length - 1];
+      currentStatus = latestOrder.status;
+  }
+
+  const getStepStatus = (stepName) => {
+      const statusMap = {
+          "Order Placed": ["Verification Pending", "Preparing", "Cooked", "Served", "Completed"],
+          "Confirmed": ["Preparing", "Cooked", "Served", "Completed"],
+          "Preparing": ["Preparing", "Cooked", "Served", "Completed"],
+          "Ready to Serve": ["Cooked", "Served", "Completed"],
+          "Served": ["Served", "Completed"]
+      };
+
+      const activeMap = {
+          "Order Placed": "Verification Pending",
+          "Confirmed": "",
+          "Preparing": "Preparing",
+          "Ready to Serve": "Cooked",
+          "Served": "Served"
+      };
+
+      if (activeMap[stepName] === currentStatus) return "active";
+      if (statusMap[stepName].includes(currentStatus)) return "completed";
+      return "pending";
+  };
 
   const steps = [
     {
       title: "Order Placed",
-      time: "02:30 PM",
-      status: "completed",
+      time: "Pending",
+      status: getStepStatus("Order Placed"),
     },
     {
       title: "Confirmed",
-      time: "02:31 PM",
-      status: "completed",
+      time: "Pending",
+      status: getStepStatus("Confirmed"),
     },
     {
       title: "Preparing",
-      time: "15 - 20 min",
-      status: "active",
+      time: "Pending",
+      status: getStepStatus("Preparing"),
     },
     {
       title: "Ready to Serve",
       time: "Pending",
-      status: "pending",
+      status: getStepStatus("Ready to Serve"),
     },
     {
       title: "Served",
       time: "Pending",
-      status: "pending",
+      status: getStepStatus("Served"),
     },
   ];
 
@@ -50,10 +92,14 @@ export default function OrderTracking() {
         {/* Top Info row */}
         <div className="flex items-center justify-between">
           <div className="rounded-full bg-orange-50 border border-orange-100 px-4 py-1.5 shadow-sm">
-            <span className="text-sm font-bold text-orange-500">Order #1425</span>
+            <span className="text-sm font-bold text-orange-500">
+                Order #{sessionData?.orders?.length > 0 ? sessionData.orders[sessionData.orders.length - 1].id : "..."}
+            </span>
           </div>
           <div className="rounded-full bg-red-50 border border-red-100 px-4 py-1.5 shadow-sm">
-            <span className="text-sm font-bold text-red-500">Table 07</span>
+            <span className="text-sm font-bold text-red-500">
+                {customerSession?.tableId ? (customerSession.tableId.toLowerCase().includes('table') ? customerSession.tableId : `Table ${customerSession.tableId}`) : "No Table"}
+            </span>
           </div>
         </div>
 

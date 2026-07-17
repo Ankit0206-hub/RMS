@@ -8,14 +8,14 @@ import ImageCropModal from "../../components/customer/common/ImageCropModal";
 import { useApp } from "../../context/AppContext";
 
 export default function Profile() {
-    const { user, updateUser } = useApp();
+    const { user, updateUser, customerSession } = useApp();
     const [isEditing, setIsEditing] = useState(false);
     const [cropImageSrc, setCropImageSrc] = useState(null);
     
     const [formData, setFormData] = useState({
-        name: user.name || "",
+        name: customerSession?.customerName || user.name || "",
         email: user.email || "",
-        phone: user.phone || "",
+        phone: customerSession?.customerPhone || user.phone || "",
         image: user.image || "",
     });
 
@@ -49,9 +49,9 @@ export default function Profile() {
 
     const handleCancel = () => {
         setFormData({
-            name: user.name || "",
+            name: customerSession?.customerName || user.name || "",
             email: user.email || "",
-            phone: user.phone || "",
+            phone: customerSession?.customerPhone || user.phone || "",
             image: user.image || "",
         });
         setIsEditing(false);
@@ -75,7 +75,7 @@ export default function Profile() {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-5 pb-32">
-                    <div className="max-w-2xl mx-auto w-full">
+                    <div className=" mx-auto w-full">
                         {/* Avatar Section */}
                     <div className="flex flex-col items-center mb-8">
                         <div className="relative">
@@ -118,7 +118,7 @@ export default function Profile() {
                             ) : (
                                 <div className="flex items-center gap-3">
                                     <User size={18} className="text-orange-500" />
-                                    <p className="text-[15px] font-bold text-gray-900">{user.name}</p>
+                                    <p className="text-[15px] font-bold text-gray-900">{customerSession?.customerName || user.name}</p>
                                 </div>
                             )}
                         </div>
@@ -166,7 +166,7 @@ export default function Profile() {
                             ) : (
                                 <div className="flex items-center gap-3">
                                     <Phone size={18} className="text-orange-500" />
-                                    <p className="text-[15px] font-bold text-gray-900">{user.phone}</p>
+                                    <p className="text-[15px] font-bold text-gray-900">{customerSession?.customerPhone || user.phone}</p>
                                 </div>
                             )}
                         </div>

@@ -16,6 +16,11 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [customerSession, setCustomerSession] = useState(() => {
+    const saved = localStorage.getItem("customerSession");
+    return saved ? JSON.parse(saved) : null;
+  });
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
@@ -24,6 +29,15 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("orders", JSON.stringify(orders));
   }, [orders]);
+
+  useEffect(() => {
+    if (customerSession) {
+      localStorage.setItem("customerSession", JSON.stringify(customerSession));
+    } else {
+      localStorage.removeItem("customerSession");
+    }
+  }, [customerSession]);
+
   const [editingAddress, setEditingAddress] = useState(null);
   const [user, setUser] = useState({
     
@@ -202,8 +216,11 @@ export const AppProvider = ({ children }) => {
         addAddress,
         updateAddress,
         deleteAddress,
-         editingAddress,
-      setEditingAddress, 
+        editingAddress,
+        setEditingAddress,
+        customerSession,
+        setCustomerSession,
+        setCartItems,
       }}
     >
       {children}

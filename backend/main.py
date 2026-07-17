@@ -15,6 +15,7 @@ from app.api.admin import reservations as admin_reservations
 from app.api.admin import notifications as admin_notifications
 from app.api.operator import operator_router
 from app.api.waiter import waiter_router
+from app.api.customer import customer_router
 from app.api import websocket_router
 
 from fastapi.exceptions import RequestValidationError
@@ -71,6 +72,7 @@ app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations
 app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(operator_router.router, prefix="/api/v1", tags=["Operator"])
 app.include_router(waiter_router.router, prefix="/api/v1", tags=["Waiter"])
+app.include_router(customer_router.router, prefix="/api/v1/customer", tags=["Customer"])
 app.include_router(websocket_router.router, prefix="/api/v1", tags=["WebSockets"])
 
 @app.get("/")

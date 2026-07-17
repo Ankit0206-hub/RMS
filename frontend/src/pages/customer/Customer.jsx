@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Phone, Users, Utensils, Minus, Plus, ChefHat } from "lucide-react";
+import toast from "react-hot-toast";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import customerApi from "../../services/customerApi";
 
 export default function Customer() {
   const navigate = useNavigate();
+  const { setCustomerSession } = useApp();
+  const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "Rahul Sharma",
     phone: "+91 98765 43210",
     persons: 4,
-    table: "Table 07",
+    table: "",
   });
+
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        const data = await customerApi.getTables();
+        setTables(data);
+        if (data.length > 0) {
+          setForm(prev => ({ ...prev, table: data[0].id }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch tables", err);
+      }
+    };
+    fetchTables();
+  }, []);
 
   const handleDecreasePersons = () => {
     if (form.persons > 1) {
@@ -22,6 +42,35 @@ export default function Customer() {
 
   const handleIncreasePersons = () => {
     setForm({ ...form, persons: form.persons + 1 });
+  };
+
+  const handleContinue = async () => {
+    if (!form.table) {
+      toast.error("Please select a table");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const res = await customerApi.startSession({
+        table_id: form.table,
+        customer_name: form.name,
+        customer_phone: form.phone,
+        guests: form.persons
+      });
+      // Store session in AppContext
+      setCustomerSession({
+        sessionId: res.session_id,
+        tableId: form.table,
+        customerName: form.name,
+        customerPhone: form.phone
+      });
+      navigate("/customer/home");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Failed to start session");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,10 +179,10 @@ export default function Customer() {
                 onChange={(e) => setForm({ ...form, table: e.target.value })}
                 className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none appearance-none cursor-pointer"
               >
-                <option>Table 01</option>
-                <option>Table 02</option>
-                <option>Table 07</option>
-                <option>Table 12</option>
+                {tables.length === 0 && <option value="">No vacant tables</option>}
+                {tables.map(t => (
+                  <option key={t.id} value={t.id}>{t.id} ({t.capacity} Seats)</option>
+                ))}
               </select>
             </div>
           </div>
@@ -144,10 +193,11 @@ export default function Customer() {
         {/* Continue Button */}
         <div className="pb-2 pt-4 md:pt-8 max-w-sm md:max-w-lg mx-auto w-full">
           <button
-            onClick={() => navigate("/customer/home")}
-            className="w-full rounded-2xl md:rounded-3xl bg-orange-500 py-4 md:py-5 text-[17px] md:text-xl font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 active:scale-[0.98]"
+            onClick={handleContinue}
+            disabled={loading}
+            className="w-full rounded-2xl md:rounded-3xl bg-orange-500 py-4 md:py-5 text-[17px] md:text-xl font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 active:scale-[0.98] disabled:opacity-70"
           >
-            Continue
+            {loading ? "Starting..." : "Continue"}
           </button>
         </div>
 

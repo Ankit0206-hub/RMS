@@ -51,7 +51,7 @@ export default function WaiterOrders() {
  <Clock className="h-3.5 w-3.5 mr-1"/> {order.time}
  </div>
  </div>
- <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border backdrop-blur-md ${order.status ==='Preparing'?'bg-amber-500/10 text-amber-700 border-amber-200/50':'bg-teal-500/10 text-teal-700 border-teal-200/50'}`}>{order.status}</span>
+ <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border backdrop-blur-md ${order.status === 'Verification Pending' ? 'bg-purple-500/10 text-purple-700 border-purple-200/50' : order.status ==='Preparing'?'bg-amber-500/10 text-amber-700 border-amber-200/50':'bg-teal-500/10 text-teal-700 border-teal-200/50'}`}>{order.status}</span>
  </div>
  
  <div className="space-y-1.5 mt-4 mb-5 border-t border-white/30 pt-4 flex-1">

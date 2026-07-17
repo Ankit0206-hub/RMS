@@ -4,50 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
 import CustomizationModal from "../../customer/common/CustomizationModal";
 
-const popularDishes = [
-    {
-        id: 1,
-        name: "Paneer Butter Masala",
-        price: 239,
-        rating: 4.8,
-        image:
-            "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
-    },
-    {
-        id: 2,
-        name: "Veg Biryani",
-        price: 199,
-        rating: 4.7,
-        image:
-            "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&q=80",
-    },
-    {
-        id: 3,
-        name: "Margherita Pizza",
-        price: 249,
-        rating: 4.9,
-        image:
-            "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=600&q=80",
-    },
-    {
-        id: 4,
-        name: "Veg Burger",
-        price: 179,
-        rating: 4.6,
-        image:
-            "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
-    },
-];
-
-export default function PopularDishes() {
+export default function PopularDishes({ popularDishes = [] }) {
     const navigate = useNavigate();
     const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
 
     const [favorites, setFavorites] = useState([]);
     const [customizationFood, setCustomizationFood] = useState(null);
 
-    // On desktop we might as well show all 4, on mobile it wraps anyway
-    const featuredDishes = popularDishes;
+    // Map the backend items to the expected format
+    const featuredDishes = popularDishes.map((dish) => ({
+        id: dish.id,
+        name: dish.name,
+        price: dish.price,
+        rating: 4.8, // Mock rating as backend doesn't have it
+        image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
+        hasPortions: dish.has_portions,
+        customizableSpice: dish.customizable_spice
+    }));
 
     const toggleFavorite = (id) => {
         setFavorites((prev) =>

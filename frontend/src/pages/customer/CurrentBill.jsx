@@ -1,24 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import customerApi from "../../services/customerApi";
 
 export default function CurrentBill() {
   const navigate = useNavigate();
+  const { user, customerSession } = useApp();
+  const [sessionData, setSessionData] = useState(null);
 
-  // For this mock screen, we will just display cartItems as if they were ordered
-  // In a real app, this would come from an "active orders" endpoint.
-  const { user, cartItems } = useApp();
+  useEffect(() => {
+    if (customerSession?.sessionId) {
+      customerApi.getSessionDetails(customerSession.sessionId)
+        .then(data => setSessionData(data))
+        .catch(console.error);
+    }
+  }, [customerSession]);
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  const tax = Math.round(subtotal * 0.05);
-  const serviceCharge = cartItems.length ? 30 : 0;
+  const allOrderedItems = sessionData?.orders?.flatMap(order => order.items) || [];
+  
+  const subtotal = sessionData?.subtotal || 0;
+  const tax = sessionData?.tax || 0;
+  const serviceCharge = allOrderedItems.length > 0 ? 30 : 0;
   const total = subtotal + tax + serviceCharge;
 
   return (
@@ -44,11 +49,13 @@ export default function CurrentBill() {
         {/* Table Pill */}
         <div className="flex justify-center">
           <div className="rounded-full bg-red-50 border border-red-100 px-6 py-1.5 shadow-sm">
-            <span className="text-sm font-bold text-red-500">Table 07</span>
+            <span className="text-sm font-bold text-red-500">
+                {customerSession?.tableId ? (customerSession.tableId.toLowerCase().includes('table') ? customerSession.tableId : `Table ${customerSession.tableId}`) : "No Table"}
+            </span>
           </div>
         </div>
 
-        {cartItems.length === 0 ? (
+        {allOrderedItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center pt-20">
             <p className="text-gray-500 text-center">
               No items ordered yet.
@@ -58,16 +65,15 @@ export default function CurrentBill() {
           <>
             {/* Ordered Items */}
             <div className="space-y-4">
-              {cartItems.map((item) => (
+              {allOrderedItems.map((item, idx) => (
                 <div
-                  key={item.id}
+                  key={idx}
                   className="rounded-2xl bg-white p-3 shadow-sm border border-gray-100 flex gap-4"
                 >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="h-20 w-20 rounded-xl object-cover"
-                  />
+                  <div className="h-20 w-20 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
+                    {/* Placeholder for item image if not provided by backend */}
+                    🍽️
+                  </div>
                   <div className="flex-1 flex flex-col justify-center">
                     <div className="flex justify-between items-start">
                       <h2 className="font-bold text-gray-900 leading-tight pr-4">
