@@ -67,10 +67,10 @@ async def get_tables(
                     display_status = "Ready to Serve"
             
             # Check bills
-            pending_bills = [b for b in active_session.bills if b.status == "Pending"]
+            pending_bills = [b for b in active_session.bills if b.payment_status == "Pending"]
             if pending_bills:
                 display_status = "Payment Pending"
-                current_bill = float(sum(b.total_amount for b in pending_bills))
+                current_bill = float(sum(b.grand_total for b in pending_bills))
             else:
                 for o in active_session.orders:
                     if o.status not in ("Cancelled",):
