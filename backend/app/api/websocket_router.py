@@ -77,3 +77,19 @@ async def websocket_customer(websocket: WebSocket, session_id: int = Query(...))
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket, "customer")
+
+@router.websocket("/ws/kitchen")
+async def websocket_kitchen(websocket: WebSocket, token: str = Query(...)):
+    role = await verify_token(websocket, token)
+    if role is None:
+        return
+    if role not in ["kitchen", "admin", "employee"]:
+        await websocket.close(code=1008)
+        return
+        
+    await manager.connect(websocket, "kitchen")
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, "kitchen")

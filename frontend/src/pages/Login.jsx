@@ -24,6 +24,8 @@ const Login = () => {
                 navigate('/operator/dashboard');
             } else if (role === 'waiter') {
                 navigate('/waiter/dashboard');
+            } else if (role === 'kitchen') {
+                navigate('/kitchen');
             } else {
                 navigate('/');
             }
