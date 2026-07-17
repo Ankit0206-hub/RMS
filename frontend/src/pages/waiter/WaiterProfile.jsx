@@ -5,7 +5,7 @@ import {useAuth} from'../../contexts/AuthContext';
 
 export default function WaiterProfile() {
  const navigate = useNavigate();
- const {logout} = useAuth();
+ const {user, logout} = useAuth();
  
  const menuItems = [
  {icon: User, label:'Personal Details', color:'text-sky-500', bg:'bg-sky-500/10 border border-sky-200/50'},
@@ -13,6 +13,12 @@ export default function WaiterProfile() {
  {icon: Sliders, label:'Performance Settings', color:'text-teal-500', bg:'bg-teal-500/10 border border-teal-200/50'},
  {icon: Settings, label:'App Settings', color:'text-gray-600', bg:'bg-white/40 border border-white/50'}
  ];
+
+ const firstName = user?.first_name || 'Amit';
+ const lastName = user?.last_name || 'Kumar';
+ const fullName = `${firstName} ${lastName}`;
+ const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+ const roleName = user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Waiter';
 
  return (
  <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
@@ -34,15 +40,15 @@ export default function WaiterProfile() {
  <div className="bg-white/20 backdrop-blur-xl rounded-[32px] p-8 shadow-sm border border-white/40 flex flex-col items-center">
  <div className="relative">
  <div className="h-28 w-28 rounded-full bg-rose-100/50 flex items-center justify-center text-4xl font-black text-rose-500 border-4 border-white/60 shadow-lg backdrop-blur-md">
- AK
+ {initials}
  </div>
  <button className="absolute bottom-0 right-0 h-10 w-10 bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-full flex items-center justify-center shadow-md border-2 border-white/80 transition-transform">
  <Camera className="h-5 w-5"/>
  </button>
  </div>
- <h2 className="text-2xl font-black text-gray-800 mt-5">Amit Kumar</h2>
+ <h2 className="text-2xl font-black text-gray-800 mt-5">{fullName}</h2>
  <p className="text-teal-700 font-bold text-sm mt-2 bg-teal-500/10 px-4 py-1.5 rounded-full border border-teal-200/50 backdrop-blur-md tracking-wide">
- Senior Waiter
+ {roleName}
  </p>
  </div>
 

@@ -1,7 +1,7 @@
-import React, {useState} from'react';
-import {useNavigate} from'react-router-dom';
-import {Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle} from'lucide-react';
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle } from 'lucide-react';
+import waiterApi from '../../services/waiterApi';
 const TableGraphic = ({status, capacity = 4, guests = 0}) => {
  const getChairClass = (index) => {
  let style ='bg-white/70 backdrop-blur-sm border-white/80 shadow-[0_2px_8px_rgba(0,0,0,0.05)]'; // Default/Vacant
@@ -78,18 +78,31 @@ export default function MyTables() {
  const [activeTab, setActiveTab] = useState('All');
  const [searchQuery, setSearchQuery] = useState('');
  
- const tables = [
- {id:'T01', status:'Occupied', time:'45m', guests: 4, capacity: 4, order:'#128', currentBill: 1240},
- {id:'T02', status:'Ready to Serve', time:'12m', guests: 2, capacity: 2, order:'#129', currentBill: 850},
- {id:'T03', status:'Payment Pending', time:'1h 15m', guests: 3, capacity: 4, order:'#125', currentBill: 2100},
- {id:'T04', status:'Empty', time:'', guests: 0, capacity: 4, order:'', currentBill: 0},
- {id:'T05', status:'Occupied', time:'5m', guests: 6, capacity: 6, order:'Ordering', currentBill: 0},
- ];
- 
- // Stats calculation
- const totalOccupied = tables.filter(t => t.status ==='Occupied').length;
- const totalReady = tables.filter(t => t.status ==='Ready to Serve').length;
- const totalEmpty = tables.filter(t => t.status ==='Empty').length;
+    const [tables, setTables] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+        const fetchTables = async () => {
+            try {
+                const data = await waiterApi.getTables();
+                setTables(data);
+            } catch (error) {
+                console.error("Error fetching tables:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTables();
+        
+        // Optionally poll every 30s
+        const interval = setInterval(fetchTables, 30000);
+        return () => clearInterval(interval);
+    }, []);
+    
+    // Stats calculation
+    const totalOccupied = tables.filter(t => t.status === 'Occupied').length;
+    const totalReady = tables.filter(t => t.status === 'Ready to Serve').length;
+    const totalEmpty = tables.filter(t => t.status === 'Empty').length;
 
  const filteredTables = tables.filter(table => {
  const matchesTab = activeTab ==='All'? true : 
@@ -159,8 +172,13 @@ export default function MyTables() {
  </div>
  </div>
  
- {/* Tables Grid - Scrollable */}
- <div className="flex-1 overflow-y-auto px-4 pt-4 pb-24 content-start">
+  {/* Tables Grid - Scrollable */}
+  <div className="flex-1 overflow-y-auto px-4 pt-4 pb-24 content-start">
+  {loading ? (
+      <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+      </div>
+  ) : (
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
  {filteredTables.map(table => (
  <div 
@@ -214,17 +232,18 @@ export default function MyTables() {
  </div>
  ))}
  
- {filteredTables.length === 0 ? (
- <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
- <div className="bg-white/30 backdrop-blur-xl shadow-sm p-4 rounded-full mb-4 border border-white/40">
- <Search className="h-8 w-8 text-gray-400"/>
- </div>
- <h3 className="text-lg font-black text-gray-800 mb-1">No tables found</h3>
- <p className="text-gray-500 font-bold text-sm">Try adjusting your filters or search query.</p>
- </div>
- ) : null}
- </div>
- </div>
+  {filteredTables.length === 0 ? (
+  <div className="col-span-full py-12 flex flex-col items-center justify-center text-center">
+  <div className="bg-white/30 backdrop-blur-xl shadow-sm p-4 rounded-full mb-4 border border-white/40">
+  <Search className="h-8 w-8 text-gray-400"/>
+  </div>
+  <h3 className="text-lg font-black text-gray-800 mb-1">No tables found</h3>
+  <p className="text-gray-500 font-bold text-sm">Try adjusting your filters or search query.</p>
+  </div>
+  ) : null}
+  </div>
+  )}
+  </div>
  </div>
  </div>
  );

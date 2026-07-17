@@ -1,30 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Search, ShoppingCart, Plus, Minus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import waiterApi from '../../services/waiterApi';
 
 export default function WaiterMenu() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [activeCat, setActiveCat] = useState('All');
-    const categories = ['All', 'Starters', 'Main Course', 'Breads', 'Desserts', 'Beverages'];
     
-    const [items, setItems] = useState(() => {
-        const defaultItems = [
-            { id: 1, name: 'Paneer Butter Masala', category: 'Main Course', price: 240, qty: 0, img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80' },
-            { id: 2, name: 'Garlic Naan', category: 'Breads', price: 40, qty: 0, img: 'https://images.unsplash.com/photo-1626200419199-391ae4be7a41?w=100&q=80' },
-            { id: 3, name: 'Dal Makhani', category: 'Main Course', price: 220, qty: 0, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=100&q=80' }
-        ];
-        
-        if (location.state?.cartItems) {
-            return defaultItems.map(item => {
-                const existing = location.state.cartItems.find(i => i.id === item.id);
-                if (existing) return { ...item, ...existing };
-                return item;
-            });
-        }
-        return defaultItems;
-    });
+    // We need tableId and sessionId for ordering
+    const tableId = location.state?.tableId || 'T01';
+    const sessionId = location.state?.sessionId;
+    
+    const [activeCat, setActiveCat] = useState('All');
+    const [categories, setCategories] = useState(['All']);
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+        const fetchMenu = async () => {
+            try {
+                const data = await waiterApi.getMenu();
+                
+                const cats = ['All', ...data.map(c => c.name)];
+                setCategories(cats);
+                
+                let allItems = [];
+                data.forEach(c => {
+                    c.items.forEach(i => {
+                        allItems.push({
+                            ...i,
+                            category: c.name,
+                            qty: 0,
+                            img: i.image_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80'
+                        });
+                    });
+                });
+                
+                if (location.state?.cartItems) {
+                    allItems = allItems.map(item => {
+                        const existing = location.state.cartItems.find(i => i.id === item.id);
+                        if (existing) return { ...item, ...existing };
+                        return item;
+                    });
+                }
+                setItems(allItems);
+            } catch (err) {
+                console.error(err);
+                toast.error("Failed to load menu");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMenu();
+    }, [location.state]);
     
     const [customizingItem, setCustomizingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
@@ -78,7 +107,7 @@ export default function WaiterMenu() {
                             <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
                                 <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                             </button>
-                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Menu <span className="text-gray-500 font-bold">(Table T01)</span></h1>
+                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Menu <span className="text-gray-500 font-bold">(Table {tableId})</span></h1>
                         </div>
                         <button onClick={() => toast('Search clicked!')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm">
                             <Search className="h-5 w-5" strokeWidth={2.5} />
@@ -105,6 +134,11 @@ export default function WaiterMenu() {
                 </div>
 
                 <div className="px-4 md:px-8 py-6 w-full pb-32 max-w-7xl mx-auto flex-1">
+                    {loading ? (
+                        <div className="flex justify-center items-center h-40">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+                        </div>
+                    ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {items.filter(item => activeCat === 'All' || item.category === activeCat).map(item => (
                             <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
@@ -135,12 +169,13 @@ export default function WaiterMenu() {
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
 
                 {cartCount > 0 && (
                     <div className="fixed bottom-20 md:bottom-24 left-0 right-0 p-4 md:p-6 bg-transparent z-40 pointer-events-none flex justify-center">
                         <div className="w-full max-w-md">
-                            <button onClick={() => navigate('/waiter/cart', { state: { cartItems: items.filter(i => i.qty > 0) } })} className="w-full pointer-events-auto relative overflow-hidden rounded-[24px] p-[2px] active:scale-[0.98] transition-all shadow-[0_8px_32px_rgba(244,63,94,0.4)]">
+                            <button onClick={() => navigate('/waiter/cart', { state: { cartItems: items.filter(i => i.qty > 0), tableId, sessionId } })} className="w-full pointer-events-auto relative overflow-hidden rounded-[24px] p-[2px] active:scale-[0.98] transition-all shadow-[0_8px_32px_rgba(244,63,94,0.4)]">
                                 <div className="absolute inset-0 bg-gradient-to-r from-rose-400 via-pink-500 to-rose-500 opacity-90 transition-opacity"></div>
                                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                                 <div className="relative bg-white/20 backdrop-blur-md flex items-center justify-between px-3 md:px-5 py-3 md:py-4 rounded-[22px] border border-white/40 transition-all">

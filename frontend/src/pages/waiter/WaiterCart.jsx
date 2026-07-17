@@ -2,12 +2,16 @@ import React, {useState} from'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, Edit3, ShoppingBag } from 'lucide-react';
 import toast from 'react-hot-toast';
+import waiterApi from '../../services/waiterApi';
 
 export default function WaiterCart() {
     const navigate = useNavigate();
     const location = useLocation();
 
     const [items, setItems] = useState(location.state?.cartItems || []);
+    const tableId = location.state?.tableId || 'T01';
+    const sessionId = location.state?.sessionId;
+    const [specialInstructions, setSpecialInstructions] = useState('');
     
     const [editingItem, setEditingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
@@ -53,7 +57,7 @@ export default function WaiterCart() {
  <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
  <ArrowLeft className="h-5 w-5"strokeWidth={2.5} />
  </button>
- <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Confirm Order <span className="text-gray-500 font-bold">(T01)</span></h1>
+ <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Confirm Order <span className="text-gray-500 font-bold">({tableId})</span></h1>
  </div>
  <div className="w-10"></div>
  </div>
@@ -97,7 +101,7 @@ export default function WaiterCart() {
  ))}
  </div>
  
-    <button onClick={() => navigate('/waiter/menu', { state: { cartItems: items } })} className="w-full mt-5 py-3.5 bg-white/30 backdrop-blur-md border-2 border-dashed border-rose-300/60 rounded-2xl text-rose-500 font-bold text-[15px] flex items-center justify-center transition-colors">
+    <button onClick={() => navigate('/waiter/menu', { state: { cartItems: items, tableId, sessionId } })} className="w-full mt-5 py-3.5 bg-white/30 backdrop-blur-md border-2 border-dashed border-rose-300/60 rounded-2xl text-rose-500 font-bold text-[15px] flex items-center justify-center transition-colors">
         <Plus className="h-5 w-5 mr-2" /> Add More Items
     </button>
  </div>
@@ -107,7 +111,7 @@ export default function WaiterCart() {
  <Edit3 className="h-4 w-4 mr-2 text-rose-400"/>
  <span className="text-sm font-bold uppercase tracking-wide">Special Instructions</span>
  </div>
- <textarea placeholder="E.g. Make it spicy, less oil..."className="w-full bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl px-3.5 py-3 md:text-base text-sm font-medium text-gray-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all min-h-[85px] md:min-h-[100px] resize-none placeholder:text-gray-500 leading-relaxed"></textarea>
+  <textarea value={specialInstructions} onChange={e => setSpecialInstructions(e.target.value)} placeholder="E.g. Make it spicy, less oil..."className="w-full bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl px-3.5 py-3 md:text-base text-sm font-medium text-gray-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all min-h-[85px] md:min-h-[100px] resize-none placeholder:text-gray-500 leading-relaxed"></textarea>
  </div>
  </div>
 
@@ -117,9 +121,31 @@ export default function WaiterCart() {
  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-0.5">Total Amount</p>
  <p className="text-2xl font-black text-gray-900">₹ {cartTotal}</p>
  </div>
- <button onClick={() => {toast.success('Order sent to kitchen!'); navigate('/waiter/tables');}} className="bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-[18px] py-3.5 px-6 md:px-8 font-bold text-[15px] shadow-sm active:scale-95 transition-all border border-rose-300/50">
- Send to Kitchen
- </button>
+  <button onClick={async () => {
+      try {
+          if (!sessionId) {
+              toast.error("No active session found for this table.");
+              return;
+          }
+          const orderData = {
+              session_id: sessionId,
+              special_instructions: specialInstructions,
+              items: items.map(item => ({
+                  menu_item_id: item.id,
+                  quantity: item.qty,
+                  notes: [item.prepType, item.spiceLevel].filter(Boolean).join(', ') || undefined
+              }))
+          };
+          await waiterApi.createOrder(sessionId, orderData);
+          toast.success('Order placed successfully!'); 
+          navigate('/waiter/tables');
+      } catch (err) {
+          toast.error("Failed to place order");
+          console.error(err);
+      }
+  }} className="bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-[18px] py-3.5 px-6 md:px-8 font-bold text-[15px] shadow-sm active:scale-95 transition-all border border-rose-300/50">
+  Place Order
+  </button>
  </div>
  </div>
         </div>
