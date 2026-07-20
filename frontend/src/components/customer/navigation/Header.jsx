@@ -31,9 +31,8 @@ export default function Header() {
           </span>
         </div>
 
-        {/* User Profile */}
         <button
-          onClick={() => navigate("/customer/settings")}
+          onClick={() => navigate("/customer/profile")}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-50 text-orange-500 shadow-sm overflow-hidden"
         >
           <User size={20} />

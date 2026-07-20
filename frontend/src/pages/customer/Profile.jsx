@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { User, Mail, Phone, Edit2, Check, X } from "lucide-react";
+import { User, Mail, Phone, Edit2, Check, X, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
-import BottomNav from "../../components/customer/navigation/BottomNav";
 import ImageCropModal from "../../components/customer/common/ImageCropModal";
 import { useApp } from "../../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
+    const navigate = useNavigate();
     const { user, updateUser, customerSession } = useApp();
     const [isEditing, setIsEditing] = useState(false);
     const [cropImageSrc, setCropImageSrc] = useState(null);
@@ -61,16 +62,31 @@ export default function Profile() {
         <PageLayout className="bg-gray-50">
             <div className="flex h-full flex-col">
                 {/* Header */}
-                <div className="bg-white px-5 py-5 shadow-sm flex items-center justify-between relative z-10">
-                    <h1 className="text-xl font-bold text-gray-900">Profile</h1>
-                    {!isEditing && (
-                        <button 
-                            onClick={() => setIsEditing(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 rounded-full text-sm font-bold active:scale-95 transition"
-                        >
-                            <Edit2 size={14} /> Edit
-                        </button>
-                    )}
+                <div className="bg-white px-5 py-4 shadow-sm flex items-center justify-between relative z-10">
+                    <button onClick={() => navigate(-1)} className="text-gray-900">
+                        <ArrowLeft size={22} />
+                    </button>
+                    <h1 className="text-xl font-bold text-gray-900 absolute left-1/2 -translate-x-1/2">Profile</h1>
+                    <div className="flex items-center gap-2">
+                        {formData.email !== user.email && !isEditing && (
+                            <button 
+                                onClick={handleSave}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white rounded-full text-sm font-bold shadow-sm active:scale-95 transition"
+                            >
+                                <Check size={14} /> Save
+                            </button>
+                        )}
+                        {!isEditing ? (
+                            <button 
+                                onClick={() => setIsEditing(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 rounded-full text-sm font-bold active:scale-95 transition"
+                            >
+                                <Edit2 size={14} /> Edit
+                            </button>
+                        ) : (
+                            <div className="w-[72px]"></div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -128,23 +144,17 @@ export default function Profile() {
                         {/* Email */}
                         <div>
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Email Address</label>
-                            {isEditing ? (
-                                <div className="relative">
-                                    <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                    <input 
-                                        type="email" 
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-[15px] font-semibold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white transition"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-3">
-                                    <Mail size={18} className="text-orange-500" />
-                                    <p className="text-[15px] font-bold text-gray-900">{user.email}</p>
-                                </div>
-                            )}
+                            <div className="relative">
+                                <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input 
+                                    type="email" 
+                                    name="email"
+                                    placeholder="Add Email Address"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-[15px] font-semibold text-gray-900 focus:outline-none focus:border-orange-500 focus:bg-white transition placeholder:text-gray-400"
+                                />
+                            </div>
                         </div>
 
                         <div className="border-t border-gray-50"></div>
@@ -192,8 +202,6 @@ export default function Profile() {
 
                     </div>
                 </div>
-
-                <BottomNav />
             </div>
 
             {/* Cropper Modal */}

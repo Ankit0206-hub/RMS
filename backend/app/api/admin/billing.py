@@ -27,6 +27,32 @@ async def get_bills(
     meta = PaginationMeta(total=total, page=page, page_size=page_size)
     return StandardResponse(success=True, message="Bills retrieved successfully", data=bills, meta=meta)
 
+@router.get("/requests")
+async def get_bill_requests(db: AsyncSession = Depends(get_db), current_user = Depends(get_current_admin_or_operator)):
+    from app.models.ordering import CustomerSession
+    from app.models.restaurant import RestaurantTable
+    from sqlalchemy import select
+    from sqlalchemy.orm import selectinload
+    
+    query = select(CustomerSession).where(
+        CustomerSession.bill_requested == True,
+        CustomerSession.status == "Active"
+    ).options(selectinload(CustomerSession.table))
+    
+    result = await db.execute(query)
+    sessions = result.scalars().all()
+    
+    requests = []
+    for s in sessions:
+        requests.append({
+            "session_id": s.id,
+            "table_number": s.table.table_number if s.table else "N/A",
+            "customer_name": s.customer_name,
+            "requested_at": s.updated_at.isoformat() if s.updated_at else s.created_at.isoformat()
+        })
+        
+    return StandardResponse(success=True, message="Bill requests retrieved", data=requests)
+
 @router.get("/bills/{bill_id}", response_model=StandardResponse[BillResponse])
 async def get_bill(bill_id: int, db: AsyncSession = Depends(get_db)):
     bill = await service.get_bill(db, bill_id)
