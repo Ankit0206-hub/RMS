@@ -201,4 +201,24 @@ class TablesService:
         await db.refresh(virtual_table)
         return virtual_table
 
+    async def unmerge_table(self, db: AsyncSession, table_id: int):
+        from sqlalchemy.future import select
+        
+        virtual_table = await self.get_table(db, table_id)
+        if not virtual_table.is_virtual:
+            raise HTTPException(status_code=400, detail="Only virtual (merged) tables can be unmerged")
+            
+        if virtual_table.status != "Available":
+            raise HTTPException(status_code=400, detail="Table must be Available to unmerge")
+            
+        result = await db.execute(select(RestaurantTable).where(RestaurantTable.parent_table_id == virtual_table.id))
+        children = result.scalars().all()
+        
+        for t in children:
+            t.parent_table_id = None
+            t.status = "Available"
+            
+        await db.delete(virtual_table)
+        await db.commit()
+
 tables_service = TablesService()

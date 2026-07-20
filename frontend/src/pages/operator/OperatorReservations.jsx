@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { 
     Search, ChevronDown, ChevronLeft, ChevronRight, 
-    Calendar, Users, User, Clock, Star, Leaf, Plus
+    Calendar, Users, User, Clock, Star, Leaf, Plus, Unlink
 } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
 import ReservationModal from '../../components/ReservationModal';
@@ -73,9 +73,23 @@ const OperatorReservations = () => {
             setSelectedTablesForMerge([]);
             fetchData();
         } catch (error) {
-            toast.error(error?.response?.data?.detail || "Failed to merge tables");
+            console.error("Merge error:", error);
+            toast.error(error.response?.data?.detail || "Failed to merge tables");
         } finally {
             setMerging(false);
+        }
+    };
+
+    const handleUnmerge = async (e, tableId) => {
+        e.stopPropagation();
+        if (confirm('Are you sure you want to split this merged table back into its original tables?')) {
+            try {
+                await adminApi.unmergeTable(tableId);
+                toast.success('Table split successfully');
+                fetchData();
+            } catch (err) {
+                toast.error(err.response?.data?.detail || 'Failed to split table');
+            }
         }
     };
 
@@ -188,7 +202,7 @@ const OperatorReservations = () => {
             isAvailableWithFutureRes,
             isMerged: dbTable?.status === 'Merged'
         };
-    });
+    }).filter(t => t.dbId !== undefined);
     
     const virtualTables = tables.filter(t => t.is_virtual);
 
@@ -626,6 +640,13 @@ const OperatorReservations = () => {
                                                     {table.status}
                                                 </span>
                                             </div>
+                                            <button
+                                                onClick={(e) => handleUnmerge(e, table.id)}
+                                                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
+                                                title="Split Table"
+                                            >
+                                                <Unlink className="w-3 h-3" />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>

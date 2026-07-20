@@ -70,6 +70,15 @@ async def merge_tables(
     data = await tables_service.merge_tables(db, obj_in.table_ids)
     return StandardResponse(data=data, message="Tables merged successfully")
 
+@router.delete("/{table_id}/merge", response_model=StandardResponse[dict])
+async def unmerge_table(
+    table_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    await tables_service.unmerge_table(db, table_id)
+    return StandardResponse(data={"success": True}, message="Tables unmerged successfully")
+
 @router.post("/{table_id}/assign", response_model=StandardResponse[TableAssignmentResponse])
 async def assign_waiter(
     table_id: int,

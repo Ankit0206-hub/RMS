@@ -8,6 +8,8 @@ class TableBase(BaseModel):
     floor: Optional[str] = None
     capacity: int
     status: Optional[str] = "Available"
+    is_virtual: bool = False
+    parent_table_id: Optional[int] = None
 
 class TableCreate(TableBase):
     pass

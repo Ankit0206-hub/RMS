@@ -31,5 +31,9 @@ export const adminApi = {
     mergeTables: async (tableIds) => {
         const response = await api.post('/admin/tables/merge', { table_ids: tableIds });
         return response.data;
+    },
+    unmergeTable: async (tableId) => {
+        const response = await api.delete(`/admin/tables/${tableId}/merge`);
+        return response.data;
     }
 };
