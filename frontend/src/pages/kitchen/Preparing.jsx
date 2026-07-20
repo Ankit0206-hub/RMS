@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 const Preparing = () => {
     const navigate = useNavigate();
-    const [filter, setFilter] = useState('All'); 
+    const [filter, setFilter] = useState('All');
     const [preparingOrders, setPreparingOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,21 +27,21 @@ const Preparing = () => {
 
     useEffect(() => {
         fetchOrders();
-        
+
         // Setup WebSocket for real-time updates
         const token = localStorage.getItem('token');
         if (!token) return;
-        
+
         const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/kitchen?token=${token}`;
         const ws = new WebSocket(wsUrl);
-        
+
         ws.onopen = () => console.log("Kitchen WebSocket connected for Preparing Orders");
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 if (data.event === "order.updated") {
                     if (data.payload.status === "Preparing") {
-                        fetchOrders(); 
+                        fetchOrders();
                     } else if (data.payload.status !== "Preparing") {
                         if (data.payload.status === "Cancelled") {
                             toast(`Order #${data.payload.id} was cancelled`, { icon: '❌' });
@@ -53,7 +53,7 @@ const Preparing = () => {
                 console.error("WS message error", err);
             }
         };
-        
+
         return () => ws.close();
     }, []);
 
@@ -111,7 +111,7 @@ const Preparing = () => {
                 <h2 className="text-gray-900 font-black text-2xl tracking-tight">
                     Preparing <span className="text-gray-400 font-medium ml-2">({displayOrders.length})</span>
                 </h2>
-                
+
                 <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex bg-gray-100 p-1 rounded-xl">
                         <button
@@ -132,17 +132,15 @@ const Preparing = () => {
                         <div className="flex bg-gray-100 p-1.5 rounded-lg border border-gray-200">
                             <button
                                 onClick={() => setFilter('All')}
-                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors ${
-                                    filter === 'All' ? 'bg-white text-gray-900 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors ${filter === 'All' ? 'bg-white text-gray-900 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                    }`}
                             >
                                 All Active
                             </button>
                             <button
                                 onClick={() => setFilter('Long')}
-                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors flex items-center gap-2 ${
-                                    filter === 'Long' ? 'bg-white text-[#f97316] border border-red-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors flex items-center gap-2 ${filter === 'Long' ? 'bg-white text-[#f97316] border border-red-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                    }`}
                             >
                                 <span className={`w-2 h-2 rounded-full ${filter === 'Long' ? 'bg-red-500' : 'bg-gray-300'}`}></span>
                                 Long Running
@@ -150,116 +148,119 @@ const Preparing = () => {
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Content Area */}
+            </div>            {/* Content Area */}
             {viewMode === 'items' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {itemViewData.map((item, index) => (
-                        <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 flex gap-4 items-center shadow-sm">
-                            <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" />
-                            <div className="flex-1">
-                                <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
-                                <p className="text-gray-500 text-xs mt-1">Preparing for: {item.orders.join(', ')}</p>
+                        <div key={index} className="bg-zinc-900 rounded-2xl border border-zinc-700 p-5 flex gap-5 items-center shadow-lg hover:border-orange-500/50 transition-all">
+                            <div className="relative">
+                                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shadow-inner" />
+                                <div className="absolute -top-3 -right-3 bg-orange-500 text-white font-black text-xl h-9 w-9 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.5)] border-2 border-zinc-900">
+                                    {item.quantity}
+                                </div>
                             </div>
-                            <div className="bg-orange-100 text-orange-600 font-black text-2xl h-12 w-12 rounded-xl flex items-center justify-center">
-                                {item.quantity}
+                            <div className="flex-1">
+                                <h3 className="font-black text-white text-lg leading-tight">{item.name}</h3>
+                                <div className="mt-2 text-zinc-400 text-xs font-bold">
+                                    Needed for: <span className="text-zinc-300">{item.orders.join(', ')}</span>
+                                </div>
                             </div>
                         </div>
                     ))}
                     {itemViewData.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-gray-400 font-medium">No items being prepared.</div>
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-zinc-800 rounded-2xl">
+                            <span className="text-xl">No items pending prep.</span>
+                        </div>
                     )}
                 </div>
             ) : (
-                <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     {displayOrders.map((order) => {
-                    const isLongRunning = order.elapsedMin >= 20;
-                    const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
-                    
-                    return (
+                        const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
+                        const isLongRunning = order.elapsedMin > 20;
+
+                        return (
                         <div 
                             key={order.id} 
-                            className={`bg-white rounded-lg border p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden ${
-                                isLongRunning ? 'border-[#f97316]' : 'border-gray-200'
+                            className={`bg-zinc-900 flex flex-col rounded-xl overflow-hidden border shadow-xl transition-all ${
+                                isLongRunning ? 'border-red-500/80 shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'border-zinc-700/80 hover:shadow-[0_0_20px_rgba(249,115,22,0.15)]'
                             }`}
                         >
-                            {/* Urgent Solid Bar for Long Running */}
-                            {isLongRunning && (
-                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
-                            )}
-
-                            {/* Left: Table & Order Info */}
-                            <div className="flex items-center gap-5 md:w-1/4 shrink-0 pl-1">
-                                <div className={`${
-                                    isLongRunning ? 'bg-red-600' : 'bg-[#f97316]'
-                                } text-white text-2xl font-black px-4 py-3 rounded-lg shrink-0`}>
-                                    {order.table_number || "TA"}
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-gray-900 font-black text-xl tracking-wide mb-1">Order #{order.id}</span>
-                                    <span className="text-gray-500 font-semibold text-sm">
-                                        {itemCount} Items • {order.order_type}
+                            {/* Ticket Header */}
+                            <div className={`${isLongRunning ? 'bg-red-600' : 'bg-orange-600'} p-3 flex justify-between items-start text-white relative`}>
+                                {isLongRunning && (
+                                    <div className="absolute inset-0 bg-white/20 animate-pulse mix-blend-overlay pointer-events-none"></div>
+                                )}
+                                <div className="relative z-10">
+                                    <h3 className="font-black text-3xl leading-none">
+                                        {order.table_number || "TA"}
+                                    </h3>
+                                    <span className={`${isLongRunning ? 'text-red-100' : 'text-orange-100'} font-bold text-xs uppercase tracking-wider mt-1 block`}>
+                                        {order.order_type}
                                     </span>
                                 </div>
-                            </div>
-
-                            {/* Middle: Special Instructions (If any) */}
-                            <div className="md:w-1/3 flex justify-start md:justify-center">
-                                {order.special_instructions ? (
-                                    <div className="bg-amber-50 text-amber-700 px-4 py-2.5 rounded-lg border border-amber-200 flex items-start gap-2 w-full max-w-sm">
-                                        <Info size={18} className="shrink-0 mt-0.5 text-amber-600" />
-                                        <div>
-                                            <span className="block text-xs font-black uppercase tracking-wider text-amber-600/80 mb-0.5">Special Instructions</span>
-                                            <span className="font-bold text-sm leading-snug">{order.special_instructions}</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="hidden md:block w-full max-w-sm"></div> // Spacer
-                                )}
-                            </div>
-                            
-                            {/* Right: Time & Actions */}
-                            <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-4 md:w-auto shrink-0 justify-end w-full">
-                                <div className="text-center sm:text-right hidden sm:block md:hidden lg:block lg:mr-4">
-                                    <span className={`font-black text-2xl block flex items-center gap-1.5 justify-end ${
-                                        isLongRunning ? 'text-red-600' : 'text-amber-600'
-                                    }`}>
-                                        <Clock size={20} strokeWidth={3} className={isLongRunning ? 'text-red-500' : 'text-amber-500'} />
+                                <div className="text-right relative z-10">
+                                    <span className="font-black text-xl flex items-center gap-1 justify-end">
+                                        <Clock size={16} strokeWidth={3} className={isLongRunning ? 'animate-pulse' : ''} />
                                         {order.elapsedMin}m
                                     </span>
-                                    <span className="text-gray-400 font-bold text-xs uppercase tracking-wider">Elapsed Time</span>
-                                </div>
-                                
-                                <div className="flex items-center gap-3 w-full sm:w-auto">
-                                    <button 
-                                        onClick={() => navigate(`/kitchen/orders/${order.id}`)}
-                                        className="flex-1 sm:flex-none bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold py-2.5 px-6 rounded-lg transition-colors"
-                                    >
-                                        View Details
-                                    </button>
-                                    <button 
-                                        onClick={() => handleMarkReady(order.id)}
-                                        className={`flex-1 sm:flex-none text-white font-bold py-2.5 px-6 rounded-lg transition-colors ${
-                                            isLongRunning 
-                                                ? 'bg-red-600 hover:bg-red-700' 
-                                                : 'bg-[#f97316] hover:bg-[#ea580c]'
-                                        }`}
-                                    >
-                                        Mark Ready
-                                    </button>
+                                    <span className={`${isLongRunning ? 'text-red-200' : 'text-orange-200'} font-bold text-xs uppercase tracking-widest block mt-0.5`}>Elapsed</span>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
 
-                {displayOrders.length === 0 && (
-                    <div className="text-center bg-white rounded-lg border border-gray-200 text-gray-500 py-20 font-bold text-lg">
-                        No orders are currently being prepared.
-                    </div>
-                )}
-            </div>
+                            {/* Special Instructions (Optional Header Banner) */}
+                            {order.special_instructions && (
+                                <div className="bg-amber-500/20 text-amber-400 p-2 text-xs font-bold border-b border-amber-500/20 flex items-center gap-1.5 leading-tight">
+                                    <Info size={14} className="shrink-0" />
+                                    {order.special_instructions}
+                                </div>
+                            )}
+
+                            {/* Ticket Body (Items List) */}
+                            <div className="p-3 flex-1 overflow-y-auto bg-zinc-900 min-h-[150px] max-h-[250px] custom-scrollbar">
+                                <div className="text-zinc-500 text-xs font-bold uppercase tracking-widest border-b border-zinc-800 pb-2 mb-2 flex justify-between">
+                                    <span>{itemCount} Items</span>
+                                    <span>Order #{order.id}</span>
+                                </div>
+                                <ul className="flex flex-col gap-3">
+                                    {order.items?.map((item, idx) => (
+                                        <li key={idx} className="flex items-start gap-3 text-zinc-200">
+                                            <span className="font-black text-orange-400 text-lg w-6 shrink-0">{item.quantity}</span>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-base leading-tight">{item.menu_item_name}</span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            
+                            {/* Ticket Footer / Action */}
+                            <div className="p-3 bg-zinc-950 border-t border-zinc-800 grid grid-cols-2 gap-2 mt-auto">
+                                <button 
+                                    onClick={() => navigate(`/kitchen/orders/${order.id}`)}
+                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-2.5 rounded-lg transition-colors text-sm"
+                                >
+                                    Details
+                                </button>
+                                <button 
+                                    onClick={() => handleMarkReady(order.id)}
+                                    className={`${isLongRunning ? 'bg-red-600 hover:bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'bg-orange-600 hover:bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.3)]'} text-white font-black py-2.5 rounded-lg transition-colors text-sm`}
+                                >
+                                    Mark Ready
+                                </button>
+                            </div>
+                        </div>
+                    )})}
+                    
+                    {displayOrders.length === 0 && (
+                        <div className="col-span-full text-center bg-zinc-900/50 rounded-2xl border-2 border-dashed border-zinc-800 text-zinc-500 py-20 font-bold text-xl flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
+                                <Info className="text-zinc-600 w-8 h-8" />
+                            </div>
+                            No orders are currently being prepared.
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );

@@ -119,7 +119,7 @@ class BillingService:
                 await db.commit()
                 
                 # Broadcast the settlement event
-                from app.api.ws.manager import manager
+                from app.websocket.connection_manager import manager
                 await manager.broadcast("BILL_PAID", {
                     "session_id": session.id,
                     "table_id": table.table_number if table else None
