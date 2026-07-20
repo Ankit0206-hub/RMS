@@ -59,7 +59,7 @@ async def delete_table(
     await tables_service.delete_table(db, table_id)
     return StandardResponse(data={"deleted": True})
 
-from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse
+from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate
 
 @router.post("/{table_id}/assign", response_model=StandardResponse[TableAssignmentResponse])
 async def assign_waiter(
@@ -87,3 +87,13 @@ async def unassign_waiter(
 ):
     await tables_service.unassign_waiter(db, table_id)
     return StandardResponse(data={"deleted": True}, message="Waiter unassigned from table")
+
+@router.post("/{table_id}/transfer", response_model=StandardResponse[dict])
+async def transfer_table(
+    table_id: int,
+    obj_in: TableTransferCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    await tables_service.transfer_table(db, table_id, obj_in.target_table_id)
+    return StandardResponse(data={"success": True}, message="Table transferred successfully")

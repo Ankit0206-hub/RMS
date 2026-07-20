@@ -9,10 +9,13 @@ import { Modal } from '../../components/ui/Modal';
 
 const TableAssignment = () => {
     const queryClient = useQueryClient();
-    const [selectedTable, setSelectedTable] = useState(null);
+    const [selectedTables, setSelectedTables] = useState([]);
     const [selectedWaiter, setSelectedWaiter] = useState('');
     const [searchWaiter, setSearchWaiter] = useState('');
     const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [targetTransferTable, setTargetTransferTable] = useState('');
 
     // Fetch Tables
     const { data: tablesData, isLoading: tablesLoading } = useQuery({
@@ -37,11 +40,6 @@ const TableAssignment = () => {
         mutationFn: async ({ tableId, employeeId }) => {
             const res = await api.post(`/admin/tables/${tableId}/assign`, { employee_id: employeeId });
             return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
-            setSelectedWaiter('');
-            setSelectedTable(null);
         }
     });
 
@@ -49,12 +47,6 @@ const TableAssignment = () => {
         mutationFn: async (tableId) => {
             const res = await api.delete(`/admin/tables/${tableId}/assign`);
             return res.data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
-            if (selectedTable) {
-                setSelectedTable(prev => ({...prev, assigned_waiter_name: null, assigned_waiter_id: null}));
-            }
         }
     });
 
@@ -65,8 +57,21 @@ const TableAssignment = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['adminTables'] });
-            setSelectedTable(prev => prev ? {...prev, assigned_waiter_name: null, assigned_waiter_id: null} : null);
+            setSelectedTables([]);
             setIsConfirmClearOpen(false);
+        }
+    });
+
+    const transferMutation = useMutation({
+        mutationFn: async ({ tableId, targetTableId }) => {
+            const res = await api.post(`/admin/tables/${tableId}/transfer`, { target_table_id: targetTableId });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+            setSelectedTables([]);
+            setIsTransferModalOpen(false);
+            setTargetTransferTable('');
         }
     });
 
@@ -96,13 +101,45 @@ const TableAssignment = () => {
     const activeWaiters = waiters.length; 
     const availableWaiters = waiters.filter(w => !w.status || w.status !== 'Inactive').length; 
 
-    const handleAssign = () => {
-        if (!selectedTable || !selectedWaiter) return;
-        assignMutation.mutate({ tableId: selectedTable.id, employeeId: parseInt(selectedWaiter) });
+    const handleAssign = async () => {
+        if (selectedTables.length === 0 || !selectedWaiter) return;
+        
+        const waiterId = parseInt(selectedWaiter);
+        const tablesToAssign = selectedTables.filter(t => t.assigned_waiter_id !== waiterId);
+        
+        if (tablesToAssign.length === 0) {
+             setSelectedTables([]);
+             setSelectedWaiter('');
+             return;
+        }
+
+        setIsAssigning(true);
+        try {
+            await Promise.all(tablesToAssign.map(t => assignMutation.mutateAsync({ tableId: t.id, employeeId: waiterId })));
+            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+            setSelectedTables([]);
+            setSelectedWaiter('');
+        } catch (error) {
+            console.error('Error assigning tables:', error);
+        } finally {
+            setIsAssigning(false);
+        }
     };
 
-    const handleUnassign = (tableId) => {
-        unassignMutation.mutate(tableId);
+    const handleUnassign = async () => {
+        const tablesToUnassign = selectedTables.filter(t => t.assigned_waiter_id);
+        if (tablesToUnassign.length === 0) return;
+
+        setIsAssigning(true);
+        try {
+            await Promise.all(tablesToUnassign.map(t => unassignMutation.mutateAsync(t.id)));
+            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+            setSelectedTables([]);
+        } catch (error) {
+            console.error('Error unassigning tables:', error);
+        } finally {
+            setIsAssigning(false);
+        }
     };
 
 
@@ -171,12 +208,22 @@ const TableAssignment = () => {
                             <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white flex items-center cursor-pointer">
                                 Restaurant Floor (Main Hall) <ChevronDown size={16} className="ml-2 text-gray-400" />
                             </h3>
-                            <button 
-                                onClick={() => setIsConfirmClearOpen(true)}
-                                className="flex items-center px-3 py-1.5 border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
-                            >
-                                <Trash2 size={14} className="mr-1.5" /> Clear All Assignments
-                            </button>
+                            <div className="flex items-center space-x-2">
+                                {selectedTables.length > 0 && (
+                                    <button 
+                                        onClick={() => setSelectedTables([])}
+                                        className="flex items-center px-3 py-1.5 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
+                                    >
+                                        Clear Selection ({selectedTables.length})
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={() => setIsConfirmClearOpen(true)}
+                                    className="flex items-center px-3 py-1.5 border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
+                                >
+                                    <Trash2 size={14} className="mr-1.5" /> Clear All Assignments
+                                </button>
+                            </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
                             <span className="flex items-center"><span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span> Available</span>
@@ -235,7 +282,7 @@ const TableAssignment = () => {
                                 }
 
                                 const isUnassigned = !table.assigned_waiter_id;
-                                const isSelected = selectedTable?.id === table.id;
+                                const isSelected = selectedTables.some(st => st.id === table.id);
                                 
                                 let colSpanClass = 'col-span-1';
                                 if (table.capacity >= 5 && table.capacity <= 8) {
@@ -252,7 +299,7 @@ const TableAssignment = () => {
                                 return (
                                     <div 
                                         key={table.id}
-                                        onClick={() => setSelectedTable(table)}
+                                        onClick={() => setSelectedTables(prev => prev.some(t => t.id === table.id) ? prev.filter(t => t.id !== table.id) : [...prev, table])}
                                         className={`relative w-full h-24 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex ${colSpanClass}
                                             ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900 border-indigo-200 dark:border-indigo-800' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
@@ -276,21 +323,6 @@ const TableAssignment = () => {
                                     </div>
                                 );
                             })}
-                        </div>
-                    </div>
-                    
-                    <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-slate-800/50/50 rounded-b-2xl text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-600 dark:text-slate-400">
-                        <div className="flex items-center text-indigo-600">
-                            <Info size={14} className="mr-1.5" /> Drag & drop waiter to assign table (or use panel)
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <label className="flex items-center cursor-pointer">
-                                <input type="checkbox" className="mr-2 rounded border-gray-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500" />
-                                Select Multiple
-                            </label>
-                            <button className="flex items-center border border-indigo-200 text-indigo-600 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg hover:bg-indigo-50">
-                                <Plus size={14} className="mr-1" /> Bulk Actions
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -322,18 +354,25 @@ const TableAssignment = () => {
                                 const isBusy = workload > 3; // mock logic
                                 const statusClass = isBusy ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50";
                                 const statusText = isBusy ? "Busy" : "Available";
+                                
+                                const isDisabled = selectedTables.length > 0 && selectedTables.every(t => t.assigned_waiter_id === waiter.id);
 
                                 return (
                                     <div 
                                         key={waiter.id} 
-                                        onClick={() => setSelectedWaiter(waiter.id.toString())}
-                                        className={`flex items-center p-3 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 rounded-xl cursor-pointer transition-colors border ${selectedWaiter === waiter.id.toString() ? 'border-indigo-500 bg-indigo-50/30' : 'border-transparent hover:border-gray-100 dark:border-slate-800'}`}
+                                        onClick={() => !isDisabled && setSelectedWaiter(waiter.id.toString())}
+                                        className={`flex items-center p-3 rounded-xl transition-colors border 
+                                            ${isDisabled ? 'opacity-50 cursor-not-allowed border-transparent bg-gray-50/50 dark:bg-slate-800/30' : 
+                                            selectedWaiter === waiter.id.toString() ? 'border-indigo-500 bg-indigo-50/30 cursor-pointer' : 
+                                            'border-transparent hover:border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 cursor-pointer'}`}
                                     >
                                         <div className="text-gray-300 mr-2"><MoreVertical size={16} /></div>
                                         <img src={`https://ui-avatars.com/api/?name=${waiter.full_name}&background=random`} alt={waiter.full_name} className="w-10 h-10 rounded-full mr-3 border border-gray-200 dark:border-slate-700" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
-                                                <h4 className="text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-900 dark:text-white truncate pr-2">{waiter.full_name}</h4>
+                                                <h4 className="text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-900 dark:text-white truncate pr-2">
+                                                    {waiter.full_name} {isDisabled && <span className="text-[10px] text-gray-500 font-normal">(Assigned)</span>}
+                                                </h4>
                                                 <span className={`text-[9px] 2xl:text-[10px] font-bold px-1.5 py-0.5 rounded-full ${statusClass}`}>{statusText}</span>
                                             </div>
                                             <p className="text-[10px] lg:text-[11px] 2xl:text-xs text-gray-500 dark:text-slate-400 truncate">{workload} Tables • Main Hall</p>
@@ -351,38 +390,18 @@ const TableAssignment = () => {
                         <div className="mb-4">
                             <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 mb-2">Selected Table</p>
                             
-                            {/* Read-only view for Desktop */}
-                            <div className="hidden lg:flex bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 justify-between items-center min-w-0">
+                            {/* Read-only view */}
+                            <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl p-3 justify-between items-center min-w-0">
                                 <div className="min-w-0 flex-1 pr-2">
-                                    <div className="flex items-center">
-                                        <h4 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mr-2 truncate">{selectedTable ? selectedTable.table_number : 'None'}</h4>
-                                        <span className="text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold bg-gray-200 text-gray-600 dark:text-slate-400 px-2 py-0.5 rounded-full shrink-0">{selectedTable?.assigned_waiter_id ? 'Assigned' : 'Unassigned'}</span>
+                                    <div className="flex items-center flex-wrap gap-1">
+                                        <h4 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mr-2 truncate">
+                                            {selectedTables.length > 0 ? `${selectedTables.length} Selected` : 'None'}
+                                        </h4>
                                     </div>
-                                    <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 mt-1 truncate">Capacity: {selectedTable?.capacity || '-'} Seats</p>
+                                    <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 mt-1">
+                                        {selectedTables.length > 0 ? selectedTables.map(t => t.table_number).join(', ') : 'Click tables on the map to select'}
+                                    </p>
                                 </div>
-                                <div className="text-right shrink-0">
-                                    <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-semibold mb-1">Status</p>
-                                    <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-bold text-gray-800 dark:text-slate-200">{selectedTable?.status || '-'}</p>
-                                </div>
-                            </div>
-
-                            {/* Dropdown for Mobile/Tablet */}
-                            <div className="lg:hidden">
-                                <select 
-                                    className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500"
-                                    value={selectedTable?.id || ''}
-                                    onChange={(e) => {
-                                        const table = tables.find(t => t.id === parseInt(e.target.value));
-                                        setSelectedTable(table || null);
-                                    }}
-                                >
-                                    <option value="">Select table...</option>
-                                    {[...tables].sort((a, b) => a.capacity - b.capacity).map(t => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.table_number} ({t.capacity} Seats) - {t.status}
-                                        </option>
-                                    ))}
-                                </select>
                             </div>
                         </div>
 
@@ -394,27 +413,41 @@ const TableAssignment = () => {
                                 onChange={(e) => setSelectedWaiter(e.target.value)}
                             >
                                 <option value="">Select waiter...</option>
-                                {waiters.map(w => (
-                                    <option key={w.id} value={w.id}>{w.full_name}</option>
-                                ))}
+                                {waiters.map(w => {
+                                    const isDisabled = selectedTables.length > 0 && selectedTables.every(t => t.assigned_waiter_id === w.id);
+                                    return (
+                                        <option key={w.id} value={w.id} disabled={isDisabled}>
+                                            {w.full_name} {isDisabled ? '(Already Assigned)' : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                         </div>
 
                         <div className="mt-auto space-y-2">
                             <button 
                                 onClick={handleAssign}
-                                disabled={!selectedTable || !selectedWaiter || assignMutation.isPending}
+                                disabled={selectedTables.length === 0 || !selectedWaiter || isAssigning}
                                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:text-gray-500 dark:text-slate-400 text-white font-bold text-xs lg:text-[13px] 2xl:text-sm py-2.5 rounded-xl transition-colors"
                             >
-                                {assignMutation.isPending ? 'Assigning...' : 'Assign Table'}
+                                {isAssigning ? 'Assigning...' : 'Assign Table'}
                             </button>
-                            {selectedTable?.assigned_waiter_id && (
+                            {selectedTables.some(t => t.assigned_waiter_id) && (
                                 <button 
-                                    onClick={() => handleUnassign(selectedTable.id)}
-                                    disabled={unassignMutation.isPending}
+                                    onClick={handleUnassign}
+                                    disabled={isAssigning}
                                     className="w-full border border-red-200 bg-white dark:bg-slate-900 hover:bg-red-50 text-red-600 font-bold text-xs lg:text-[13px] 2xl:text-sm py-2.5 rounded-xl transition-colors"
                                 >
                                     Remove Assignment
+                                </button>
+                            )}
+                            {selectedTables.length === 1 && selectedTables[0].status !== 'Available' && (
+                                <button 
+                                    onClick={() => setIsTransferModalOpen(true)}
+                                    disabled={isAssigning || transferMutation.isPending}
+                                    className="w-full border border-orange-200 bg-white dark:bg-slate-900 hover:bg-orange-50 text-orange-600 font-bold text-xs lg:text-[13px] 2xl:text-sm py-2.5 rounded-xl transition-colors"
+                                >
+                                    Transfer Table
                                 </button>
                             )}
                             <button className="w-full flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-indigo-600 font-semibold text-[10px] lg:text-[11px] 2xl:text-xs py-2">
@@ -519,6 +552,46 @@ const TableAssignment = () => {
                             className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors disabled:bg-red-400 flex items-center justify-center"
                         >
                             {clearAllAssignmentsMutation.isPending ? 'Clearing...' : 'Yes, Clear All'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+            <Modal isOpen={isTransferModalOpen} onClose={() => !transferMutation.isPending && setIsTransferModalOpen(false)} title="Transfer Table">
+                <div className="flex flex-col p-4">
+                    <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
+                        Transfer customer, active orders, and waiter assignment from <strong>{selectedTables[0]?.table_number}</strong> to an available table.
+                    </p>
+                    <div className="mb-6">
+                        <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">Select Destination Table</label>
+                        <select 
+                            className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500"
+                            value={targetTransferTable}
+                            onChange={(e) => setTargetTransferTable(e.target.value)}
+                        >
+                            <option value="">Choose an available table...</option>
+                            {tables.filter(t => t.status === 'Available').sort((a, b) => a.capacity - b.capacity).map(t => (
+                                <option key={t.id} value={t.id}>{t.table_number} ({t.capacity} Seats)</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex space-x-3 w-full">
+                        <button 
+                            onClick={() => setIsTransferModalOpen(false)}
+                            disabled={transferMutation.isPending}
+                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={() => {
+                                if(targetTransferTable) {
+                                    transferMutation.mutate({ tableId: selectedTables[0].id, targetTableId: targetTransferTable });
+                                }
+                            }}
+                            disabled={!targetTransferTable || transferMutation.isPending}
+                            className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl transition-colors disabled:bg-orange-300 flex items-center justify-center"
+                        >
+                            {transferMutation.isPending ? 'Transferring...' : 'Confirm Transfer'}
                         </button>
                     </div>
                 </div>

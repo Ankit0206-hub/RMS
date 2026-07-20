@@ -19,6 +19,12 @@ class CustomerSession(TimestampMixin, Base):
     orders: Mapped[List["Order"]] = relationship(back_populates="session")
     bills: Mapped[List["Bill"]] = relationship(back_populates="session")
 
+    @property
+    def table_name(self) -> Optional[str]:
+        if self.table:
+            return self.table.name if self.table.name else self.table.table_number
+        return None
+
 class Order(TimestampMixin, Base):
     __tablename__ = "orders"
 

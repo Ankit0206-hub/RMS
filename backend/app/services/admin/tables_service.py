@@ -112,4 +112,53 @@ class TablesService:
     async def clear_all_assignments(self, db: AsyncSession):
         await tables_repo.clear_all_assignments(db)
 
+    async def transfer_table(self, db: AsyncSession, source_table_id: int, target_table_id: int):
+        from app.models.ordering import CustomerSession
+        from app.models.restaurant import TableAssignment
+        from app.schemas.admin.tables import TableUpdate
+        from sqlalchemy.future import select
+        from sqlalchemy import update
+        from fastapi import HTTPException
+        
+        if source_table_id == target_table_id:
+            raise HTTPException(status_code=400, detail="Source and target tables cannot be the same")
+            
+        source_table = await self.get_table(db, source_table_id)
+        target_table = await self.get_table(db, target_table_id)
+        
+        # Check if target table is occupied or has an active session
+        if target_table.status != "Available":
+            raise HTTPException(status_code=400, detail="Target table is not available")
+            
+        active_target_session = await db.execute(
+            select(CustomerSession).where(CustomerSession.table_id == target_table_id, CustomerSession.status == "Active")
+        )
+        if active_target_session.scalars().first():
+            raise HTTPException(status_code=400, detail="Target table already has an active customer session")
+            
+        # 1. Transfer active session
+        await db.execute(
+            update(CustomerSession)
+            .where(CustomerSession.table_id == source_table_id, CustomerSession.status == "Active")
+            .values(table_id=target_table_id)
+        )
+        
+        # 2. Transfer active waiter assignment
+        active_assignment = await db.execute(
+            select(TableAssignment).where(TableAssignment.table_id == source_table_id, TableAssignment.is_active == True)
+        )
+        assignment = active_assignment.scalars().first()
+        if assignment:
+            # unassign source
+            await tables_repo.unassign_waiter(db, source_table_id)
+            # assign target
+            await tables_repo.assign_waiter(db, target_table_id, assignment.employee_id)
+            
+        # 3. Update table statuses
+        # we need to skip the uniqueness check for name in the repo or just pass status
+        await tables_repo.update(db, target_table, TableUpdate(status=source_table.status))
+        await tables_repo.update(db, source_table, TableUpdate(status="Available"))
+        
+        await db.commit()
+
 tables_service = TablesService()

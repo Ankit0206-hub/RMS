@@ -43,3 +43,6 @@ class TableAssignmentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TableTransferCreate(BaseModel):
+    target_table_id: int

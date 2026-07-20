@@ -46,6 +46,8 @@ class BillSessionResponse(BaseModel):
     id: int
     customer_name: Optional[str]
     customer_phone: Optional[str]
+    table_name: Optional[str] = None
+    number_of_people: Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 class BillResponse(BillBase):

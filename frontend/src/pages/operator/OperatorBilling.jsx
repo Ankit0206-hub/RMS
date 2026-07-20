@@ -108,7 +108,9 @@ const OperatorBilling = () => {
           id: session.id,
           type: "session",
           status,
-          customer: session.customer_name || "Walk-in",
+          customer: session.customer_name 
+            ? `${session.customer_name} (${session.table_name || 'Table ' + session.table_id})` 
+            : (session.table_name || `Table ${session.table_id || 'Walk-in'}`),
           pax: session.number_of_people || 1,
           time: `${diffMins} min`,
           orderType: session.table_id ? "Dine In" : "Takeaway",
@@ -146,8 +148,10 @@ const OperatorBilling = () => {
           type: "bill",
           status: "Billed",
           bill_number: bill.bill_number,
-          customer: `Session ${bill.session_id}`,
-          pax: "-",
+          customer: bill.session?.customer_name
+            ? `${bill.session.customer_name} (${bill.session.table_name || 'Table ' + bill.session.table_id})`
+            : (bill.session?.table_name || `Table ${bill.session?.table_id || 'Walk-in'}`),
+          pax: bill.session?.number_of_people || "-",
           time: generatedAt,
           orderType: "Completed",
           startedAt: generatedAt,
@@ -199,12 +203,12 @@ const OperatorBilling = () => {
         }
       });
     } else if (selectedItem.type === "bill") {
-      (selectedItem.originalData.items || []).forEach((item) => {
+      (selectedItem.originalData.items || []).forEach((item, idx) => {
         items.push({
-          id: item.menu_item_id,
-          name: item.item_name,
-          qty: item.quantity,
-          price: parseFloat(item.price),
+          id: item.menu_item_id || `bill-item-${item.id || idx}`,
+          name: item.item_name || 'Unknown Item',
+          qty: item.quantity || 1,
+          price: parseFloat(item.price || 0),
           img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
         });
       });
@@ -233,12 +237,19 @@ const OperatorBilling = () => {
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [isRoundOff, setIsRoundOff] = useState(false);
 
-  const discountAmount = totalAmount * (discountPercentage / 100);
+  const discountAmount = matchingBill 
+    ? matchingBill.total_discount 
+    : totalAmount * (discountPercentage / 100);
+    
   const totalAfterDiscount = totalAmount - discountAmount;
-  const grandTotal = isRoundOff
-    ? Math.round(totalAfterDiscount)
-    : totalAfterDiscount;
-  const roundOffDiff = isRoundOff ? grandTotal - totalAfterDiscount : 0;
+  
+  const grandTotal = matchingBill
+    ? matchingBill.grand_total
+    : (isRoundOff ? Math.round(totalAfterDiscount) : totalAfterDiscount);
+    
+  const roundOffDiff = matchingBill 
+    ? 0 
+    : (isRoundOff ? grandTotal - totalAfterDiscount : 0);
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash");
   const [paymentReceived, setPaymentReceived] = useState(grandTotal);
@@ -315,7 +326,7 @@ const OperatorBilling = () => {
   };
 
   return (
-    <div className="-m-6 p-6 font-inter h-full bg-slate-50/50 dark:bg-[#0B1120] min-h-screen">
+    <div className="font-inter h-full bg-slate-50/50 dark:bg-[#0B1120]">
       <Toaster
         position="top-right"
         toastOptions={{
