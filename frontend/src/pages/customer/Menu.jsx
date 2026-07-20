@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
 import { ShoppingCart, Utensils, CheckCircle } from 'lucide-react';
@@ -9,9 +9,10 @@ import { toast, Toaster } from 'react-hot-toast';
 
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
-    const tableId = searchParams.get('table') || 1; // Default to 1 for demo
+    const location = useLocation();
+    const tableId = location.state?.tableId || searchParams.get('table') || 1;
     
-    const [sessionId, setSessionId] = useState(null);
+    const [sessionId, setSessionId] = useState(location.state?.sessionId || null);
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [orderStatus, setOrderStatus] = useState(null);
@@ -19,13 +20,15 @@ const CustomerMenu = () => {
 
     // 1. Initialize Session
     const startSessionMutation = useMutation({
-        mutationFn: () => api.post('/admin/ordering/sessions', {
-            table_id: parseInt(tableId),
-            customer_count: 2,
-            notes: "QR Scanned"
+        mutationFn: () => customerApi.startSession({
+            table_id: tableId.toString(),
+            guests: 2
         }),
         onSuccess: (res) => {
-            setSessionId(res.data.data.id);
+            setSessionId(res.session_id);
+            if (res.token) {
+                localStorage.setItem('customer_token', res.token);
+            }
         }
     });
 
@@ -33,7 +36,7 @@ const CustomerMenu = () => {
         if (!sessionId) {
             startSessionMutation.mutate();
         }
-    }, [tableId]);
+    }, [tableId, sessionId]);
 
     // 2. Connect Customer WebSocket when session is ready
     useEffect(() => {

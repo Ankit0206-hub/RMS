@@ -170,7 +170,7 @@ class OrderingService:
         return order
         
     async def update_order_status(self, db: AsyncSession, order_id: int, status_update: OrderStatusUpdate):
-        valid_statuses = ["Pending", "Confirmed", "Cooked", "Served", "Completed", "Cancelled"]
+        valid_statuses = ["Pending", "Confirmed", "Preparing", "Cooked", "Served", "Completed", "Cancelled"]
         if status_update.status not in valid_statuses:
             raise BusinessRuleException("Invalid status")
             
@@ -182,7 +182,7 @@ class OrderingService:
             "id": order.id,
             "session_id": order.session_id,
             "status": order.status
-        }, target_roles=["operator", "waiter", "admin"])
+        }, target_roles=["operator", "waiter", "admin", "kitchen"])
         
         await manager.notify_customer(order.session_id, "order.updated", {
             "id": order.id,

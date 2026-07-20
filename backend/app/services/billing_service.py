@@ -57,7 +57,17 @@ class BillingService:
             "payment_status": "Pending"
         }
 
-        return await self.repository.create_bill(db, bill_data, items_data)
+        # Reset bill_requested flag now that bill is generated
+        session.bill_requested = False
+        db.add(session)
+        # Commit will be handled inside create_bill implicitly or we should ensure it
+        
+        bill = await self.repository.create_bill(db, bill_data, items_data)
+        
+        # We need to explicitly commit the session update
+        await db.commit()
+        
+        return bill
 
     async def get_bills(self, db: AsyncSession, page: int, page_size: int, payment_status: str = None):
         return await self.repository.get_bills(db, page, page_size, payment_status)
@@ -99,4 +109,14 @@ class BillingService:
                     
                 await db.commit()
                 
+                # Broadcast the settlement event
+                from app.api.ws.manager import manager
+                await manager.broadcast("BILL_PAID", {
+                    "session_id": session.id,
+                    "table_id": table.table_number if table else None
+                }, ["operator", "waiter"])
+                await manager.notify_customer(session.id, "BILL_PAID", {
+                    "message": "Payment successful."
+                })
+        
         return payment

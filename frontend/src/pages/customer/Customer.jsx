@@ -58,7 +58,11 @@ export default function Customer() {
         customer_phone: form.phone,
         guests: form.persons
       });
-      // Store session in AppContext
+      // Store session
+      if (res.token) {
+        localStorage.setItem('customer_token', res.token);
+      }
+      
       setCustomerSession({
         sessionId: res.session_id,
         tableId: form.table,

@@ -70,6 +70,7 @@ import Customers from './pages/admin/Customers';
 import AnalyticsOverview from './pages/admin/AnalyticsOverview';
 import OperatorReservations from './pages/operator/OperatorReservations';
 import Notifications from './pages/admin/Notifications';
+import KitchenOverview from './pages/admin/KitchenOverview';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from 'react-hot-toast';
 
@@ -144,6 +145,7 @@ const App = () => {
                             <Route path="customers" element={<Customers />} />
                             <Route path="analytics" element={<AnalyticsOverview />} />
                             <Route path="notifications" element={<Notifications />} />
+                            <Route path="kitchen" element={<KitchenOverview />} />
 
                             <Route path="settings" element={<Settings />} />
                             <Route path="tables" element={<Tables />} />

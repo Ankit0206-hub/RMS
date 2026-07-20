@@ -42,7 +42,7 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState({
     
     name: "John Doe",
-    email: "john.doe@email.com",
+    email: "",
     phone: "+91 98765 43210",
     image: "https://i.pravatar.cc/150?img=12",
   });

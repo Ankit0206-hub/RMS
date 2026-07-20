@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
     LayoutDashboard, Users, Settings, LogOut, 
     UtensilsCrossed, ClipboardList, Receipt,
-    Activity, PieChart, Bell, Menu, ChevronRight, Store, FileText, BellRing, User, Mail, Maximize, Calendar, Plus, MoreVertical, Search, ChevronDown
+    Activity, PieChart, Bell, Menu, ChevronRight, Store, FileText, BellRing, User, Mail, Maximize, Calendar, Plus, MoreVertical, Search, ChevronDown, ChefHat
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -114,6 +114,12 @@ const AdminLayout = () => {
             name: 'Billing & Payments', 
             path: '/admin/billing', 
             icon: Receipt, 
+            hasDropdown: false
+        },
+        {
+            name: 'Kitchen Management',
+            path: '/admin/kitchen',
+            icon: ChefHat,
             hasDropdown: false
         },
         { 
@@ -233,6 +239,9 @@ const AdminLayout = () => {
             return (
                 <span className="text-gray-900">Customers</span>
             );
+        }
+        if (location.pathname.startsWith('/admin/kitchen')) {
+            return <span className="text-gray-900">Kitchen Management</span>;
         }
         if (location.pathname.startsWith('/admin/analytics')) {
             return <span className="text-gray-900">Reports & Analytics</span>;
