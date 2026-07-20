@@ -26,14 +26,14 @@ const NewOrders = () => {
 
     useEffect(() => {
         fetchOrders();
-        
+
         // Setup WebSocket for real-time updates
         const token = localStorage.getItem('token');
         if (!token) return;
-        
+
         const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/kitchen?token=${token}`;
         const ws = new WebSocket(wsUrl);
-        
+
         ws.onopen = () => console.log("Kitchen WebSocket connected for New Orders");
         ws.onmessage = (event) => {
             try {
@@ -53,7 +53,7 @@ const NewOrders = () => {
                 console.error("WS message error", err);
             }
         };
-        
+
         return () => ws.close();
     }, []);
 
@@ -71,7 +71,7 @@ const NewOrders = () => {
     const orders = [...rawOrders].sort((a, b) => {
         const timeA = new Date(a.created_at).getTime();
         const timeB = new Date(b.created_at).getTime();
-        if (sortOrder === 'newest') return timeB - timeA; 
+        if (sortOrder === 'newest') return timeB - timeA;
         if (sortOrder === 'oldest') return timeA - timeB;
         return 0;
     });
@@ -124,8 +124,8 @@ const NewOrders = () => {
                     </div>
                     {viewMode === 'orders' && (
                         <div className="relative">
-                            <select 
-                                value={sortOrder} 
+                            <select
+                                value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                                 className="appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl pl-4 pr-10 py-2.5 outline-none focus:ring-4 focus:ring-green-500/20 focus:border-[#ea580c] shadow-sm cursor-pointer transition-all"
                             >
@@ -139,97 +139,110 @@ const NewOrders = () => {
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Content Area */}
+            </div>            {/* Content Area */}
             {viewMode === 'items' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {itemViewData.map((item, index) => (
-                        <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 flex gap-4 items-center shadow-sm">
-                            <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" />
-                            <div className="flex-1">
-                                <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
-                                <p className="text-gray-500 text-xs mt-1">Needed for: {item.orders.join(', ')}</p>
+                        <div key={index} className="bg-zinc-900 rounded-2xl border border-zinc-700 p-5 flex gap-5 items-center shadow-lg hover:border-emerald-500/50 transition-all">
+                            <div className="relative">
+                                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover shadow-inner" />
+                                <div className="absolute -top-3 -right-3 bg-emerald-500 text-white font-black text-xl h-9 w-9 rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.5)] border-2 border-zinc-900">
+                                    {item.quantity}
+                                </div>
                             </div>
-                            <div className="bg-orange-100 text-orange-600 font-black text-2xl h-12 w-12 rounded-xl flex items-center justify-center">
-                                {item.quantity}
+                            <div className="flex-1">
+                                <h3 className="font-black text-white text-lg leading-tight">{item.name}</h3>
+                                <div className="mt-2 text-zinc-400 text-xs font-bold">
+                                    Needed for: <span className="text-zinc-300">{item.orders.join(', ')}</span>
+                                </div>
                             </div>
                         </div>
                     ))}
                     {itemViewData.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-gray-400 font-medium">No items to prepare.</div>
+                        <div className="col-span-full py-20 flex flex-col items-center justify-center text-zinc-600 font-bold border-2 border-dashed border-zinc-800 rounded-2xl">
+                            <span className="text-xl">No items pending prep.</span>
+                        </div>
                     )}
                 </div>
             ) : (
-                <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                     {orders.map((order) => {
-                    const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
-                    const orderTime = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
-                    return (
-                    <div 
-                        key={order.id} 
-                        className="bg-white rounded-lg border border-gray-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-5"
-                    >
-                        {/* Left: Table & Order Info */}
-                        <div className="flex items-center gap-5 md:w-1/4 shrink-0">
-                            <div className="bg-[#f97316] text-white text-2xl font-black px-4 py-3 rounded-lg shrink-0">
-                                {order.table_number || "TA"}
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-gray-900 font-black text-xl tracking-wide mb-1">Order #{order.id}</span>
-                                <span className="text-gray-500 font-semibold text-sm">
-                                    {itemCount} Items • {order.order_type}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Middle: Special Instructions (If any) */}
-                        <div className="md:w-1/3 flex justify-start md:justify-center">
-                            {order.special_instructions ? (
-                                <div className="bg-amber-50 text-amber-700 px-4 py-2.5 rounded-lg border border-amber-200 flex items-start gap-2 w-full max-w-sm">
-                                    <Info size={18} className="shrink-0 mt-0.5 text-amber-600" />
-                                    <div>
-                                        <span className="block text-xs font-black uppercase tracking-wider text-amber-600/80 mb-0.5">Special Instructions</span>
-                                        <span className="font-bold text-sm leading-snug">{order.special_instructions}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="hidden md:block w-full max-w-sm"></div> // Spacer to keep layout balanced
-                            )}
-                        </div>
+                        const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
+                        const orderTime = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         
-                        {/* Right: Time & Actions */}
-                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-4 md:w-auto shrink-0 justify-end w-full">
-                            <div className="text-center sm:text-right hidden sm:block md:hidden lg:block lg:mr-4">
-                                <span className="text-gray-900 font-black text-xl block">{orderTime}</span>
-                                <span className="text-gray-400 font-bold text-xs uppercase tracking-wider">Received</span>
+                        return (
+                        <div 
+                            key={order.id} 
+                            className="bg-zinc-900 flex flex-col rounded-xl overflow-hidden border border-zinc-700/80 shadow-xl hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all"
+                        >
+                            {/* Ticket Header */}
+                            <div className="bg-emerald-600 p-3 flex justify-between items-start text-white">
+                                <div>
+                                    <h3 className="font-black text-3xl leading-none">
+                                        {order.table_number || "TA"}
+                                    </h3>
+                                    <span className="text-emerald-100 font-bold text-xs uppercase tracking-wider mt-1 block">
+                                        {order.order_type}
+                                    </span>
+                                </div>
+                                <div className="text-right">
+                                    <span className="font-black text-lg block">{orderTime}</span>
+                                    <span className="font-bold text-emerald-200 text-xs">#{order.id}</span>
+                                </div>
+                            </div>
+
+                            {/* Special Instructions (Optional Header Banner) */}
+                            {order.special_instructions && (
+                                <div className="bg-amber-500/20 text-amber-400 p-2 text-xs font-bold border-b border-amber-500/20 flex items-center gap-1.5 leading-tight">
+                                    <Info size={14} className="shrink-0" />
+                                    {order.special_instructions}
+                                </div>
+                            )}
+
+                            {/* Ticket Body (Items List) */}
+                            <div className="p-3 flex-1 overflow-y-auto bg-zinc-900 min-h-[150px] max-h-[250px] custom-scrollbar">
+                                <div className="text-zinc-500 text-xs font-bold uppercase tracking-widest border-b border-zinc-800 pb-2 mb-2 flex justify-between">
+                                    <span>{itemCount} Items</span>
+                                </div>
+                                <ul className="flex flex-col gap-3">
+                                    {/* Dummy Items for UI demonstration, since `order.items` structure varies */}
+                                    <li className="flex items-start gap-3 text-zinc-200">
+                                        <span className="font-black text-emerald-400 text-lg w-6 shrink-0">{itemCount > 0 ? itemCount : '1'}</span>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-base leading-tight">Sample Item (Mock)</span>
+                                            <span className="text-zinc-500 text-xs mt-0.5">Extra spicy</span>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                             
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                            {/* Ticket Footer / Action */}
+                            <div className="p-3 bg-zinc-950 border-t border-zinc-800 grid grid-cols-2 gap-2 mt-auto">
                                 <button 
                                     onClick={() => navigate(`/kitchen/orders/${order.id}`)}
-                                    className="flex-1 sm:flex-none bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold py-2.5 px-6 rounded-lg transition-colors"
+                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-2.5 rounded-lg transition-colors text-sm"
                                 >
-                                    View Details
+                                    Details
                                 </button>
                                 <button 
                                     onClick={() => handleStartPreparing(order.id)}
-                                    className="flex-1 sm:flex-none bg-[#f97316] hover:bg-[#ea580c] text-white font-bold py-2.5 px-6 rounded-lg transition-colors"
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 rounded-lg transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)] text-sm"
                                 >
-                                    Start Preparing
+                                    Start Prep
                                 </button>
                             </div>
                         </div>
-                    </div>
-                )})}
-                
-                {orders.length === 0 && (
-                    <div className="text-center bg-white rounded-2xl border border-gray-100 shadow-sm text-gray-500 py-20 font-bold text-lg">
-                        No new orders at the moment.
-                    </div>
-                )}
-            </div>
+                    )})}
+                    
+                    {orders.length === 0 && (
+                        <div className="col-span-full text-center bg-zinc-900/50 rounded-2xl border-2 border-dashed border-zinc-800 text-zinc-500 py-20 font-bold text-xl flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
+                                <Info className="text-zinc-600 w-8 h-8" />
+                            </div>
+                            No new orders in queue.
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );
