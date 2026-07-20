@@ -4,17 +4,41 @@ import PageLayout from "../../components/customer/layout/PageLayout";
 import { useEffect, useState } from "react";
 import customerApi from "../../services/customerApi";
 import { useApp } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 export default function OrderTracking() {
   const navigate = useNavigate();
   const { customerSession } = useApp();
   const [sessionData, setSessionData] = useState(null);
+  const [isWaiterModalOpen, setIsWaiterModalOpen] = useState(false);
 
   useEffect(() => {
     if (customerSession?.sessionId) {
-      customerApi.getSessionDetails(customerSession.sessionId)
-        .then(data => setSessionData(data))
-        .catch(console.error);
+      const fetchDetails = () => {
+        customerApi.getSessionDetails(customerSession.sessionId)
+          .then(data => setSessionData(data))
+          .catch(console.error);
+      };
+      
+      fetchDetails();
+
+      // Connect WebSocket for real-time order tracking
+      const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/customer?session_id=${customerSession.sessionId}`;
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => console.log("Customer WebSocket connected");
+      ws.onmessage = (event) => {
+          try {
+              const data = JSON.parse(event.data);
+              if (data.event === "order.updated" || data.event === "order.created") {
+                  fetchDetails(); // Re-fetch to get latest status and updated times
+              }
+          } catch (err) {
+              console.error("WS parse error", err);
+          }
+      };
+      
+      return () => ws.close();
     }
   }, [customerSession]);
 
@@ -159,7 +183,7 @@ export default function OrderTracking() {
           <h3 className="font-bold text-gray-900 mb-3 px-1">Need Help?</h3>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => navigate("/customer/call-waiter")}
+              onClick={() => setIsWaiterModalOpen(true)}
               className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 active:scale-[0.98] transition"
             >
               <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
@@ -197,6 +221,43 @@ export default function OrderTracking() {
           Add More Items
         </button>
       </div>
+
+      {/* Waiter Modal */}
+      {isWaiterModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4 pb-10">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden animate-in slide-in-from-bottom-10">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Request Assistance</h3>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {['water', 'tissue', 'waiter'].map(type => (
+                  <button
+                    key={type}
+                    onClick={async () => {
+                      if (!customerSession?.sessionId) return;
+                      try {
+                        await customerApi.callWaiter(customerSession.sessionId, type);
+                        toast.success(`Requested ${type}`);
+                        setIsWaiterModalOpen(false);
+                      } catch (e) {
+                        toast.error('Failed to send request');
+                      }
+                    }}
+                    className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-50 p-4 border border-gray-100 hover:border-blue-200 hover:bg-blue-50 active:scale-95 transition"
+                  >
+                    <span className="text-sm font-bold text-gray-700 capitalize">{type}</span>
+                  </button>
+                ))}
+              </div>
+              <button 
+                onClick={() => setIsWaiterModalOpen(false)}
+                className="w-full h-12 rounded-2xl bg-gray-100 font-bold text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }

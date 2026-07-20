@@ -4,6 +4,7 @@ import {
   ShoppingCart,
   ClipboardList,
   User,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
@@ -68,13 +69,13 @@ export default function BottomNav({ active = "home" }) {
           Orders
         </span>
       </button>
-      {/* Profile */}
+      {/* Settings */}
       <button
-        onClick={() => navigate("/customer/profile")}
-        className={`flex flex-1 flex-col items-center justify-center ${active === "profile" ? "text-orange-500" : "text-gray-400"}`}
+        onClick={() => navigate("/customer/settings")}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "settings" ? "text-orange-500" : "text-gray-400"}`}
       >
-        <User size={18} />
-        <span className="mt-1 text-xs font-medium">Profile</span>
+        <SettingsIcon size={18} />
+        <span className="mt-1 text-xs font-medium">Settings</span>
       </button>
 
     </div>

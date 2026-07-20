@@ -75,6 +75,15 @@ async def get_current_admin_or_operator(current_user: dict = Depends(get_current
         detail="Requires Admin or Operator privileges"
     )
 
+async def get_current_staff(current_user: dict = Depends(get_current_user)):
+    # Allows admin, operator, waiter, kitchen (any authenticated internal user)
+    if current_user["role"] in ["admin", "employee"]:
+        return current_user["user"]
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Requires internal staff privileges"
+    )
+
 async def get_current_waiter(current_user: dict = Depends(get_current_user)) -> Employee:
     if current_user["role"] != "employee" or not current_user["user"].role or current_user["user"].role.name.lower() != "waiter":
         if current_user["role"] == "admin":
@@ -94,3 +103,29 @@ async def get_current_kitchen(current_user: dict = Depends(get_current_user)) ->
             detail="Requires Kitchen privileges"
         )
     return current_user["user"]
+async def get_current_customer_session(
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate customer session",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        session_id: str = payload.get("sub")
+        role: str = payload.get("role")
+        if session_id is None or role != "customer":
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    from app.models.ordering import CustomerSession
+    result = await db.execute(select(CustomerSession).options(selectinload(CustomerSession.table)).filter(CustomerSession.id == int(session_id)))
+    session = result.scalar_one_or_none()
+
+    if session is None:
+        raise credentials_exception
+    
+    return session

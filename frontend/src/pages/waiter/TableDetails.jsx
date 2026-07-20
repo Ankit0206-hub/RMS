@@ -14,6 +14,43 @@ export default function TableDetails() {
     
     const [sessionData, setSessionData] = useState(null);
     const [loading, setLoading] = useState(true);
+    
+    // Transfer Table State
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [availableTables, setAvailableTables] = useState([]);
+    const [isTransferring, setIsTransferring] = useState(false);
+
+    useEffect(() => {
+        if (isTransferModalOpen) {
+            fetchAvailableTables();
+        }
+    }, [isTransferModalOpen]);
+
+    const fetchAvailableTables = async () => {
+        try {
+            const tables = await waiterApi.getTables();
+            // Assuming waiterApi.getTables returns all tables, filter for available ones
+            setAvailableTables(tables.filter(t => t.status === 'Available' || t.status === 'available'));
+        } catch (err) {
+            console.error("Failed to fetch tables", err);
+            toast.error("Failed to load tables");
+        }
+    };
+
+    const handleTransfer = async (targetTableId) => {
+        if (!sessionData?.session_id) return;
+        setIsTransferring(true);
+        try {
+            await waiterApi.transferSession(sessionData.session_id, targetTableId);
+            toast.success(`Transferred to Table ${targetTableId}`);
+            setIsTransferModalOpen(false);
+            navigate('/waiter/tables');
+        } catch (err) {
+            toast.error(err.response?.data?.detail || "Transfer failed");
+        } finally {
+            setIsTransferring(false);
+        }
+    };
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -109,19 +146,74 @@ export default function TableDetails() {
  </div>
 
  <div className="grid grid-cols-2 gap-3">
- <button onClick={() => navigate(`/waiter/tables/${id}/menu`, { state: { tableId: id, sessionId: sessionData?.session_id } })} className="flex items-center justify-center bg-white/20 backdrop-blur-xl border border-rose-200/80 text-rose-600 rounded-2xl py-3 px-2 font-bold shadow-sm transition-all text-sm disabled:opacity-50" disabled={loading}>
+ <button 
+     onClick={() => navigate(`/waiter/tables/${id}/menu`, { state: { tableId: id, sessionId: sessionData?.session_id } })} 
+     className="flex items-center justify-center bg-white/20 backdrop-blur-xl border border-rose-200/80 text-rose-600 rounded-2xl py-3 px-2 font-bold shadow-sm transition-all text-sm disabled:opacity-50" 
+     disabled={loading || sessionData?.bill_requested}>
  <div className="bg-rose-100/50 p-1.5 rounded-full mr-2 transition-colors">
  <Plus className="h-4 w-4"/>
  </div>
  Add Items
  </button>
- <button onClick={() => {toast.success('Bill Generated successfully!'); navigate('/waiter/tables');}} className="flex items-center justify-center bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-2xl py-3 px-2 font-bold shadow-sm transition-all border border-rose-300/50 text-sm">
+ <button 
+     onClick={async () => {
+         if(!sessionData?.session_id) return;
+         try {
+             await waiterApi.requestBill(sessionData.session_id);
+             toast.success('Bill requested successfully!');
+             setSessionData({...sessionData, bill_requested: true});
+         } catch (e) {
+             toast.error('Failed to request bill');
+         }
+     }} 
+     disabled={sessionData?.bill_requested || loading}
+     className={`flex items-center justify-center text-white rounded-2xl py-3 px-2 font-bold shadow-sm transition-all border text-sm disabled:opacity-50 ${sessionData?.bill_requested ? 'bg-gray-400 border-gray-400' : 'bg-gradient-to-br from-rose-400 to-rose-500 border-rose-300/50'}`}>
  <Receipt className="h-4 w-4 mr-2"/>
- Generate Bill
+ {sessionData?.bill_requested ? 'Bill Requested' : 'Request Bill'}
  </button>
  </div>
+ 
+ {sessionData?.session_id && (
+    <div className="mt-3">
+        <button 
+            onClick={() => setIsTransferModalOpen(true)}
+            className="w-full flex items-center justify-center bg-white/20 backdrop-blur-xl border border-indigo-200/80 text-indigo-600 rounded-2xl py-3 px-2 font-bold shadow-sm transition-all text-sm"
+        >
+            Transfer Table
+        </button>
+    </div>
+ )}
  </div>
  </div>
+
+ {isTransferModalOpen && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold mb-4">Transfer to Table</h3>
+            <div className="max-h-60 overflow-y-auto space-y-2">
+                {availableTables.map(t => (
+                    <button 
+                        key={t.id}
+                        onClick={() => handleTransfer(t.id)}
+                        disabled={isTransferring}
+                        className="w-full text-left p-3 rounded-xl border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 font-bold disabled:opacity-50"
+                    >
+                        Table {t.id} (Capacity: {t.capacity})
+                    </button>
+                ))}
+                {availableTables.length === 0 && (
+                    <p className="text-gray-500 text-sm text-center">No available tables.</p>
+                )}
+            </div>
+            <button 
+                onClick={() => setIsTransferModalOpen(false)}
+                className="mt-4 w-full p-3 rounded-xl bg-gray-100 text-gray-700 font-bold"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+ )}
  </div>
  );
 }

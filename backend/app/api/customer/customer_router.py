@@ -7,6 +7,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from app.db.database import get_db
+from app.api.deps import get_current_customer_session
 from app.models.restaurant import RestaurantTable, TableAssignment
 from app.models.ordering import CustomerSession, Order, OrderItem
 from app.models.billing import Bill
@@ -60,11 +61,11 @@ async def start_customer_session(
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
         
-    # Check for existing active session
+    # Check for existing active session with a lock
     active_session_query = select(CustomerSession).where(
         CustomerSession.table_id == table.id,
         CustomerSession.status == "Active"
-    )
+    ).with_for_update()
     active_session_result = await db.execute(active_session_query)
     existing_session = active_session_result.scalars().first()
     
@@ -90,7 +91,10 @@ async def start_customer_session(
         "status": "Occupied"
     }, ["operator", "waiter"])
     
-    return {"message": "Session started", "session_id": session.id}
+    from app.core.security import create_access_token
+    token = create_access_token(subject=str(session.id), role="customer")
+    
+    return {"message": "Session started", "session_id": session.id, "token": token}
 
 @router.get("/menu")
 async def get_customer_menu(db: AsyncSession = Depends(get_db)):
@@ -126,16 +130,11 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
 async def create_customer_order(
     session_id: int,
     req: CustomerOrderCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    session: CustomerSession = Depends(get_current_customer_session)
 ):
-    query = select(CustomerSession).where(CustomerSession.id == session_id).options(
-        selectinload(CustomerSession.table)
-    )
-    result = await db.execute(query)
-    session = result.scalars().first()
-    
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    if session.id != session_id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this session")
         
     if session.status != "Active":
         raise HTTPException(status_code=400, detail="Cannot create order for inactive session")
@@ -181,8 +180,12 @@ async def create_customer_order(
 @router.get("/sessions/{session_id}")
 async def get_customer_session_details(
     session_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    session_token_data: CustomerSession = Depends(get_current_customer_session)
 ):
+    if session_token_data.id != session_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this session")
+        
     query = select(CustomerSession).where(CustomerSession.id == session_id).options(
         selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item),
         selectinload(CustomerSession.bills)
@@ -239,8 +242,12 @@ async def get_customer_session_details(
 @router.post("/sessions/{session_id}/request-bill")
 async def request_customer_bill(
     session_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    session_token_data: CustomerSession = Depends(get_current_customer_session)
 ):
+    if session_token_data.id != session_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this session")
+        
     query = select(CustomerSession).where(CustomerSession.id == session_id).options(
         selectinload(CustomerSession.table),
         selectinload(CustomerSession.bills)
@@ -251,6 +258,9 @@ async def request_customer_bill(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
         
+    session.bill_requested = True
+    await db.commit()
+        
     # Broadcast to operator and waiter channels
     await manager.broadcast("CUSTOMER_REQUESTED_BILL", {
         "session_id": session.id,
@@ -258,3 +268,33 @@ async def request_customer_bill(
     }, ["operator", "waiter"])
     
     return {"message": "Bill requested"}
+
+class CallWaiterRequest(BaseModel):
+    request_type: str # 'water', 'tissue', 'waiter'
+
+@router.post("/sessions/{session_id}/call-waiter")
+async def call_waiter(
+    session_id: int,
+    req: CallWaiterRequest,
+    db: AsyncSession = Depends(get_db),
+    session_token_data: CustomerSession = Depends(get_current_customer_session)
+):
+    if session_token_data.id != session_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this session")
+        
+    query = select(CustomerSession).where(CustomerSession.id == session_id).options(
+        selectinload(CustomerSession.table)
+    )
+    result = await db.execute(query)
+    session = result.scalars().first()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    await manager.broadcast("CUSTOMER_NEEDS_ASSISTANCE", {
+        "session_id": session.id,
+        "table_id": session.table.table_number,
+        "request_type": req.request_type
+    }, ["waiter"])
+    
+    return {"message": f"Requested {req.request_type}"}

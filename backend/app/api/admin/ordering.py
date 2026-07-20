@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_admin_or_operator
+from app.api.deps import get_current_staff
 from app.db.database import get_db
 from app.schemas.common import StandardResponse, PaginationMeta
 from app.schemas.ordering import CustomerSessionResponse, CustomerSessionCreate, OrderResponse, OrderCreate, OrderStatusUpdate
 from app.services.ordering_service import OrderingService
 
-router = APIRouter(prefix="/ordering", tags=["Admin - Ordering"], dependencies=[Depends(get_current_admin_or_operator)])
+router = APIRouter(prefix="/ordering", tags=["Admin - Ordering"], dependencies=[Depends(get_current_staff)])
 service = OrderingService()
 
 @router.post("/sessions", response_model=StandardResponse[CustomerSessionResponse])

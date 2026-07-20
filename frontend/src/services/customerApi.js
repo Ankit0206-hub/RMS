@@ -7,6 +7,14 @@ const api = axios.create({
     }
 });
 
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('customer_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 export const customerApi = {
     // Tables
     getTables: async () => {
@@ -41,6 +49,12 @@ export const customerApi = {
     // Billing
     requestBill: async (sessionId) => {
         const response = await api.post(`/sessions/${sessionId}/request-bill`);
+        return response.data;
+    },
+
+    // Assistance
+    callWaiter: async (sessionId, requestType) => {
+        const response = await api.post(`/sessions/${sessionId}/call-waiter`, { request_type: requestType });
         return response.data;
     }
 };

@@ -4,6 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from typing import List
 from datetime import datetime
+from pydantic import BaseModel
 import math
 
 from app.db.database import get_db
@@ -71,6 +72,12 @@ async def get_tables(
             if pending_bills:
                 display_status = "Payment Pending"
                 current_bill = float(sum(b.grand_total for b in pending_bills))
+            elif active_session.bill_requested:
+                display_status = "Bill Requested"
+                for o in active_session.orders:
+                    if o.status not in ("Cancelled",):
+                        for item in o.items:
+                            current_bill += float(item.price_at_order) * item.quantity
             else:
                 for o in active_session.orders:
                     if o.status not in ("Cancelled",):
@@ -126,11 +133,11 @@ async def start_session(
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
         
-    # Check for existing active session
+    # Check for existing active session with lock
     active_session_query = select(CustomerSession).where(
         CustomerSession.table_id == table.id,
         CustomerSession.status == "Active"
-    )
+    ).with_for_update()
     active_session_result = await db.execute(active_session_query)
     existing_session = active_session_result.scalars().first()
     
@@ -263,5 +270,89 @@ async def get_active_session(
     return {
         "session_id": session.id,
         "guests": session.number_of_people,
-        "orders": formatted_orders
+        "orders": formatted_orders,
+        "bill_requested": session.bill_requested
     }
+
+@router.post("/sessions/{session_id}/request-bill")
+async def request_waiter_bill(
+    session_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_waiter)
+):
+    query = select(CustomerSession).where(CustomerSession.id == session_id).options(
+        selectinload(CustomerSession.table),
+        selectinload(CustomerSession.bills)
+    )
+    result = await db.execute(query)
+    session = result.scalars().first()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    session.bill_requested = True
+    await db.commit()
+        
+    # Broadcast to operator and waiter channels
+    await manager.broadcast("WAITER_REQUESTED_BILL", {
+        "session_id": session.id,
+        "table_id": session.table.table_number
+    }, ["operator", "waiter"])
+    
+    return {"message": "Bill requested"}
+
+class WaiterTransferSessionRequest(BaseModel):
+    target_table_id: str
+
+@router.put("/sessions/{session_id}/transfer")
+async def transfer_session(
+    session_id: int,
+    req: WaiterTransferSessionRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_waiter)
+):
+    # Lock the target table to check if it's available
+    target_table_query = select(RestaurantTable).where(
+        RestaurantTable.table_number == req.target_table_id
+    ).with_for_update()
+    target_table_result = await db.execute(target_table_query)
+    target_table = target_table_result.scalars().first()
+
+    if not target_table:
+        raise HTTPException(status_code=404, detail="Target table not found")
+
+    if target_table.status != "Available":
+        raise HTTPException(status_code=400, detail="Target table is not available")
+
+    # Get the session and lock the old table
+    session_query = select(CustomerSession).where(
+        CustomerSession.id == session_id
+    ).options(selectinload(CustomerSession.table)).with_for_update()
+    session_result = await db.execute(session_query)
+    session = session_result.scalars().first()
+
+    if not session or session.status != "Active":
+        raise HTTPException(status_code=404, detail="Active session not found")
+
+    old_table = session.table
+    old_table_number = old_table.table_number
+
+    # Transfer the session
+    session.table_id = target_table.id
+    old_table.status = "Available"
+    target_table.status = "Occupied"
+
+    await db.commit()
+
+    # Broadcast changes to both tables
+    await manager.broadcast("TABLE_UPDATED", {
+        "table_id": old_table_number,
+        "status": "Available"
+    }, ["operator", "waiter"])
+    
+    await manager.broadcast("TABLE_UPDATED", {
+        "table_id": target_table.table_number,
+        "status": "Occupied"
+    }, ["operator", "waiter"])
+
+    return {"message": "Table transferred successfully"}

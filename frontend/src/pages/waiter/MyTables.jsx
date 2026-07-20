@@ -2,24 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle } from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
+import toast from 'react-hot-toast';
 const TableGraphic = ({status, capacity = 4, guests = 0}) => {
  const getChairClass = (index) => {
  let style ='bg-white/70 backdrop-blur-sm border-white/80 shadow-[0_2px_8px_rgba(0,0,0,0.05)]'; // Default/Vacant
  
  // If not empty, and this specific chair is occupied (index < guests)
  if (status !=='Empty'&& index < guests) {
- if (status ==='Occupied') style ='bg-amber-300/80 backdrop-blur-sm border-amber-300 shadow-[0_2px_8px_rgba(251,191,36,0.3)]';
- else if (status ==='Ready to Serve') style ='bg-teal-300/80 backdrop-blur-sm border-teal-300 shadow-[0_2px_8px_rgba(45,212,191,0.3)]';
- else if (status ==='Payment Pending') style ='bg-sky-300/80 backdrop-blur-sm border-sky-300 shadow-[0_2px_8px_rgba(125,211,252,0.3)]';
-}
- return`border rounded-full ${style} transition-all duration-300`;
+        if (status === 'Occupied') style = 'bg-amber-300/80 backdrop-blur-sm border-amber-300 shadow-[0_2px_8px_rgba(251,191,36,0.3)]';
+        else if (status === 'Ready to Serve') style = 'bg-teal-300/80 backdrop-blur-sm border-teal-300 shadow-[0_2px_8px_rgba(45,212,191,0.3)]';
+        else if (status === 'Bill Requested') style = 'bg-purple-300/80 backdrop-blur-sm border-purple-300 shadow-[0_2px_8px_rgba(168,85,247,0.3)]';
+        else if (status === 'Payment Pending') style = 'bg-sky-300/80 backdrop-blur-sm border-sky-300 shadow-[0_2px_8px_rgba(125,211,252,0.3)]';
+    }
+    return `border rounded-full ${style} transition-all duration-300`;
 };
 
- const getTableStyle = () => {
- if (status ==='Occupied') return'bg-amber-100/50 backdrop-blur-md border-amber-200 text-amber-700';
- if (status ==='Ready to Serve') return'bg-teal-100/50 backdrop-blur-md border-teal-200 text-teal-700';
- if (status ==='Payment Pending') return'bg-sky-100/50 backdrop-blur-md border-sky-200 text-sky-700';
- return'bg-white/60 backdrop-blur-md border-white/80 text-gray-500'; // Vacant
+const getTableStyle = () => {
+    if (status === 'Occupied') return 'bg-amber-100/50 backdrop-blur-md border-amber-200 text-amber-700';
+    if (status === 'Ready to Serve') return 'bg-teal-100/50 backdrop-blur-md border-teal-200 text-teal-700';
+    if (status === 'Bill Requested') return 'bg-purple-100/50 backdrop-blur-md border-purple-200 text-purple-700';
+    if (status === 'Payment Pending') return 'bg-sky-100/50 backdrop-blur-md border-sky-200 text-sky-700';
+    return 'bg-white/60 backdrop-blur-md border-white/80 text-gray-500'; // Vacant
 };
 
  const tableClass =`rounded-xl border z-10 flex flex-col items-center justify-center shadow-sm transition-all duration-300 ${getTableStyle()}`;
@@ -94,9 +97,31 @@ export default function MyTables() {
         };
         fetchTables();
         
-        // Optionally poll every 30s
+        // Connect to WebSocket for real-time updates
+        const token = localStorage.getItem('token');
+        const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/waiter?token=${token}`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.event === "CUSTOMER_REQUESTED_BILL" || data.event === "BILL_PAID" || data.event === "WAITER_REQUESTED_BILL") {
+                    fetchTables();
+                } else if (data.event === "CUSTOMER_NEEDS_ASSISTANCE") {
+                    toast(`Table ${data.payload.table_id} needs: ${data.payload.request_type}`, { icon: '🔔' });
+                }
+            } catch (err) {
+                console.error("WS parse error", err);
+            }
+        };
+
         const interval = setInterval(fetchTables, 30000);
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            if (ws.readyState === 1) {
+                ws.close();
+            }
+        };
     }, []);
     
     // Stats calculation

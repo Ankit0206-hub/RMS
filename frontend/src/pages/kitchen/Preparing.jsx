@@ -1,52 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, Clock } from 'lucide-react';
+import kitchenApi from '../../services/kitchenApi';
+import toast from 'react-hot-toast';
 
 const Preparing = () => {
     const navigate = useNavigate();
     const [filter, setFilter] = useState('All'); 
+    const [preparingOrders, setPreparingOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Dummy data
-    const preparingOrders = [
-        { id: '132', table: 'T05', items: 4, guests: 4, elapsedMin: 25, startedAt: '07:05 PM', instructions: null }, // Long running
-        { id: '130', table: 'T01', items: 5, guests: 5, elapsedMin: 15, startedAt: '07:15 PM', instructions: 'No ice in drinks' },
-        { id: '129', table: 'T03', items: 3, guests: 2, elapsedMin: 10, startedAt: '07:20 PM', instructions: null },
-    ];
+    const [viewMode, setViewMode] = useState('orders'); // 'orders' or 'items'
 
-    const displayOrders = filter === 'All' ? preparingOrders : preparingOrders.filter(o => o.elapsedMin >= 20);
+    const fetchOrders = async () => {
+        try {
+            const res = await kitchenApi.getOrders("Preparing");
+            if (res.success) {
+                setPreparingOrders(res.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch preparing orders:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchOrders();
+        
+        // Setup WebSocket for real-time updates
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/kitchen?token=${token}`;
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => console.log("Kitchen WebSocket connected for Preparing Orders");
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.event === "order.updated") {
+                    if (data.payload.status === "Preparing") {
+                        fetchOrders(); 
+                    } else if (data.payload.status !== "Preparing") {
+                        if (data.payload.status === "Cancelled") {
+                            toast(`Order #${data.payload.id} was cancelled`, { icon: '❌' });
+                        }
+                        setPreparingOrders(prev => prev.filter(o => o.id !== data.payload.id));
+                    }
+                }
+            } catch (err) {
+                console.error("WS message error", err);
+            }
+        };
+        
+        return () => ws.close();
+    }, []);
+
+    const handleMarkReady = async (orderId) => {
+        try {
+            await kitchenApi.updateOrderStatus(orderId, "Cooked");
+            toast.success("Order marked as Ready");
+            setPreparingOrders(prev => prev.filter(o => o.id !== orderId));
+        } catch (error) {
+            console.error("Failed to update status", error);
+            toast.error("Failed to mark as ready");
+        }
+    };
+
+    // Calculate elapsed time dynamically
+    const ordersWithTime = preparingOrders.map(order => {
+        // Find when it became "Preparing"
+        // Wait, for MVP, just use created_at or updated_at difference
+        const start = new Date(order.updated_at || order.created_at).getTime();
+        const now = new Date().getTime();
+        const elapsedMin = Math.floor((now - start) / 60000);
+        return { ...order, elapsedMin };
+    });
+
+    const displayOrders = filter === 'All' ? ordersWithTime : ordersWithTime.filter(o => o.elapsedMin >= 20);
+
+    const aggregatedItems = {};
+    if (viewMode === 'items') {
+        displayOrders.forEach(order => {
+            order.items?.forEach(item => {
+                const key = item.menu_item_name;
+                if (!aggregatedItems[key]) {
+                    aggregatedItems[key] = {
+                        name: item.menu_item_name,
+                        quantity: 0,
+                        orders: [],
+                        image: item.menu_item_image,
+                    };
+                }
+                aggregatedItems[key].quantity += item.quantity;
+                aggregatedItems[key].orders.push(`Order #${order.id} (x${item.quantity})`);
+            });
+        });
+    }
+    const itemViewData = Object.values(aggregatedItems);
+
+    if (loading) {
+        return <div className="p-6 flex justify-center items-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div></div>;
+    }
 
     return (
         <div className="p-2 sm:p-4 lg:p-6 flex flex-col gap-2 h-full w-full">
             {/* Header & Controls */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
                 <h2 className="text-gray-900 font-black text-2xl tracking-tight">
                     Preparing <span className="text-gray-400 font-medium ml-2">({displayOrders.length})</span>
                 </h2>
-                <div className="flex bg-gray-100 p-1.5 rounded-lg border border-gray-200">
-                    <button
-                        onClick={() => setFilter('All')}
-                        className={`px-5 py-2 text-sm font-bold rounded-md transition-colors ${
-                            filter === 'All' ? 'bg-white text-gray-900 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        All Active
-                    </button>
-                    <button
-                        onClick={() => setFilter('Long')}
-                        className={`px-5 py-2 text-sm font-bold rounded-md transition-colors flex items-center gap-2 ${
-                            filter === 'Long' ? 'bg-white text-[#f97316] border border-red-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        <span className={`w-2 h-2 rounded-full ${filter === 'Long' ? 'bg-red-500' : 'bg-gray-300'}`}></span>
-                        Long Running
-                    </button>
+                
+                <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button
+                            onClick={() => setViewMode('orders')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition ${viewMode === 'orders' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Order View
+                        </button>
+                        <button
+                            onClick={() => setViewMode('items')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition ${viewMode === 'items' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Item View
+                        </button>
+                    </div>
+
+                    {viewMode === 'orders' && (
+                        <div className="flex bg-gray-100 p-1.5 rounded-lg border border-gray-200">
+                            <button
+                                onClick={() => setFilter('All')}
+                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors ${
+                                    filter === 'All' ? 'bg-white text-gray-900 border border-gray-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                All Active
+                            </button>
+                            <button
+                                onClick={() => setFilter('Long')}
+                                className={`px-5 py-2 text-sm font-bold rounded-md transition-colors flex items-center gap-2 ${
+                                    filter === 'Long' ? 'bg-white text-[#f97316] border border-red-200 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                <span className={`w-2 h-2 rounded-full ${filter === 'Long' ? 'bg-red-500' : 'bg-gray-300'}`}></span>
+                                Long Running
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Flat Horizontal Cards List */}
-            <div className="flex flex-col gap-4">
-                {displayOrders.map((order) => {
+            {/* Content Area */}
+            {viewMode === 'items' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {itemViewData.map((item, index) => (
+                        <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 flex gap-4 items-center shadow-sm">
+                            <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" />
+                            <div className="flex-1">
+                                <h3 className="font-bold text-gray-900 text-lg">{item.name}</h3>
+                                <p className="text-gray-500 text-xs mt-1">Preparing for: {item.orders.join(', ')}</p>
+                            </div>
+                            <div className="bg-orange-100 text-orange-600 font-black text-2xl h-12 w-12 rounded-xl flex items-center justify-center">
+                                {item.quantity}
+                            </div>
+                        </div>
+                    ))}
+                    {itemViewData.length === 0 && (
+                        <div className="col-span-full py-12 text-center text-gray-400 font-medium">No items being prepared.</div>
+                    )}
+                </div>
+            ) : (
+                <div className="flex flex-col gap-4">
+                    {displayOrders.map((order) => {
                     const isLongRunning = order.elapsedMin >= 20;
+                    const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
                     
                     return (
                         <div 
@@ -65,24 +194,24 @@ const Preparing = () => {
                                 <div className={`${
                                     isLongRunning ? 'bg-red-600' : 'bg-[#f97316]'
                                 } text-white text-2xl font-black px-4 py-3 rounded-lg shrink-0`}>
-                                    {order.table}
+                                    {order.table_number || "TA"}
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-gray-900 font-black text-xl tracking-wide mb-1">Order #{order.id}</span>
                                     <span className="text-gray-500 font-semibold text-sm">
-                                        {order.items} Items • {order.guests} Guests
+                                        {itemCount} Items • {order.order_type}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Middle: Special Instructions (If any) */}
                             <div className="md:w-1/3 flex justify-start md:justify-center">
-                                {order.instructions ? (
+                                {order.special_instructions ? (
                                     <div className="bg-amber-50 text-amber-700 px-4 py-2.5 rounded-lg border border-amber-200 flex items-start gap-2 w-full max-w-sm">
                                         <Info size={18} className="shrink-0 mt-0.5 text-amber-600" />
                                         <div>
                                             <span className="block text-xs font-black uppercase tracking-wider text-amber-600/80 mb-0.5">Special Instructions</span>
-                                            <span className="font-bold text-sm leading-snug">{order.instructions}</span>
+                                            <span className="font-bold text-sm leading-snug">{order.special_instructions}</span>
                                         </div>
                                     </div>
                                 ) : (
@@ -110,6 +239,7 @@ const Preparing = () => {
                                         View Details
                                     </button>
                                     <button 
+                                        onClick={() => handleMarkReady(order.id)}
                                         className={`flex-1 sm:flex-none text-white font-bold py-2.5 px-6 rounded-lg transition-colors ${
                                             isLongRunning 
                                                 ? 'bg-red-600 hover:bg-red-700' 
@@ -130,6 +260,7 @@ const Preparing = () => {
                     </div>
                 )}
             </div>
+            )}
         </div>
     );
 };

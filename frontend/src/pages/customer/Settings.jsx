@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
+import BottomNav from "../../components/customer/navigation/BottomNav";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -54,17 +55,8 @@ export default function Settings() {
       <div className="flex h-full flex-col">
 
         {/* Header */}
-
-        <div className="bg-white px-5 py-4 shadow-sm flex items-center">
-
-          <button onClick={() => navigate(-1)}>
-            <ArrowLeft size={22} />
-          </button>
-
-          <h1 className="flex-1 text-center text-lg font-semibold mr-6">
-            Settings
-          </h1>
-
+        <div className="bg-white px-5 py-5 shadow-sm flex items-center justify-between relative z-10">
+          <h1 className="text-xl font-bold text-gray-900">Settings</h1>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -167,6 +159,7 @@ export default function Settings() {
         </div>
 
       </div>
+      <BottomNav active="settings" />
     </PageLayout>
   );
 }
