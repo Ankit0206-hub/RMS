@@ -16,6 +16,7 @@ const TableAssignment = () => {
     const [isAssigning, setIsAssigning] = useState(false);
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [targetTransferTable, setTargetTransferTable] = useState('');
+    const [selectedFloor, setSelectedFloor] = useState('All');
 
     // Fetch Tables
     const { data: tablesData, isLoading: tablesLoading } = useQuery({
@@ -78,6 +79,9 @@ const TableAssignment = () => {
     if (tablesLoading || employeesLoading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter text-sm lg:text-[15px] 2xl:text-base font-bold">Loading Floor Data...</div>;
 
     const tables = tablesData || [];
+    const uniqueFloors = ['All', ...new Set(tables.map(t => t.floor || 'Main Hall'))];
+    const filteredTablesByFloor = tables.filter(t => selectedFloor === 'All' || (t.floor || 'Main Hall') === selectedFloor);
+
     const waiters = (employeesData || [])
         .filter(e => e.role_name?.toLowerCase() === 'waiter' || e.role_id === 2 || e.role_id === 3)
         .map(w => ({ ...w, full_name: `${w.first_name} ${w.last_name}`.trim() }));
@@ -205,9 +209,23 @@ const TableAssignment = () => {
                 <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col">
                     <div className="p-5 border-b border-gray-100 dark:border-slate-800 shrink-0">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white flex items-center cursor-pointer">
-                                Restaurant Floor (Main Hall) <ChevronDown size={16} className="ml-2 text-gray-400" />
-                            </h3>
+                            <div className="flex items-center">
+                                <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mr-3">
+                                    Restaurant Floor
+                                </h3>
+                                <select 
+                                    className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                                    value={selectedFloor}
+                                    onChange={(e) => {
+                                        setSelectedFloor(e.target.value);
+                                        setSelectedTables([]); // Clear selection when switching floors
+                                    }}
+                                >
+                                    {uniqueFloors.map(floor => (
+                                        <option key={floor} value={floor}>{floor}</option>
+                                    ))}
+                                </select>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 {selectedTables.length > 0 && (
                                     <button 
@@ -236,7 +254,7 @@ const TableAssignment = () => {
                     
                     <div className="p-5">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-x-4 gap-y-8">
-                            {[...tables].sort((a, b) => a.capacity - b.capacity).map(table => {
+                            {[...filteredTablesByFloor].sort((a, b) => a.capacity - b.capacity).map(table => {
                                 const renderChairs = (seats, status) => {
                                     const chairs = [];
                                     const topSeats = Math.ceil(seats / 2);

@@ -161,4 +161,44 @@ class TablesService:
         
         await db.commit()
 
+    async def merge_tables(self, db: AsyncSession, table_ids: List[int]) -> RestaurantTable:
+        from sqlalchemy.future import select
+        
+        result = await db.execute(select(RestaurantTable).where(RestaurantTable.id.in_(table_ids)))
+        tables = result.scalars().all()
+        
+        if len(tables) != len(table_ids):
+            raise HTTPException(status_code=400, detail="Some tables not found")
+            
+        if len(tables) < 2:
+            raise HTTPException(status_code=400, detail="Need at least 2 tables to merge")
+            
+        for t in tables:
+            if t.status != "Available":
+                raise HTTPException(status_code=400, detail=f"Table {t.table_number} is not Available")
+            if t.is_virtual:
+                raise HTTPException(status_code=400, detail=f"Table {t.table_number} is already a merged table")
+                
+        combined_number = "+".join(sorted([t.table_number for t in tables]))
+        combined_capacity = sum([t.capacity for t in tables])
+        
+        virtual_table = RestaurantTable(
+            table_number=combined_number,
+            name=f"Merged {combined_number}",
+            capacity=combined_capacity,
+            status="Available",
+            is_virtual=True
+        )
+        db.add(virtual_table)
+        await db.commit()
+        await db.refresh(virtual_table)
+        
+        for t in tables:
+            t.parent_table_id = virtual_table.id
+            t.status = "Merged"
+        
+        await db.commit()
+        await db.refresh(virtual_table)
+        return virtual_table
+
 tables_service = TablesService()

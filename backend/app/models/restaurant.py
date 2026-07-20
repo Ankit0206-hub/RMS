@@ -20,8 +20,10 @@ class RestaurantTable(TimestampMixin, Base):
     name: Mapped[Optional[str]] = mapped_column(String(50))
     floor: Mapped[Optional[str]] = mapped_column(String(50))
     capacity: Mapped[int] = mapped_column(Integer)
-    # Status: Available, Occupied, Reserved, Cleaning
+    # Status: Available, Occupied, Reserved, Cleaning, Merged
     status: Mapped[str] = mapped_column(String(20), default="Available", index=True)
+    is_virtual: Mapped[bool] = mapped_column(Boolean, default=False)
+    parent_table_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("restaurant_tables.id", ondelete="SET NULL"), index=True)
     
     assignments: Mapped[List["TableAssignment"]] = relationship(back_populates="table")
     reservations: Mapped[List["TableReservation"]] = relationship(back_populates="table")

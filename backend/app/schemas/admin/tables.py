@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class TableBase(BaseModel):
@@ -46,3 +46,6 @@ class TableAssignmentResponse(BaseModel):
 
 class TableTransferCreate(BaseModel):
     target_table_id: int
+
+class TableMergeCreate(BaseModel):
+    table_ids: List[int]

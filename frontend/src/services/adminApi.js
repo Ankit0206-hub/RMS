@@ -27,5 +27,9 @@ export const adminApi = {
             params: { page, page_size: pageSize }
         });
         return response.data;
+    },
+    mergeTables: async (tableIds) => {
+        const response = await api.post('/admin/tables/merge', { table_ids: tableIds });
+        return response.data;
     }
 };

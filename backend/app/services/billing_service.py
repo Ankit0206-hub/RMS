@@ -95,7 +95,16 @@ class BillingService:
                 from app.models.restaurant import RestaurantTable
                 table = await db.get(RestaurantTable, session.table_id)
                 if table:
-                    table.status = "Available"
+                    if table.is_virtual:
+                        from sqlalchemy.future import select
+                        result = await db.execute(select(RestaurantTable).where(RestaurantTable.parent_table_id == table.id))
+                        children = result.scalars().all()
+                        for child in children:
+                            child.status = "Available"
+                            child.parent_table_id = None
+                        await db.delete(table)
+                    else:
+                        table.status = "Available"
                     
                 await db.commit()
                 

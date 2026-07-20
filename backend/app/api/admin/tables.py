@@ -59,7 +59,16 @@ async def delete_table(
     await tables_service.delete_table(db, table_id)
     return StandardResponse(data={"deleted": True})
 
-from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate
+from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate, TableMergeCreate
+
+@router.post("/merge", response_model=StandardResponse[TableResponse])
+async def merge_tables(
+    obj_in: TableMergeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    data = await tables_service.merge_tables(db, obj_in.table_ids)
+    return StandardResponse(data=data, message="Tables merged successfully")
 
 @router.post("/{table_id}/assign", response_model=StandardResponse[TableAssignmentResponse])
 async def assign_waiter(
