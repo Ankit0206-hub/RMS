@@ -31,11 +31,10 @@ const OrderDetails = () => {
             <div className="bg-white p-5 py-6 border-b border-gray-200">
                 <div className="flex justify-between items-start">
                     <div>
-                        <span className={`text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider ${
-                            order.status === 'NEW' ? 'bg-green-100 text-green-800' :
-                            order.status === 'PREPARING' ? 'bg-orange-100 text-orange-800' :
-                            'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`text-xs font-bold px-3 py-1 rounded-sm uppercase tracking-wider ${order.status === 'NEW' ? 'bg-green-100 text-green-800' :
+                                order.status === 'PREPARING' ? 'bg-orange-100 text-orange-800' :
+                                    'bg-gray-100 text-gray-800'
+                            }`}>
                             {order.status}
                         </span>
                         <div className="flex items-center gap-4 mt-3">
@@ -56,7 +55,7 @@ const OrderDetails = () => {
 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-5 pb-24">
-                
+
                 {/* Item List */}
                 <div className="mb-8">
                     <h4 className="text-gray-500 font-bold uppercase tracking-wider text-sm mb-4">Items ({order.items.length})</h4>

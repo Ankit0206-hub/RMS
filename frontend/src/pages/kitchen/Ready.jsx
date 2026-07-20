@@ -23,21 +23,21 @@ const Ready = () => {
 
     useEffect(() => {
         fetchOrders();
-        
+
         // Setup WebSocket for real-time updates
         const token = localStorage.getItem('token');
         if (!token) return;
-        
+
         const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/kitchen?token=${token}`;
         const ws = new WebSocket(wsUrl);
-        
+
         ws.onopen = () => console.log("Kitchen WebSocket connected for Ready Orders");
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 if (data.event === "order.updated") {
                     if (data.payload.status === "Cooked") {
-                        fetchOrders(); 
+                        fetchOrders();
                     } else if (data.payload.status !== "Cooked") {
                         setReadyOrders(prev => prev.filter(o => o.id !== data.payload.id));
                     }
@@ -46,7 +46,7 @@ const Ready = () => {
                 console.error("WS message error", err);
             }
         };
-        
+
         return () => ws.close();
     }, []);
 
@@ -71,71 +71,76 @@ const Ready = () => {
                 </h2>
             </div>
 
-            {/* Flat Horizontal Cards List */}
-            <div className="flex flex-col gap-4">
+            {/* Content Area */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {ordersWithTime.map((order) => {
                     const itemCount = order.items ? order.items.reduce((acc, it) => acc + it.quantity, 0) : 0;
                     const readyTime = new Date(order.updated_at || order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                     return (
                     <div 
-                        key={order.id}
-                        onClick={() => navigate(`/kitchen/orders/${order.id}`)}
-                        className="bg-white rounded-lg border border-gray-200 p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 cursor-pointer relative overflow-hidden transition-shadow hover:shadow-md"
+                        key={order.id} 
+                        className="bg-zinc-900 flex flex-col rounded-xl overflow-hidden border border-zinc-700/80 shadow-xl hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all"
                     >
-                        {/* Green accent bar */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#f97316]"></div>
-
-                        {/* Left: Table & Order Info */}
-                        <div className="flex items-center gap-5 md:w-1/4 shrink-0 pl-1">
-                            <div className="bg-[#f97316] hover:bg-[#ea580c] text-white text-2xl font-black px-4 py-3 rounded-lg shrink-0">
-                                {order.table_number || "TA"}
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-gray-900 font-black text-xl tracking-wide mb-1">Order #{order.id}</span>
-                                <span className="text-gray-500 font-semibold text-sm">
-                                    {itemCount} Items • {order.order_type}
+                        {/* Ticket Header */}
+                        <div className="bg-blue-600 p-3 flex justify-between items-start text-white">
+                            <div>
+                                <h3 className="font-black text-3xl leading-none">
+                                    {order.table_number || "TA"}
+                                </h3>
+                                <span className="text-blue-100 font-bold text-xs uppercase tracking-wider mt-1 block">
+                                    {order.order_type}
                                 </span>
                             </div>
+                            <div className="text-right">
+                                <span className="font-black text-lg block">{readyTime}</span>
+                                <span className="font-bold text-blue-200 text-xs">#{order.id}</span>
+                            </div>
                         </div>
 
-                        {/* Middle: Special Instructions (If any) */}
-                        <div className="md:w-1/3 flex justify-start md:justify-center">
-                            {order.special_instructions ? (
-                                <div className="bg-amber-50 text-amber-700 px-4 py-2.5 rounded-lg border border-amber-200 flex items-start gap-2 w-full max-w-sm">
-                                    <Info size={18} className="shrink-0 mt-0.5 text-amber-600" />
-                                    <div>
-                                        <span className="block text-xs font-black uppercase tracking-wider text-amber-600/80 mb-0.5">Special Instructions</span>
-                                        <span className="font-bold text-sm leading-snug">{order.special_instructions}</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="hidden md:block w-full max-w-sm"></div> // Spacer
-                            )}
-                        </div>
+                        {/* Special Instructions (Optional Header Banner) */}
+                        {order.special_instructions && (
+                            <div className="bg-amber-500/20 text-amber-400 p-2 text-xs font-bold border-b border-amber-500/20 flex items-center gap-1.5 leading-tight">
+                                <Info size={14} className="shrink-0" />
+                                {order.special_instructions}
+                            </div>
+                        )}
 
-                        {/* Right: Time & Status */}
-                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row items-center gap-4 md:w-auto shrink-0 justify-end w-full">
-                            <div className="text-center sm:text-right hidden sm:block md:hidden lg:block lg:mr-4">
-                                <span className="text-gray-900 font-black text-xl block">{readyTime}</span>
-                                <span className="text-[#f97316] font-black text-[10px] uppercase tracking-widest bg-emerald-50 border border-[#f97316] px-2 py-0.5 rounded-full inline-block mt-1">Ready</span>
+                        {/* Ticket Body (Items List) */}
+                        <div className="p-3 flex-1 overflow-y-auto bg-zinc-900 min-h-[150px] max-h-[250px] custom-scrollbar">
+                            <div className="text-zinc-500 text-xs font-bold uppercase tracking-widest border-b border-zinc-800 pb-2 mb-2 flex justify-between">
+                                <span>{itemCount} Items</span>
+                                <span>Waiting: {order.waitTimeMin}m</span>
                             </div>
-                            
-                            <div className="w-full sm:w-auto">
-                                <div className="bg-gray-50 border border-gray-200 px-5 py-2.5 rounded-lg flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-2 text-gray-700 font-bold text-sm">
-                                        <Clock size={18} />
-                                        Waiting for Waiter
-                                    </div>
-                                    <span className="text-gray-900 font-black text-lg">{order.waitTimeMin}m</span>
-                                </div>
-                            </div>
+                            <ul className="flex flex-col gap-3">
+                                {order.items?.map((item, idx) => (
+                                    <li key={idx} className="flex items-start gap-3 text-zinc-200">
+                                        <span className="font-black text-blue-400 text-lg w-6 shrink-0">{item.quantity}</span>
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-base leading-tight">{item.menu_item_name}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        
+                        {/* Ticket Footer / Action */}
+                        <div className="p-3 bg-zinc-950 border-t border-zinc-800 grid grid-cols-1 gap-2 mt-auto">
+                            <button 
+                                onClick={() => navigate(`/kitchen/orders/${order.id}`)}
+                                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-2.5 rounded-lg transition-colors text-sm w-full"
+                            >
+                                View Details
+                            </button>
                         </div>
                     </div>
                 )})}
 
                 {ordersWithTime.length === 0 && (
-                    <div className="text-center bg-white rounded-lg border border-gray-200 text-gray-500 py-20 font-bold text-lg">
+                    <div className="col-span-full text-center bg-zinc-900/50 rounded-2xl border-2 border-dashed border-zinc-800 text-zinc-500 py-20 font-bold text-xl flex flex-col items-center gap-4">
+                        <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
+                            <Info className="text-zinc-600 w-8 h-8" />
+                        </div>
                         No orders are currently waiting for pickup.
                     </div>
                 )}
