@@ -178,6 +178,31 @@ class OrderingService:
         if not order:
             raise NotFoundException("Order not found")
             
+        if status_update.status == "Cooked":
+            from app.models.system import Notification
+            from app.models.restaurant import TableAssignment
+            from sqlalchemy.future import select
+            
+            full_order = await self.repository.get_order_by_id(db, order_id)
+            if full_order and full_order.session and full_order.session.table:
+                assignments_query = select(TableAssignment).where(
+                    TableAssignment.table_id == full_order.session.table_id,
+                    TableAssignment.is_active == True
+                )
+                assignments_result = await db.execute(assignments_query)
+                assignments = assignments_result.scalars().all()
+                for assign in assignments:
+                    notif = Notification(
+                        employee_id=assign.employee_id,
+                        title="Order Ready",
+                        message=f"Table {full_order.session.table.table_number}'s order #{order.id} is ready to serve",
+                        notification_type="ORDER_READY",
+                        is_read=False
+                    )
+                    db.add(notif)
+                await db.commit()
+                await manager.broadcast("NEW_NOTIFICATION", {}, ["waiter"])
+            
         await manager.broadcast("order.updated", {
             "id": order.id,
             "session_id": order.session_id,

@@ -52,6 +52,28 @@ export const waiterApi = {
     updateOrderStatus: async (orderId, status) => {
         const response = await api.patch(`/admin/ordering/orders/${orderId}/status`, { status });
         return response.data;
+    },
+    
+    // Requests
+    getRequests: async () => {
+        const response = await api.get('/waiter/requests');
+        return response.data;
+    },
+    
+    resolveRequest: async (requestId) => {
+        const response = await api.put(`/waiter/requests/${requestId}/resolve`);
+        return response.data;
+    },
+
+    // Notifications
+    getNotifications: async () => {
+        const response = await api.get('/waiter/notifications');
+        return response.data;
+    },
+
+    markNotificationRead: async (notificationId) => {
+        const response = await api.put(`/waiter/notifications/${notificationId}/read`);
+        return response.data;
     }
 };
 

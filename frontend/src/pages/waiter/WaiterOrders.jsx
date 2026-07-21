@@ -46,6 +46,8 @@ export default function WaiterOrders() {
         return () => ws.close();
     }, []);
 
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
+
     // Filter logic
     const filteredOrders = activeTab === 'Active' 
         ? rawOrders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled') 
@@ -54,19 +56,16 @@ export default function WaiterOrders() {
     // Sort by latest first
     const sortedOrders = [...filteredOrders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+    const toggleExpand = (id) => {
+        setExpandedOrderId(prev => prev === id ? null : id);
+    };
+
     if (loading) {
         return <div className="p-6 flex justify-center items-center min-h-screen bg-slate-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div></div>;
     }
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
-            {/* Decorative Glassmorphism Blobs */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-            </div>
-
             <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 w-full shrink-0">
                     <div className="flex items-center w-full max-w-7xl mx-auto justify-between">
@@ -78,68 +77,87 @@ export default function WaiterOrders() {
                     </div>
                 </div>
 
-                <div className="px-4 md:px-8 mt-4 flex-1 space-y-6 w-full pb-24 max-w-7xl mx-auto">
-                    <div className="flex space-x-2 md:max-w-md">
-                        <button onClick={() => setActiveTab('Active')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm border ${activeTab ==='Active'?'bg-rose-400/90 backdrop-blur-md text-white border-rose-400':'bg-white/20 backdrop-blur-md text-gray-600 border-white/40'}`}>Active</button>
-                        <button onClick={() => setActiveTab('Completed')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm border ${activeTab ==='Completed'?'bg-rose-400/90 backdrop-blur-md text-white border-rose-400':'bg-white/20 backdrop-blur-md text-gray-600 border-white/40'}`}>Completed</button>
+                <div className="px-4 md:px-8 mt-4 flex-1 w-full pb-24">
+                    <div className="flex space-x-2 mb-6">
+                        <button onClick={() => setActiveTab('Active')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm border ${activeTab ==='Active'?'bg-rose-500 text-white border-rose-500':'bg-white/50 text-gray-600 border-white/60'}`}>Active</button>
+                        <button onClick={() => setActiveTab('Completed')} className={`flex-1 py-3 rounded-2xl text-[15px] font-bold transition-colors shadow-sm border ${activeTab ==='Completed'?'bg-rose-500 text-white border-rose-500':'bg-white/50 text-gray-600 border-white/60'}`}>Completed</button>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="flex flex-col space-y-3">
                         {sortedOrders.map(order => {
                             const orderTime = new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const isExpanded = expandedOrderId === order.id;
+                            const itemCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+                            
                             return (
-                                <div key={order.id} className="bg-white/20 backdrop-blur-xl rounded-3xl p-5 shadow-sm border border-white/40 flex flex-col transition-colors">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div>
-                                            <div className="flex items-center space-x-2 mb-1">
-                                                <h3 className="text-lg font-black text-gray-800">Order #{order.id}</h3>
-                                                <span className="bg-teal-500/10 text-teal-700 font-bold px-2 py-0.5 rounded-md text-xs border border-teal-200/50 backdrop-blur-md">{order.table_number || "TA"}</span>
+                                <div key={order.id} className="bg-white border border-gray-100 shadow-sm overflow-hidden transition-all">
+                                    <div 
+                                        onClick={() => toggleExpand(order.id)}
+                                        className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3 md:gap-4 w-full">
+                                            <div className="bg-slate-100 h-12 px-3 rounded-2xl flex flex-col items-center justify-center border border-slate-200 shrink-0 min-w-[70px]">
+                                                <span className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase leading-none mb-0.5">Table</span>
+                                                <span className="text-xs md:text-sm font-black text-slate-800 leading-tight">{order.table_number || "TA"}</span>
                                             </div>
-                                            <div className="flex items-center text-xs text-gray-500 font-medium">
-                                                <Clock className="h-3.5 w-3.5 mr-1"/> {orderTime}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-1">
+                                                    <h3 className="text-sm md:text-base font-black text-gray-800 whitespace-nowrap">Order #{order.id}</h3>
+                                                    <span className={`text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap ${
+                                                        order.status === 'Pending' || order.status === 'Verification Pending' ? 'bg-purple-100 text-purple-700' : 
+                                                        order.status === 'Preparing' ? 'bg-amber-100 text-amber-700' :
+                                                        order.status === 'Cooked' ? 'bg-orange-100 text-orange-700' :
+                                                        'bg-teal-100 text-teal-700'
+                                                    }`}>{order.status}</span>
+                                                </div>
+                                                <div className="flex flex-wrap items-center text-[11px] md:text-xs text-gray-500 font-medium gap-1.5 md:gap-3">
+                                                    <span className="flex items-center whitespace-nowrap"><Clock className="h-3 w-3 mr-1"/> {orderTime}</span>
+                                                    <span className="hidden sm:inline">•</span>
+                                                    <span className="whitespace-nowrap">{itemCount} Items</span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <span className={`text-[11px] font-bold px-3 py-1.5 rounded-xl border backdrop-blur-md ${
-                                            order.status === 'Pending' ? 'bg-purple-500/10 text-purple-700 border-purple-200/50' : 
-                                            order.status === 'Preparing' ? 'bg-amber-500/10 text-amber-700 border-amber-200/50' :
-                                            order.status === 'Cooked' ? 'bg-orange-500/10 text-orange-700 border-orange-200/50' :
-                                            'bg-teal-500/10 text-teal-700 border-teal-200/50'
-                                        }`}>{order.status}</span>
-                                    </div>
-                                    
-                                    <div className="space-y-1.5 mt-4 mb-5 border-t border-white/30 pt-4 flex-1">
-                                        {order.items && order.items.map((item, i) => (
-                                            <div key={i} className="text-sm font-medium text-gray-700 flex justify-between bg-white/30 px-3 py-2 rounded-xl border border-white/40">
-                                                <span>{item.menu_item_name}</span><span className="font-black text-gray-800 ml-1">x{item.quantity}</span>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            {order.status === 'Cooked' && (
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        waiterApi.updateOrderStatus(order.id, "Served").then(() => fetchOrders());
+                                                    }} 
+                                                    className="bg-teal-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-teal-600 transition-colors mr-2"
+                                                >
+                                                    Serve
+                                                </button>
+                                            )}
+                                            <div className={`p-1.5 rounded-full transition-transform duration-200 ${isExpanded ? 'bg-gray-100 rotate-90' : 'bg-transparent'}`}>
+                                                <ChevronRight className="h-5 w-5 text-gray-400" />
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
                                     
-                                    <div className="border-t border-white/30 pt-4 flex justify-between">
-                                        {order.status === 'Cooked' ? (
-                                            <button 
-                                                onClick={async () => {
-                                                    try {
-                                                        await waiterApi.updateOrderStatus(order.id, "Served");
-                                                        fetchOrders();
-                                                    } catch (e) {
-                                                        console.error(e);
-                                                    }
-                                                }} 
-                                                className="flex items-center bg-teal-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-teal-600 transition-colors"
-                                            >
-                                                Mark Served
-                                            </button>
-                                        ) : <div></div>}
-                                        <button onClick={() => navigate(`/waiter/orders/${order.id}`)} className="flex items-center bg-white/30 px-4 py-2 rounded-xl text-rose-500 text-sm font-bold border border-white/40 transition-colors">
-                                            View Details <ChevronRight className="h-4 w-4 ml-1"/>
-                                        </button>
-                                    </div>
+                                    {isExpanded && (
+                                        <div className="bg-slate-50 p-4 border-t border-gray-100 animate-slideUp">
+                                            <div className="space-y-2 mb-4">
+                                                {order.items && order.items.map((item, i) => (
+                                                    <div key={i} className="text-sm font-medium text-gray-700 flex justify-between bg-white px-3 py-2.5 rounded-xl border border-gray-100 shadow-sm">
+                                                        <span>{item.menu_item_name}</span>
+                                                        <span className="font-black text-gray-800">x{item.quantity}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <button onClick={() => navigate(`/waiter/orders/${order.id}`)} className="text-rose-500 text-sm font-bold flex items-center hover:text-rose-600 transition-colors">
+                                                    View Full Details <ChevronRight className="h-4 w-4 ml-0.5"/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                         {sortedOrders.length === 0 && (
-                            <div className="col-span-full text-center py-20 text-gray-500 font-bold">
+                            <div className="text-center py-20 text-gray-500 font-bold">
                                 No {activeTab.toLowerCase()} orders found.
                             </div>
                         )}

@@ -31,7 +31,7 @@ const WaiterLayout = () => {
  <div className="relative h-full w-full max-w-7xl overflow-hidden bg-slate-50 shadow-sm sm:border-x  border-white/20 flex flex-col">
  
  {/* Main Content Area */}
- <main className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-[72px]">
+ <main className="flex-1 flex flex-col min-w-0 overflow-y-auto scrollbar-hide pb-[72px]">
  <Outlet />
  </main>
 
