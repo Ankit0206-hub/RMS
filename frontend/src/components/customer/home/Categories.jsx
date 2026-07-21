@@ -45,7 +45,7 @@ export default function Categories({ categories = [] }) {
                 className="h-16 w-16 rounded-full object-cover shadow-sm border-2 border-white"
               />
             </div>
-            <span className={`text-xs font-medium text-center leading-tight ${item.isAll ? "text-orange-500" : "text-gray-600"}`}>
+            <span className={`text-xs font-medium text-center leading-tight ${item.isAll ? "text-orange-500" : "text-gray-600 dark:text-slate-400"}`}>
               {item.title}
             </span>
           </div>

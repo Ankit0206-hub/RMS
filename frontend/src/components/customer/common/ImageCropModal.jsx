@@ -72,7 +72,7 @@ export default function ImageCropModal({ isOpen, onClose, imageSrc, onCropComple
                     max={3}
                     step={0.1}
                     onChange={(e) => setZoom(Number(e.target.value))}
-                    className="w-full max-w-sm accent-orange-500 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                    className="w-full max-w-sm accent-orange-500 h-1.5 bg-white dark:bg-slate-900/20 rounded-lg appearance-none cursor-pointer"
                 />
             </div>
         </div>

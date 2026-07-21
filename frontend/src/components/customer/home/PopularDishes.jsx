@@ -34,7 +34,7 @@ export default function PopularDishes({ popularDishes = [] }) {
         <section className="mt-8">
             {/* Heading */}
             <div className="mb-5 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                     Popular Dishes
                 </h2>
 
@@ -52,7 +52,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                     <div
                         key={dish.id}
                         onClick={() => navigate("/customer/food-details", { state: { food: dish } })}
-                        className="cursor-pointer overflow-hidden rounded-2xl bg-white shadow transition hover:shadow-lg"
+                        className="cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow transition hover:shadow-lg"
                     >
                         <div className="relative">
                             <img
@@ -66,19 +66,19 @@ export default function PopularDishes({ popularDishes = [] }) {
                                     e.stopPropagation();
                                     toggleFavorite(dish.id);
                                 }}
-                                className="absolute right-3 top-3 rounded-full bg-white p-2 shadow"
+                                className="absolute right-3 top-3 rounded-full bg-white dark:bg-slate-900 p-2 shadow"
                             >
                                 <Heart
                                     size={16}
                                     className={
                                         favorites.includes(dish.id)
                                             ? "fill-red-500 text-red-500"
-                                            : "text-gray-500"
+                                            : "text-gray-500 dark:text-slate-400"
                                     }
                                 />
                             </button>
 
-                            <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white px-2 py-1 shadow">
+                            <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 px-2 py-1 shadow">
                                 <Star
                                     size={12}
                                     className="fill-yellow-400 text-yellow-400"
@@ -100,14 +100,14 @@ export default function PopularDishes({ popularDishes = [] }) {
                                 </span>
 
                                 {(() => {
-                                    const cartItem = cartItems.find((item) => item.id === dish.id);
+                                    const cartItem = cartItems.find((item) => item.id === dish.id || item.originalId === dish.id || item.name === dish.name);
                                     if (cartItem) {
                                         return (
                                             <div className="flex items-center gap-1 sm:gap-3 rounded-full bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        decreaseQuantity(dish.id);
+                                                        decreaseQuantity(cartItem.id || dish.id);
                                                     }}
                                                     className="p-1"
                                                 >
@@ -117,7 +117,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        increaseQuantity(dish.id);
+                                                        increaseQuantity(cartItem.id || dish.id);
                                                     }}
                                                     className="p-1"
                                                 >

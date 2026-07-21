@@ -78,7 +78,7 @@ export default function Customer() {
   };
 
   return (
-    <PageLayout className="relative h-screen w-full overflow-hidden bg-white">
+    <PageLayout className="relative h-screen w-full overflow-hidden bg-white dark:bg-slate-900">
       {/* Background Image & Glass Overlay */}
       <div className="absolute inset-0 z-0">
         <img
@@ -91,8 +91,14 @@ export default function Customer() {
 
       <div className="relative z-10 flex h-full flex-col px-6 pt-12 pb-6 md:px-12 md:pt-20 md:pb-12 overflow-y-auto">
         
-        {/* Top Header / Skip */}
-        <div className="absolute top-6 right-6 md:top-10 md:right-10 z-20">
+        {/* Top Header / Cancel & Skip */}
+        <div className="absolute top-6 right-6 md:top-10 md:right-10 z-20 flex items-center gap-4 md:gap-6">
+          <button 
+            onClick={() => navigate("/customer")}
+            className="text-[14px] md:text-lg font-bold text-gray-500 dark:text-slate-400 hover:text-red-500 transition"
+          >
+            Cancel
+          </button>
           <button 
             onClick={() => navigate("/customer/home")}
             className="text-[14px] md:text-lg font-bold text-[#0f172a] hover:text-orange-600 transition"
@@ -125,8 +131,8 @@ export default function Customer() {
 
         <div className="flex-1 space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full">
           {/* Your Name */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white flex flex-col transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 font-bold ml-8 md:ml-10 uppercase tracking-wider">Your Name</label>
+          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
+            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Your Name</label>
             <div className="flex items-center mt-0.5 md:mt-1.5">
               <User className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
               <input
@@ -139,8 +145,8 @@ export default function Customer() {
           </div>
 
           {/* Contact Number */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white flex flex-col transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 font-bold ml-8 md:ml-10 uppercase tracking-wider">Contact Number</label>
+          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
+            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Contact Number</label>
             <div className="flex items-center mt-0.5 md:mt-1.5">
               <Phone className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
               <input
@@ -153,29 +159,29 @@ export default function Customer() {
           </div>
 
           {/* Number of People */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white/80 backdrop-blur-md px-4 py-3 md:px-6 md:py-5 shadow-sm flex items-center justify-between">
+          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-3 md:px-6 md:py-5 shadow-sm flex items-center justify-between">
             <div className="flex flex-col">
-              <label className="text-[11px] md:text-[13px] text-gray-500 font-bold ml-8 md:ml-10 uppercase tracking-wider">Number of People</label>
+              <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Number of People</label>
               <div className="flex items-center mt-0.5 md:mt-1.5">
                 <Users className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
                 <span className="font-bold text-[#0f172a] text-[15px] md:text-lg">{form.persons}</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-4 md:gap-6 bg-gray-100/50 md:bg-gray-100/70 rounded-full px-2 py-1 md:px-3 md:py-2">
-              <button onClick={handleDecreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white transition">
+            <div className="flex items-center gap-4 md:gap-6 bg-gray-100 dark:bg-slate-800/50 md:bg-gray-100 dark:bg-slate-800/70 rounded-full px-2 py-1 md:px-3 md:py-2">
+              <button onClick={handleDecreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
                 <Minus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
               </button>
               <span className="font-extrabold w-4 md:w-6 text-center text-[#0f172a] md:text-lg">{form.persons}</span>
-              <button onClick={handleIncreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white transition">
+              <button onClick={handleIncreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
                 <Plus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
               </button>
             </div>
           </div>
 
           {/* Select Table */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white flex flex-col relative transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 font-bold ml-8 md:ml-10 uppercase tracking-wider">Select Table</label>
+          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col relative transition-all">
+            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Select Table</label>
             <div className="flex items-center mt-0.5 md:mt-1.5">
               <Utensils className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
               <select

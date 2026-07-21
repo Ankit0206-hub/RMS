@@ -49,9 +49,9 @@ export default function PopularFoods() {
 
     return (
         <MobileContainer>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50">
                 {/* Header */}
-                <div className="sticky top-0 z-10 bg-white shadow-sm">
+                <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex items-center gap-4 p-5">
                         <button onClick={() => navigate(-1)}>
                             <ArrowLeft size={24} />
@@ -64,8 +64,8 @@ export default function PopularFoods() {
 
                     {/* Search */}
                     <div className="px-5 pb-5">
-                        <div className="flex items-center rounded-xl bg-gray-100 px-4 py-3">
-                            <Search size={18} className="text-gray-500" />
+                        <div className="flex items-center rounded-xl bg-gray-100 dark:bg-slate-800 px-4 py-3">
+                            <Search size={18} className="text-gray-500 dark:text-slate-400" />
 
                             <input
                                 type="text"
@@ -84,7 +84,7 @@ export default function PopularFoods() {
                         <div
                             key={food.id}
                             onClick={() => navigate("/customer/food-details")}
-                            className="cursor-pointer overflow-hidden rounded-2xl bg-white shadow transition hover:shadow-xl"
+                            className="cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow transition hover:shadow-xl"
                         >
                             <div className="relative">
                                 <img
@@ -98,19 +98,19 @@ export default function PopularFoods() {
                                         e.stopPropagation();
                                         toggleFavorite(food.id);
                                     }}
-                                    className="absolute right-3 top-3 rounded-full bg-white p-2 shadow"
+                                    className="absolute right-3 top-3 rounded-full bg-white dark:bg-slate-900 p-2 shadow"
                                 >
                                     <Heart
                                         size={16}
                                         className={
                                             favorites.includes(food.id)
                                                 ? "fill-red-500 text-red-500"
-                                                : "text-gray-500"
+                                                : "text-gray-500 dark:text-slate-400"
                                         }
                                     />
                                 </button>
 
-                                <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white px-2 py-1">
+                                <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 px-2 py-1">
                                     <Star
                                         size={12}
                                         className="fill-yellow-400 text-yellow-400"

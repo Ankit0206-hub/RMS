@@ -6,12 +6,17 @@ replacements = {
     r'\bbg-\[\#f8f9fc\]\b': r'bg-[#f8f9fc] dark:bg-slate-950',
     r'\bbg-gray-50\b': r'bg-gray-50 dark:bg-slate-800/50',
     r'\bbg-gray-100\b': r'bg-gray-100 dark:bg-slate-800',
+    r'\bbg-gray-200\b': r'bg-gray-200 dark:bg-slate-700',
+    r'\bbg-white/80\b': r'bg-white/80 dark:bg-slate-900/80',
+    r'\bbg-white/90\b': r'bg-white/90 dark:bg-slate-900/90',
+    r'\btext-black\b': r'text-black dark:text-white',
     
     r'\btext-gray-900\b': r'text-gray-900 dark:text-white',
     r'\btext-gray-800\b': r'text-gray-800 dark:text-slate-200',
     r'\btext-gray-700\b': r'text-gray-700 dark:text-slate-300',
     r'\btext-gray-600\b': r'text-gray-600 dark:text-slate-400',
     r'\btext-gray-500\b': r'text-gray-500 dark:text-slate-400',
+    r'\btext-gray-400\b': r'text-gray-400 dark:text-slate-500',
     
     r'\btext-slate-900\b': r'text-slate-900 dark:text-white',
     r'\btext-slate-850\b': r'text-slate-850 dark:text-white',
@@ -60,12 +65,18 @@ def main():
         r"d:\RMS\frontend\src\layouts\OperatorLayout.jsx"
     ]
     
-    pages_dir = r"d:\RMS\frontend\src\pages\operator"
-    for root, dirs, files in os.walk(pages_dir):
-        for file in files:
-            if file.endswith(".jsx"):
-                target_files.append(os.path.join(root, file))
-                
+    dirs_to_process = [
+        r"d:\RMS\frontend\src\pages\operator",
+        r"d:\RMS\frontend\src\pages\customer",
+        r"d:\RMS\frontend\src\components\customer"
+    ]
+    
+    for directory in dirs_to_process:
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if file.endswith(".jsx"):
+                    target_files.append(os.path.join(root, file))
+                    
     for filepath in target_files:
         replace_in_file(filepath)
 

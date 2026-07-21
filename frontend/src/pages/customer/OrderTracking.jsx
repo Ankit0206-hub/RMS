@@ -100,14 +100,14 @@ export default function OrderTracking() {
   ];
 
   return (
-    <PageLayout className="bg-gray-50 flex flex-col">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-1">
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Track Order</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Track Order</h1>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export default function OrderTracking() {
         </div>
 
         {/* Timeline */}
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
           <div className="relative">
             {steps.map((step, index) => {
               const isCompleted = step.status === "completed";
@@ -142,7 +142,7 @@ export default function OrderTracking() {
                   {!isLast && (
                     <div 
                       className={`absolute left-[15px] top-[30px] bottom-[-10px] w-[2px] ${
-                        isCompleted ? "bg-orange-500" : "bg-gray-100"
+                        isCompleted ? "bg-orange-500" : "bg-gray-100 dark:bg-slate-800"
                       }`}
                     />
                   )}
@@ -154,8 +154,8 @@ export default function OrderTracking() {
                         isCompleted
                           ? "bg-orange-500 border-orange-500 text-white"
                           : isActive
-                          ? "bg-white border-orange-500 text-orange-500"
-                          : "bg-gray-50 border-gray-200 text-gray-300"
+                          ? "bg-white dark:bg-slate-900 border-orange-500 text-orange-500"
+                          : "bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-300"
                       }`}
                     >
                       {isCompleted && <Check size={14} strokeWidth={3} />}
@@ -165,10 +165,10 @@ export default function OrderTracking() {
 
                   {/* Content */}
                   <div className={`pb-8 ${isPending ? "opacity-50" : ""}`}>
-                    <h3 className={`font-bold text-base ${isActive ? "text-orange-500" : "text-gray-900"}`}>
+                    <h3 className={`font-bold text-base ${isActive ? "text-orange-500" : "text-gray-900 dark:text-white"}`}>
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-500 font-medium mt-0.5">
+                    <p className="text-sm text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                       {step.time}
                     </p>
                   </div>
@@ -180,26 +180,26 @@ export default function OrderTracking() {
 
         {/* Need Help */}
         <div>
-          <h3 className="font-bold text-gray-900 mb-3 px-1">Need Help?</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white mb-3 px-1">Need Help?</h3>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setIsWaiterModalOpen(true)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 active:scale-[0.98] transition"
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-gray-100 dark:border-slate-800 active:scale-[0.98] transition"
             >
               <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
                 <Bell size={20} />
               </div>
-              <span className="text-sm font-bold text-gray-700">Request Waiter</span>
+              <span className="text-sm font-bold text-gray-700 dark:text-slate-300">Request Waiter</span>
             </button>
 
             <button
               onClick={() => navigate("/customer/request-final-bill")}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white p-4 shadow-sm border border-gray-100 active:scale-[0.98] transition"
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-gray-100 dark:border-slate-800 active:scale-[0.98] transition"
             >
               <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center text-green-500">
                 <ReceiptText size={20} />
               </div>
-              <span className="text-sm font-bold text-gray-700">Request Bill</span>
+              <span className="text-sm font-bold text-gray-700 dark:text-slate-300">Request Bill</span>
             </button>
           </div>
         </div>
@@ -207,10 +207,10 @@ export default function OrderTracking() {
       </div>
 
       {/* Bottom Floating CTA */}
-      <div className="border-t border-gray-100 bg-white p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10 flex gap-3">
+      <div className="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10 flex gap-3">
         <button
           onClick={() => navigate("/customer/current-bill")}
-          className="flex-1 flex h-14 items-center justify-center rounded-2xl bg-gray-100 font-bold text-gray-700 transition hover:bg-gray-200 active:scale-[0.98]"
+          className="flex-1 flex h-14 items-center justify-center rounded-2xl bg-gray-100 dark:bg-slate-800 font-bold text-gray-700 dark:text-slate-300 transition hover:bg-gray-200 dark:bg-slate-700 active:scale-[0.98]"
         >
           View Bill
         </button>
@@ -225,9 +225,9 @@ export default function OrderTracking() {
       {/* Waiter Modal */}
       {isWaiterModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4 pb-10">
-          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden animate-in slide-in-from-bottom-10">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm overflow-hidden animate-in slide-in-from-bottom-10">
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Request Assistance</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Request Assistance</h3>
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {['water', 'tissue', 'waiter'].map(type => (
                   <button
@@ -242,15 +242,15 @@ export default function OrderTracking() {
                         toast.error('Failed to send request');
                       }
                     }}
-                    className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-50 p-4 border border-gray-100 hover:border-blue-200 hover:bg-blue-50 active:scale-95 transition"
+                    className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-50 dark:bg-slate-800/50 p-4 border border-gray-100 dark:border-slate-800 hover:border-blue-200 hover:bg-blue-50 active:scale-95 transition"
                   >
-                    <span className="text-sm font-bold text-gray-700 capitalize">{type}</span>
+                    <span className="text-sm font-bold text-gray-700 dark:text-slate-300 capitalize">{type}</span>
                   </button>
                 ))}
               </div>
               <button 
                 onClick={() => setIsWaiterModalOpen(false)}
-                className="w-full h-12 rounded-2xl bg-gray-100 font-bold text-gray-700"
+                className="w-full h-12 rounded-2xl bg-gray-100 dark:bg-slate-800 font-bold text-gray-700 dark:text-slate-300"
               >
                 Cancel
               </button>
@@ -261,4 +261,4 @@ export default function OrderTracking() {
     </PageLayout>
   );
 }
-
+

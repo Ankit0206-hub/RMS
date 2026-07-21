@@ -42,29 +42,29 @@ export default function Review() {
   );
 
   return (
-    <PageLayout className="bg-gray-50 flex flex-col">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col">
       <div className="flex-1 overflow-y-auto px-5 py-10 flex flex-col items-center">
         
         {/* Welcome Header */}
         <div className="text-center mt-6 mb-8">
-          <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2">
+          <p className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest mb-2">
             Thank you, John!
           </p>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Session Complete
           </h1>
         </div>
 
         {/* Stats Card */}
-        <div className="w-full rounded-[2rem] bg-white p-6 shadow-sm border border-gray-100 flex gap-4 mb-10">
-          <div className="flex-1 flex flex-col items-center justify-center border-r border-gray-100">
+        <div className="w-full rounded-[2rem] bg-white dark:bg-slate-900 p-6 shadow-sm border border-gray-100 dark:border-slate-800 flex gap-4 mb-10">
+          <div className="flex-1 flex flex-col items-center justify-center border-r border-gray-100 dark:border-slate-800">
             <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3">
               <Clock size={24} className="text-blue-500" />
             </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+            <p className="text-xs font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
               Visit Duration
             </p>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
               1h 45m
             </p>
           </div>
@@ -73,21 +73,21 @@ export default function Review() {
             <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
               <IndianRupee size={24} className="text-green-500" />
             </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+            <p className="text-xs font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
               Total Bill
             </p>
-            <p className="text-lg font-bold text-gray-900">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
               ₹{total}
             </p>
           </div>
         </div>
 
         {/* Rating Section */}
-        <div className="w-full bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex-1">
-          <h2 className="text-xl font-bold text-gray-900 text-center mt-2">
+        <div className="w-full bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-slate-800 flex-1">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white text-center mt-2">
             How was your experience?
           </h2>
-          <p className="text-sm font-medium text-gray-500 text-center mt-2 mb-2">
+          <p className="text-sm font-medium text-gray-500 dark:text-slate-400 text-center mt-2 mb-2">
             Your feedback helps us improve.
           </p>
 
@@ -99,14 +99,14 @@ export default function Review() {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Leave a comment (optional)..."
-              className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm font-medium text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
+              className="w-full resize-none rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 p-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-orange-500 focus:bg-white dark:bg-slate-900 transition"
             />
           </div>
         </div>
       </div>
 
       {/* Submit / Back Home */}
-      <div className="bg-white p-4 pb-6 border-t border-gray-100 z-10 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl">
+      <div className="bg-white dark:bg-slate-900 p-4 pb-6 border-t border-gray-100 dark:border-slate-800 z-10 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl">
         <button
           onClick={() => {
             // Logic to clear cart and session

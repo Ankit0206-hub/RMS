@@ -21,6 +21,11 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved ? JSON.parse(saved) : false;
+  });
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
@@ -38,6 +43,15 @@ export const AppProvider = ({ children }) => {
     }
   }, [customerSession]);
 
+  useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   const [editingAddress, setEditingAddress] = useState(null);
   const [user, setUser] = useState({
     
@@ -46,7 +60,7 @@ export const AppProvider = ({ children }) => {
     phone: "+91 98765 43210",
     image: "https://i.pravatar.cc/150?img=12",
   });
-  const addToCart = (food) => {
+  const addToCart = (food, quantityToAdd = 1) => {
     // Generate a unique ID for the cart item based on customizations so they don't merge incorrectly
     const customId = `${food.id || food.name}-${food.portion || 'Full'}-${food.spiceLevel || 'Normal'}`;
     const item = {
@@ -58,9 +72,9 @@ export const AppProvider = ({ children }) => {
 
     const existing = cartItems.find((cartItem) => cartItem.id === item.id);
     if (existing) {
-      toast.success(`Increased ${item.name} quantity`);
+      toast.success(quantityToAdd > 1 ? `Added ${quantityToAdd} more ${item.name}` : `Increased ${item.name} quantity`);
     } else {
-      toast.success(`Added ${item.name} to cart`);
+      toast.success(quantityToAdd > 1 ? `Added ${quantityToAdd} ${item.name} to cart` : `Added ${item.name} to cart`);
     }
 
     setCartItems((prev) => {
@@ -69,12 +83,12 @@ export const AppProvider = ({ children }) => {
       if (existingInPrev) {
         return prev.map((cartItem) =>
           cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            ? { ...cartItem, quantity: cartItem.quantity + quantityToAdd }
             : cartItem
         );
       }
 
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity: quantityToAdd }];
     });
   };
 
@@ -221,6 +235,8 @@ export const AppProvider = ({ children }) => {
         customerSession,
         setCustomerSession,
         setCartItems,
+        darkMode,
+        setDarkMode,
       }}
     >
       {children}

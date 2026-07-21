@@ -70,7 +70,9 @@ async def start_customer_session(
     existing_session = active_session_result.scalars().first()
     
     if existing_session:
-        raise HTTPException(status_code=400, detail="This table is already occupied.")
+        from app.core.security import create_access_token
+        token = create_access_token(subject=str(existing_session.id), role="customer")
+        return {"message": "Joined existing session", "session_id": existing_session.id, "token": token}
         
     session = CustomerSession(
         table_id=table.id,
@@ -139,16 +141,28 @@ async def create_customer_order(
     if session.status != "Active":
         raise HTTPException(status_code=400, detail="Cannot create order for inactive session")
         
-    order = Order(
-        session_id=session.id,
-        waiter_id=None, # Customer order, no waiter assigned explicitly to the order
-        order_type="Dine-in",
-        status="Verification Pending",
-        special_instructions=req.special_instructions
-    )
-    db.add(order)
-    await db.commit()
-    await db.refresh(order)
+    # Find an active order for this session
+    query = select(Order).where(
+        Order.session_id == session.id,
+        Order.status.in_(["Verification Pending", "Pending", "Preparing"])
+    ).order_by(Order.created_at.desc())
+    result = await db.execute(query)
+    existing_order = result.scalars().first()
+    
+    is_new_order = False
+    if existing_order:
+        order = existing_order
+    else:
+        order = Order(
+            session_id=session.id,
+            waiter_id=None,
+            order_type="Dine-in",
+            status="Verification Pending",
+            special_instructions=req.special_instructions
+        )
+        db.add(order)
+        await db.flush()
+        is_new_order = True
     
     for item_req in req.items:
         mi_query = select(MenuItem).where(MenuItem.id == item_req.menu_item_id)
@@ -166,16 +180,31 @@ async def create_customer_order(
         )
         db.add(order_item)
         
+    # If the user appended items but it was already pending, maybe append their special instructions
+    if not is_new_order and req.special_instructions:
+        if order.special_instructions:
+            order.special_instructions += f" | {req.special_instructions}"
+        else:
+            order.special_instructions = req.special_instructions
+
     await db.commit()
+    await db.refresh(order)
     
     # Broadcast to operator and waiter channels
-    await manager.broadcast("CUSTOMER_NEW_ORDER", {
-        "order_id": order.id,
-        "table_id": session.table.table_number,
-        "status": order.status
-    }, ["operator", "waiter"])
+    if is_new_order:
+        await manager.broadcast("order.created", {
+            "order_id": order.id,
+            "table_id": session.table.table_number,
+            "status": order.status
+        }, ["operator", "waiter", "kitchen"])
+    else:
+        await manager.broadcast("order.updated", {
+            "order_id": order.id,
+            "table_id": session.table.table_number,
+            "status": order.status
+        }, ["operator", "waiter", "kitchen"])
     
-    return {"message": "Order created, pending verification", "order_id": order.id}
+    return {"message": "Order placed successfully", "order_id": order.id}
 
 @router.get("/sessions/{session_id}")
 async def get_customer_session_details(
@@ -187,7 +216,7 @@ async def get_customer_session_details(
         raise HTTPException(status_code=403, detail="Not authorized to access this session")
         
     query = select(CustomerSession).where(CustomerSession.id == session_id).options(
-        selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item),
+        selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
         selectinload(CustomerSession.bills)
     )
     result = await db.execute(query)
@@ -204,11 +233,12 @@ async def get_customer_session_details(
             items.append({
                 "id": i.id,
                 "name": i.menu_item.name if i.menu_item else "Unknown",
+                "image": i.menu_item.images[0].image_url if getattr(i.menu_item, 'images', None) and len(i.menu_item.images) > 0 else getattr(i.menu_item, 'image_url', "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop") if i.menu_item else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
                 "quantity": i.quantity,
                 "price": float(i.price_at_order),
                 "notes": i.notes
             })
-            if order.status not in ("Cancelled", "Verification Pending"):
+            if order.status not in ("Cancelled",):
                 subtotal += float(i.price_at_order) * i.quantity
                 
         formatted_orders.append({

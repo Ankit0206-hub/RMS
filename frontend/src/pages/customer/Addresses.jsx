@@ -26,11 +26,11 @@ export default function Addresses() {
   };
 
   return (
-    <PageLayout className="bg-gray-50">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
       <div className="flex h-full flex-col">
 
         {/* Header */}
-        <div className="bg-white px-5 py-6 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 px-5 py-6 shadow-sm">
           <h1 className="text-xl font-bold">My Addresses</h1>
         </div>
 
@@ -38,7 +38,7 @@ export default function Addresses() {
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
           {addresses?.length === 0 && (
-            <p className="text-center text-gray-500">
+            <p className="text-center text-gray-500 dark:text-slate-400">
               No addresses added yet
             </p>
           )}
@@ -49,7 +49,7 @@ export default function Addresses() {
             return (
               <div
                 key={item.id}
-                className="rounded-3xl bg-white p-5 shadow-sm"
+                className="rounded-3xl bg-white dark:bg-slate-900 p-5 shadow-sm"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex gap-4">
@@ -73,7 +73,7 @@ export default function Addresses() {
                         )}
                       </div>
 
-                      <p className="mt-2 text-sm leading-6 text-gray-500">
+                      <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-slate-400">
                         {item.address}
                       </p>
                     </div>
@@ -90,7 +90,7 @@ export default function Addresses() {
 
                   <button
                     onClick={() => handleEdit(item)}
-                    className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium"
+                    className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-700 px-4 py-2 text-sm font-medium"
                   >
                     <Pencil size={16} />
                     Edit
@@ -111,7 +111,7 @@ export default function Addresses() {
         </div>
 
         {/* Bottom Button */}
-        <div className="border-t bg-white p-5">
+        <div className="border-t bg-white dark:bg-slate-900 p-5">
           <button
             onClick={() => navigate("/customer/add-address")}
             className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 font-semibold text-white transition hover:bg-orange-600"

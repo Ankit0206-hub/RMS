@@ -214,7 +214,7 @@ const OperatorReservations = () => {
             case 'Occupied': return { border: 'bg-cyan-400', text: 'text-cyan-600', badge: 'border-cyan-300 text-cyan-700' };
             case 'Available': return { border: 'bg-green-500', text: 'text-green-600', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
             case 'Reserved': return { border: 'bg-amber-400', text: 'text-amber-600', badge: 'border-amber-400 text-amber-700' };
-            case 'Merged': return { border: 'bg-gray-200', text: 'text-gray-400', badge: 'border-gray-200 text-gray-400' };
+            case 'Merged': return { border: 'bg-gray-200 dark:bg-slate-700', text: 'text-gray-400 dark:text-slate-500 dark:text-slate-400', badge: 'border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500 dark:text-slate-400' };
             default: return { border: 'bg-gray-300', text: 'text-gray-500 dark:text-slate-400', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
         }
     };
@@ -253,20 +253,20 @@ const OperatorReservations = () => {
     const renderChairs = (seats, type) => {
         const chairs = [];
         if (type === 'horizontal' && seats === 4) {
-            chairs.push(<div key="t1" className="absolute -top-1.5 left-4 w-6 h-3 bg-gray-200 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="t2" className="absolute -top-1.5 right-6 w-6 h-3 bg-gray-200 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="b1" className="absolute -bottom-1.5 left-4 w-6 h-3 bg-gray-200 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="b2" className="absolute -bottom-1.5 right-6 w-6 h-3 bg-gray-200 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="t1" className="absolute -top-1.5 left-4 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="t2" className="absolute -top-1.5 right-6 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="b1" className="absolute -bottom-1.5 left-4 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="b2" className="absolute -bottom-1.5 right-6 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
         } else if (type === 'vertical' && seats === 6) {
-            chairs.push(<div key="l1" className="absolute top-4 -left-1.5 w-3 h-6 bg-gray-200 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="l2" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="l3" className="absolute bottom-4 -left-1.5 w-3 h-6 bg-gray-200 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r1" className="absolute top-4 -right-1.5 w-3 h-6 bg-gray-200 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r2" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r3" className="absolute bottom-4 -right-1.5 w-3 h-6 bg-gray-200 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="l1" className="absolute top-4 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="l2" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="l3" className="absolute bottom-4 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="r1" className="absolute top-4 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="r2" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="r3" className="absolute bottom-4 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
         } else if (type === 'square' && seats === 2) {
-            chairs.push(<div key="l1" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r1" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="l1" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
+            chairs.push(<div key="r1" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
         }
         return chairs;
     };
@@ -310,13 +310,13 @@ const OperatorReservations = () => {
                             placeholder="Search Guest"
                             className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                         />
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {loading ? (
-                        <div className="p-4 flex justify-center text-sm text-gray-500">Loading...</div>
+                        <div className="p-4 flex justify-center text-sm text-gray-500 dark:text-slate-400">Loading...</div>
                     ) : (
                         <>
                             {/* Seated List */}
@@ -334,7 +334,7 @@ const OperatorReservations = () => {
                                         <div 
                                             key={guest.id}
                                             onClick={() => handleGuestClick(guest)}
-                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                         >
                                             <div className="flex items-start space-x-3">
                                                 <div className="text-right w-14 pt-0.5">
@@ -343,7 +343,7 @@ const OperatorReservations = () => {
                                                 <div>
                                                     <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.customer_name}</div>
                                                     <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.contact_number}</div>
-                                                    <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
+                                                    <div className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end space-y-2">
@@ -371,7 +371,7 @@ const OperatorReservations = () => {
                                         <div 
                                             key={guest.id}
                                             onClick={() => handleGuestClick(guest)}
-                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                         >
                                             <div className="flex items-start space-x-3">
                                                 <div className="text-right w-14 pt-0.5">
@@ -380,7 +380,7 @@ const OperatorReservations = () => {
                                                 <div>
                                                     <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.customer_name}</div>
                                                     <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.contact_number}</div>
-                                                    <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
+                                                    <div className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end space-y-2">
@@ -411,7 +411,7 @@ const OperatorReservations = () => {
                             <ChevronRight className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
                         </div>
                         
-                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
+                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
                             <span>Dinner</span>
                             <ChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                         </div>
@@ -452,10 +452,10 @@ const OperatorReservations = () => {
                             </div>
                         </div>
                         
-                        <div className="h-6 w-px bg-gray-200"></div>
+                        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700"></div>
 
                         <div className="flex space-x-3">
-                            <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
+                            <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
                                 <Calendar className="w-4 h-4" />
                             </button>
                             
@@ -464,7 +464,7 @@ const OperatorReservations = () => {
                                     setIsMergeMode(!isMergeMode);
                                     setSelectedTablesForMerge([]);
                                 }}
-                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-white border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
                             >
                                 {isMergeMode ? 'Cancel Merge' : 'Merge Tables'}
                             </button>
@@ -517,7 +517,7 @@ const OperatorReservations = () => {
                                         <div className={`w-3 shrink-0 rounded-l-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
                                         
                                         <div className="flex-1 p-3 flex flex-col justify-center">
-                                            <span className="text-gray-400 font-bold text-xs">{table.id}</span>
+                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
                                             {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate max-w-full block">{table.guest}</span>}
                                             <span className={`text-[10px] font-bold mt-0.5 ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
                                                 {table.status} {table.isAvailableWithFutureRes && '(Available Now)'}
@@ -542,7 +542,7 @@ const OperatorReservations = () => {
                                             ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : selectedTable === table.id && !isMergeMode ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
                                         <div className="flex-1 p-3 flex flex-col items-center justify-between py-6">
-                                            <span className="text-gray-400 font-bold text-xs">{table.id}</span>
+                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
                                             <div className="flex flex-col items-center text-center">
                                                 {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[10px] truncate max-w-[60px]">{table.guest}</span>}
                                                 <span className={`text-[10px] font-bold ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
@@ -574,7 +574,7 @@ const OperatorReservations = () => {
                                         <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
                                         
                                         <div className="flex-1 p-2 flex flex-col items-center justify-center pr-3">
-                                            <span className="text-gray-400 font-bold text-xs mb-1">{table.id}</span>
+                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs mb-1">{table.id}</span>
                                             {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[9px] truncate max-w-[50px]">{table.guest}</span>}
                                             <span className={`text-[9px] font-bold mt-0.5 text-center ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
                                                 {table.status} {table.isAvailableWithFutureRes && ' (Now)'}
@@ -601,7 +601,7 @@ const OperatorReservations = () => {
                                         <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
                                         
                                         <div className="flex-1 p-3 flex flex-col justify-center pr-4">
-                                            <span className="text-gray-400 font-bold text-xs">{table.id}</span>
+                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
                                             {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate block">{table.guest}</span>}
                                             <div className="flex space-x-1 items-center mt-0.5">
                                                 <span className={`text-[10px] font-bold ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
@@ -642,7 +642,7 @@ const OperatorReservations = () => {
                                             </div>
                                             <button
                                                 onClick={(e) => handleUnmerge(e, table.id)}
-                                                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
+                                                className="absolute top-2 right-2 p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-red-500 bg-white dark:bg-slate-900/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
                                                 title="Split Table"
                                             >
                                                 <Unlink className="w-3 h-3" />

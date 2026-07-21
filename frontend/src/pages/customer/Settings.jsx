@@ -15,11 +15,12 @@ import {
 
 import PageLayout from "../../components/customer/layout/PageLayout";
 import BottomNav from "../../components/customer/navigation/BottomNav";
+import { useApp } from "../../context/AppContext";
 
 export default function Settings() {
   const navigate = useNavigate();
 
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, setDarkMode } = useApp();
   const [notifications, setNotifications] = useState(true);
 
   const menu = [
@@ -51,19 +52,24 @@ export default function Settings() {
   ];
 
   return (
-    <PageLayout className="bg-gray-50">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
       <div className="flex h-full flex-col">
 
         {/* Header */}
-        <div className="bg-white px-5 py-5 shadow-sm flex items-center justify-between relative z-10">
-          <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+        <div className="bg-white dark:bg-slate-900 px-5 py-4 shadow-sm flex items-center relative z-10">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
+          </button>
+          <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">
+            Settings
+          </h1>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
           {/* Dark Mode */}
 
-          <div className="bg-white rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 flex items-center justify-between">
 
             <div className="flex items-center gap-3">
 
@@ -86,7 +92,7 @@ export default function Settings() {
 
           {/* Notifications */}
 
-          <div className="bg-white rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 flex items-center justify-between">
 
             <div className="flex items-center gap-3">
 
@@ -116,7 +122,7 @@ export default function Settings() {
               <button
                 key={item.title}
                 onClick={item.action}
-                className="w-full bg-white rounded-2xl p-4 flex items-center justify-between"
+                className="w-full bg-white dark:bg-slate-900 rounded-2xl p-4 flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
 
@@ -129,7 +135,7 @@ export default function Settings() {
                 </div>
 
                 <ChevronRight
-                  className="text-gray-400"
+                  className="text-gray-400 dark:text-slate-500 dark:text-slate-400"
                   size={20}
                 />
 

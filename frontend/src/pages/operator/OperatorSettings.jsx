@@ -73,7 +73,7 @@ const OperatorSettings = () => {
                             <p className="text-[14px] font-medium text-gray-500 dark:text-slate-400 mt-0.5 capitalize">{user?.role || 'Operator'}</p>
                         </div>
                     </div>
-                    <button className="flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors bg-white dark:bg-slate-900 shadow-sm shrink-0">
+                    <button className="flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors bg-white dark:bg-slate-900 shadow-sm shrink-0">
                         <Camera size={16} className="text-gray-500 dark:text-slate-400" />
                         Change Photo
                     </button>
@@ -143,7 +143,7 @@ const OperatorSettings = () => {
                                     type="text" 
                                     value={user?.role || 'Operator'}
                                     disabled
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm capitalize"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm capitalize"
                                 />
                             </div>
 
@@ -154,7 +154,7 @@ const OperatorSettings = () => {
                                     type="text" 
                                     value="DineOps Restaurant"
                                     disabled
-                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm"
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-[14px] font-medium text-gray-500 dark:text-slate-400 cursor-not-allowed shadow-sm"
                                 />
                             </div>
                         </div>

@@ -16,9 +16,9 @@ export default function About() {
 
   return (
     <MobileContainer>
-      <div className="flex h-full flex-col bg-white overflow-y-auto">
+      <div className="flex h-full flex-col bg-white dark:bg-slate-900 overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-slate-800">
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
@@ -47,7 +47,7 @@ export default function About() {
             Good Food, Good Mood
           </p>
 
-          <p className="mt-4 text-sm leading-7 text-gray-500">
+          <p className="mt-4 text-sm leading-7 text-gray-500 dark:text-slate-400">
             We serve fresh vegetarian food prepared using premium
             ingredients and authentic recipes. Our mission is to deliver
             delicious meals with excellent hospitality in a warm and
@@ -56,7 +56,7 @@ export default function About() {
         </div>
 
         {/* Opening Hours */}
-        <div className="mx-5 mt-7 rounded-2xl border border-gray-200 p-4">
+        <div className="mx-5 mt-7 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
           <div className="flex items-start gap-3">
             <Clock3 className="text-orange-500 mt-1" size={20} />
 
@@ -65,7 +65,7 @@ export default function About() {
                 Opening Hours
               </h3>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                 Monday - Sunday
               </p>
 
@@ -77,7 +77,7 @@ export default function About() {
         </div>
 
         {/* Address */}
-        <div className="mx-5 mt-4 rounded-2xl border border-gray-200 p-4">
+        <div className="mx-5 mt-4 rounded-2xl border border-gray-200 dark:border-slate-700 p-4">
           <div className="flex items-start gap-3">
             <MapPin className="text-orange-500 mt-1" size={20} />
 
@@ -86,7 +86,7 @@ export default function About() {
                 Address
               </h3>
 
-              <p className="mt-2 text-sm text-gray-500 leading-6">
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 leading-6">
                 123, Food Street,
                 <br />
                 Delicious City,

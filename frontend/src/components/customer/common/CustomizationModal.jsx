@@ -60,17 +60,17 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
       />
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-white p-6 shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200">
+      <div className="relative w-full max-w-lg rounded-t-3xl sm:rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex items-start justify-between mb-5">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">{food.name}</h2>
-            <p className="text-sm font-semibold text-gray-500 mt-0.5">Customise as per your taste</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{food.name}</h2>
+            <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 mt-0.5">Customise as per your taste</p>
           </div>
           <button 
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:bg-slate-700 active:scale-95 transition"
           >
             <X size={18} strokeWidth={2.5} />
           </button>
@@ -82,17 +82,17 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
           {/* Customization: Portion */}
           {hasPortions && (
             <div>
-              <h3 className="text-[15px] font-bold text-gray-900 mb-3">Portion</h3>
-              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 bg-gray-50/80 p-4">
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3">Portion</h3>
+              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/80 p-4">
                 {['Half', 'Full'].map((p) => (
                   <label key={p} onClick={() => setPortion(p)} className="flex items-center justify-between cursor-pointer">
                     <div className="flex items-center gap-3">
-                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${portion === p ? 'border-orange-500 bg-white' : 'border-gray-300 bg-white'}`}>
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${portion === p ? 'border-orange-500 bg-white dark:bg-slate-900' : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900'}`}>
                         {portion === p && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
                       </div>
-                      <span className="text-[14px] font-semibold text-gray-900">{p} Plate</span>
+                      <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{p} Plate</span>
                     </div>
-                    <span className="text-[14px] font-bold text-gray-700">₹{p === 'Half' ? Math.round(basePrice * 0.6) : basePrice}</span>
+                    <span className="text-[14px] font-bold text-gray-700 dark:text-slate-300">₹{p === 'Half' ? Math.round(basePrice * 0.6) : basePrice}</span>
                   </label>
                 ))}
               </div>
@@ -102,14 +102,14 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
           {/* Customization: Preparation Type */}
           {customizableSpice && (
             <div>
-              <h3 className="text-[15px] font-bold text-gray-900 mb-3">Preparation Type</h3>
-              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 bg-gray-50/80 p-4">
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3">Preparation Type</h3>
+              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/80 p-4">
                 {['Low Spicy', 'Medium Spicy', 'Extra Spicy'].map((level) => (
                   <label key={level} onClick={() => setSpiceLevel(level)} className="flex items-center gap-3 cursor-pointer">
-                    <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${spiceLevel === level ? 'border-orange-500 bg-white' : 'border-gray-300 bg-white'}`}>
+                    <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${spiceLevel === level ? 'border-orange-500 bg-white dark:bg-slate-900' : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900'}`}>
                       {spiceLevel === level && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
                     </div>
-                    <span className="text-[14px] font-semibold text-gray-900">{level}</span>
+                    <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{level}</span>
                   </label>
                 ))}
               </div>
@@ -118,7 +118,7 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
 
           {/* Special Instructions */}
           <div>
-            <h3 className="text-[15px] font-bold text-gray-900 mb-3">
+            <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3">
               Special Instructions (Optional)
             </h3>
             <textarea
@@ -126,14 +126,14 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
               placeholder="E.g. Make it spicy, less oil, no onions..."
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              className="w-full resize-none rounded-[1.25rem] border border-gray-100 bg-gray-50/80 p-4 text-[14px] font-medium text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
+              className="w-full resize-none rounded-[1.25rem] border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/80 p-4 text-[14px] font-medium text-gray-900 dark:text-white outline-none focus:border-orange-500 focus:bg-white dark:bg-slate-900 transition"
             />
           </div>
 
         </div>
 
         {/* Footer */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
           <button
             onClick={handleAdd}
             className="flex w-full items-center justify-between rounded-2xl bg-orange-500 px-6 py-4 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"

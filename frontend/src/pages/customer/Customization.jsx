@@ -23,7 +23,7 @@ export default function Customization() {
       <div className="flex h-full flex-col">
 
         {/* Header */}
-        <div className="flex items-center gap-3 border-b bg-white px-5 py-4">
+        <div className="flex items-center gap-3 border-b bg-white dark:bg-slate-900 px-5 py-4">
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
@@ -38,7 +38,7 @@ export default function Customization() {
 
           {/* Spice */}
           <div>
-            <h2 className="mb-4 font-semibold text-gray-900">
+            <h2 className="mb-4 font-semibold text-gray-900 dark:text-white">
               Choose Spice Level
             </h2>
 
@@ -49,14 +49,14 @@ export default function Customization() {
                 className={`mb-3 flex w-full items-center rounded-xl border p-4 transition ${
                   spice === level
                     ? "border-orange-500 bg-orange-50"
-                    : "border-gray-200 bg-white"
+                    : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
                 }`}
               >
                 <div
                   className={`mr-3 flex h-5 w-5 items-center justify-center rounded-full border ${
                     spice === level
                       ? "border-orange-500"
-                      : "border-gray-300"
+                      : "border-gray-300 dark:border-slate-600"
                   }`}
                 >
                   {spice === level && (
@@ -90,7 +90,7 @@ export default function Customization() {
 
               </div>
 
-              <span className="text-gray-500">
+              <span className="text-gray-500 dark:text-slate-400">
                 +₹30
               </span>
             </label>
@@ -110,7 +110,7 @@ export default function Customization() {
 
               </div>
 
-              <span className="text-gray-500">
+              <span className="text-gray-500 dark:text-slate-400">
                 +₹40
               </span>
 
@@ -130,7 +130,7 @@ export default function Customization() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="No onion, less spicy..."
-              className="w-full rounded-xl border border-gray-200 p-4 outline-none focus:border-orange-500 resize-none"
+              className="w-full rounded-xl border border-gray-200 dark:border-slate-700 p-4 outline-none focus:border-orange-500 resize-none"
             />
 
           </div>
@@ -138,7 +138,7 @@ export default function Customization() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t bg-white p-5">
+        <div className="border-t bg-white dark:bg-slate-900 p-5">
 
           <button
             onClick={() => navigate("/customer/cart")}

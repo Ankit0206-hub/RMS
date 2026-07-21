@@ -15,11 +15,11 @@ export default function EditProfile() {
     const [email, setEmail] = useState(user.email);
 
     return (
-        <PageLayout className="bg-gray-50">
+        <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
             <div className="flex h-full flex-col">
 
                 {/* Header */}
-                <div className="flex items-center bg-white px-5 py-4 shadow-sm">
+                <div className="flex items-center bg-white dark:bg-slate-900 px-5 py-4 shadow-sm">
                     <button onClick={() => navigate(-1)}>
                         <ArrowLeft size={22} />
                     </button>
@@ -50,7 +50,7 @@ export default function EditProfile() {
 
                         </div>
 
-                        <p className="mt-4 text-gray-500 text-sm">
+                        <p className="mt-4 text-gray-500 dark:text-slate-400 text-sm">
                             Tap camera to change profile photo
                         </p>
 
@@ -69,7 +69,7 @@ export default function EditProfile() {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full h-12 rounded-xl border border-gray-200 px-4 outline-none focus:border-orange-500"
+                                className="w-full h-12 rounded-xl border border-gray-200 dark:border-slate-700 px-4 outline-none focus:border-orange-500"
                             />
                         </div>
 
@@ -82,7 +82,7 @@ export default function EditProfile() {
                                 type="tel"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                className="w-full h-12 rounded-xl border border-gray-200 px-4 outline-none focus:border-orange-500"
+                                className="w-full h-12 rounded-xl border border-gray-200 dark:border-slate-700 px-4 outline-none focus:border-orange-500"
                             />
                         </div>
 
@@ -95,7 +95,7 @@ export default function EditProfile() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full h-12 rounded-xl border border-gray-200 px-4 outline-none focus:border-orange-500"
+                                className="w-full h-12 rounded-xl border border-gray-200 dark:border-slate-700 px-4 outline-none focus:border-orange-500"
                             />
                         </div>
 
@@ -105,7 +105,7 @@ export default function EditProfile() {
 
                 {/* Bottom Button */}
 
-                <div className="border-t bg-white p-5">
+                <div className="border-t bg-white dark:bg-slate-900 p-5">
 
                     <Button
                         onClick={() => {

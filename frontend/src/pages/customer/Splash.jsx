@@ -4,17 +4,23 @@ import { ChefHat, Leaf, Timer, Heart } from "lucide-react";
 
 import heroFood from "../../assets/images/banners/hero-food.png";
 import PageLayout from "../../components/customer/layout/PageLayout";
+import { useApp } from "../../context/AppContext";
 
 export default function Splash() {
   const navigate = useNavigate();
+  const { customerSession } = useApp();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigate("/customer/landing");
-    }, 3500);
+      if (customerSession && customerSession.sessionId) {
+        navigate("/customer/home");
+      } else {
+        navigate("/customer/landing");
+      }
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate, customerSession]);
 
   return (
     <PageLayout className="relative bg-black overflow-hidden h-screen w-full">

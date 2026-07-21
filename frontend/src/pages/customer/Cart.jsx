@@ -47,26 +47,32 @@ export default function Cart() {
   const total = subtotal + tax + serviceCharge;
 
   return (
-    <PageLayout className="bg-gray-50 flex flex-col">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10 relative">
+      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10 relative">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate("/customer/home")} 
-            className="p-2 -ml-2 rounded-full hover:bg-gray-50 active:scale-95 transition-transform z-20"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 active:scale-95 transition-transform z-20"
           >
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Cart</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Cart</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-full bg-white px-4 py-1.5 shadow-sm border border-gray-100">
-            <span className="text-sm font-semibold text-gray-700">{customerSession?.tableId || "No Table"}</span>
+          <div className="rounded-full border border-gray-200 dark:border-slate-700 px-4 py-1.5 shadow-sm">
+            <span className="text-sm font-bold tracking-wide text-gray-700 dark:text-slate-300">
+              {customerSession?.tableId 
+                ? (customerSession.tableId.toLowerCase().includes('table') 
+                    ? customerSession.tableId 
+                    : `Table ${customerSession.tableId}`) 
+                : "No Table"}
+            </span>
           </div>
           <img
             src={user.image || "https://i.pravatar.cc/150?img=12"}
             alt="profile"
-            className="w-10 h-10 rounded-full object-cover border border-gray-100"
+            className="w-10 h-10 rounded-full object-cover border border-gray-100 dark:border-slate-800"
           />
         </div>
       </div>
@@ -76,8 +82,8 @@ export default function Cart() {
 
         {cartItems.length === 0 ? (
           <div className="h-[50vh] flex flex-col items-center justify-center">
-            <h2 className="text-xl font-bold text-gray-900">Your Cart is Empty</h2>
-            <p className="mt-2 text-gray-500 text-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Cart is Empty</h2>
+            <p className="mt-2 text-gray-500 dark:text-slate-400 text-center">
               Looks like you haven't added anything yet.
             </p>
             <button
@@ -94,15 +100,15 @@ export default function Cart() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl bg-white p-3 shadow-sm border border-gray-100 flex gap-4 relative"
+                  className="bg-white dark:bg-slate-900 p-3 shadow-sm border border-gray-100 dark:border-slate-800 flex gap-4 relative"
                 >
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="h-20 w-20 rounded-xl object-cover"
+                    className="h-20 w-20 object-cover"
                   />
                   <div className="flex-1 flex flex-col justify-center">
-                    <h2 className="font-bold text-gray-900 leading-tight pr-8">
+                    <h2 className="font-bold text-gray-900 dark:text-white leading-tight pr-8">
                       {item.name}
                     </h2>
 
@@ -110,20 +116,20 @@ export default function Cart() {
                       <div className="mt-2">
                         <button 
                           onClick={() => toggleExpand(item.id)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-md hover:bg-gray-100 transition"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition"
                         >
                           Customization
                           <ChevronDown size={12} className={`transition-transform duration-200 ${expandedItems[item.id] ? 'rotate-180' : ''}`} />
                         </button>
                         
                         {expandedItems[item.id] && (
-                          <div className="mt-2 pl-5 p-2 bg-gray-50 rounded-lg border border-gray-100 animate-in fade-in slide-in-from-top-2">
+                          <div className="mt-2 pl-5 p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-2">
                             <div className="flex justify-between items-start gap-2">
                               <div className="flex flex-col gap-1">
-                                <p className="text-[11px] font-semibold text-gray-600 leading-snug">
+                                <p className="text-[11px] font-semibold text-gray-600 dark:text-slate-400 leading-snug">
                                   {item.portion && `• ${item.portion} Plate`}
                                 </p>
-                                <p className="text-[11px] font-semibold text-gray-600 leading-snug">
+                                <p className="text-[11px] font-semibold text-gray-600 dark:text-slate-400 leading-snug">
                                   {item.spiceLevel && `• ${item.spiceLevel}`}
                                   {(!item.portion && !item.spiceLevel) && "• Customise"}
                                 </p>
@@ -137,7 +143,7 @@ export default function Cart() {
                             </div>
                             
                             {item.instructions && (
-                              <p className="text-[11px] font-medium text-gray-500 mt-2 italic border-l-2 border-orange-200 pl-2 leading-relaxed">
+                              <p className="text-[11px] font-medium text-gray-500 dark:text-slate-400 mt-2 italic border-l-2 border-orange-200 pl-2 leading-relaxed">
                                 {item.instructions}
                               </p>
                             )}
@@ -147,26 +153,26 @@ export default function Cart() {
                     )}
 
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="font-bold text-gray-900">
+                      <p className="font-bold text-gray-900 dark:text-white">
                         ₹{item.price}
                       </p>
 
-                      <div className="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-1 bg-gray-50">
+                      <div className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-1 bg-gray-50 dark:bg-slate-800/50">
                         <button
                           onClick={() => {
                             if (item.quantity === 1) removeFromCart(item.id);
                             else decreaseQuantity(item.id);
                           }}
-                          className="text-gray-500 hover:text-orange-500 transition p-1"
+                          className="text-gray-500 dark:text-slate-400 hover:text-orange-500 transition p-1"
                         >
                           <Minus size={16} />
                         </button>
-                        <span className="font-bold text-gray-900 text-sm w-4 text-center">
+                        <span className="font-bold text-gray-900 dark:text-white text-sm w-4 text-center">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => increaseQuantity(item.id)}
-                          className="text-gray-500 hover:text-orange-500 transition p-1"
+                          className="text-gray-500 dark:text-slate-400 hover:text-orange-500 transition p-1"
                         >
                           <Plus size={16} />
                         </button>
@@ -187,35 +193,35 @@ export default function Cart() {
 
             {/* Add More Items Button */}
             <button
-              onClick={() => navigate("/customer/home")}
-              className="w-full rounded-2xl border-2 border-dashed border-gray-300 bg-white py-4 flex items-center justify-center gap-2 hover:border-orange-500 transition group"
+              onClick={() => navigate("/customer/categories")}
+              className="w-full border-2 border-dashed border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-4 flex items-center justify-center gap-2 hover:border-orange-500 transition group"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 group-hover:bg-orange-50 group-hover:text-orange-500 transition">
-                <Plus size={16} className="text-gray-500 group-hover:text-orange-500 transition" />
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 group-hover:bg-orange-50 group-hover:text-orange-500 transition">
+                <Plus size={16} className="text-gray-500 dark:text-slate-400 group-hover:text-orange-500 transition" />
               </div>
-              <span className="font-bold text-gray-700 group-hover:text-orange-500 transition">Add More Items</span>
+              <span className="font-bold text-gray-700 dark:text-slate-300 group-hover:text-orange-500 transition">Add More Items</span>
             </button>
 
             {/* Bill Summary */}
-            <div className="rounded-3xl bg-white p-5 shadow-sm border border-gray-100 mt-2">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">
+            <div className="bg-white dark:bg-slate-900 p-5 shadow-sm border border-gray-100 dark:border-slate-800 mt-2">
+              <h2 className="mb-4 text-lg font-bold text-gray-900 dark:text-white">
                 Bill Summary
               </h2>
-              <div className="space-y-3 text-sm font-medium text-gray-500">
+              <div className="space-y-3 text-sm font-medium text-gray-500 dark:text-slate-400">
                 <div className="flex justify-between">
                   <span>Item Total</span>
-                  <span className="text-gray-900">₹{subtotal}</span>
+                  <span className="text-gray-900 dark:text-white">₹{subtotal}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span className="text-gray-900">₹{tax}</span>
+                  <span className="text-gray-900 dark:text-white">₹{tax}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Service Charge</span>
-                  <span className="text-gray-900">₹{serviceCharge}</span>
+                  <span className="text-gray-900 dark:text-white">₹{serviceCharge}</span>
                 </div>
-                <div className="my-3 border-t border-gray-100 border-dashed" />
-                <div className="flex justify-between text-base font-bold text-gray-900">
+                <div className="my-3 border-t border-gray-100 dark:border-slate-800 border-dashed" />
+                <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white">
                   <span>Grand Total</span>
                   <span className="text-orange-500">₹{total}</span>
                 </div>
@@ -227,14 +233,14 @@ export default function Cart() {
 
       {/* Bottom Fixed Checkout Bar */}
       {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/85 backdrop-blur-xl border-t border-gray-100 shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-slate-900/85 backdrop-blur-xl border-t border-gray-100 dark:border-slate-800 shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
           <div className="max-w-4xl mx-auto w-full px-5 sm:px-8 py-5 pb-8 sm:pb-10 flex items-center justify-between gap-6">
             
             {/* Price Info */}
             <div className="flex flex-col">
-              <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Total Pay</span>
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Total Pay</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">₹{total}</span>
+                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">₹{total}</span>
               </div>
             </div>
 
@@ -254,7 +260,7 @@ export default function Cart() {
                     notes: [item.portion ? `Portion: ${item.portion}` : "", item.spiceLevel ? `Spice: ${item.spiceLevel}` : "", item.instructions || ""].filter(Boolean).join(" | ")
                   }));
                   
-                  await customerApi.createOrder(customerSession.sessionId, {
+                  const res = await customerApi.createOrder(customerSession.sessionId, {
                     items: itemsForApi,
                     special_instructions: "" // Or add a field for it
                   });
@@ -262,7 +268,12 @@ export default function Cart() {
                   // Handle success
                   setCartItems([]);
                   toast.success("Order placed successfully!");
-                  navigate("/customer/order-success");
+                  navigate("/customer/order-success", { 
+                    state: { 
+                      orderId: res.order_id,
+                      itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0)
+                    } 
+                  });
                 } catch (err) {
                   toast.error(err.response?.data?.detail || "Failed to place order");
                 } finally {

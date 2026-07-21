@@ -130,7 +130,7 @@ const OperatorOrderDetails = () => {
             <div className="flex items-center justify-between">
                 <button 
                     onClick={() => navigate('/operator/orders')}
-                    className="flex items-center text-sm font-bold text-gray-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm"
+                    className="flex items-center text-sm font-bold text-gray-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Orders
@@ -140,7 +140,7 @@ const OperatorOrderDetails = () => {
                         <Printer className="w-3.5 h-3.5 mr-2" />
                         Print Bill
                     </button>
-                    <button className="flex items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
+                    <button className="flex items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
                         <MoreHorizontal className="w-3.5 h-3.5 mr-2" />
                         More Actions
                     </button>
@@ -156,7 +156,7 @@ const OperatorOrderDetails = () => {
                         <ClipboardList className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 mb-0.5">Order ID</p>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-0.5">Order ID</p>
                         <div className="flex items-center space-x-2">
                             <h2 className="text-sm font-black text-gray-900 dark:text-white">ORD{orderData.id}</h2>
                             {orderData.status === 'Pending' && <span className="px-1.5 py-0.5 bg-green-50 text-green-600 font-bold text-[8px] rounded border border-green-100">New</span>}
@@ -171,7 +171,7 @@ const OperatorOrderDetails = () => {
 
                 {/* Table */}
                 <div className="min-w-[100px] border-l border-gray-100 dark:border-slate-800 pl-8">
-                    <p className="text-[10px] font-bold text-gray-400 mb-1">Table</p>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Table</p>
                     <p className="text-sm font-black text-gray-900 dark:text-white">{orderData.table_number || 'T-07'}</p>
                     <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mt-0.5">4 Seats</p>
                 </div>
@@ -182,7 +182,7 @@ const OperatorOrderDetails = () => {
                         <User className="w-4 h-4" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 mb-1">Customer</p>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Customer</p>
                         <p className="text-sm font-black text-gray-900 dark:text-white">{orderData.customer_name || 'Walk-in Customer'}</p>
                         <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mt-0.5">{orderData.customer_phone || '-'}</p>
                     </div>
@@ -192,7 +192,7 @@ const OperatorOrderDetails = () => {
                 <div className="flex items-start space-x-3 border-l border-gray-100 dark:border-slate-800 pl-8 min-w-[140px]">
                     <img src="https://i.pravatar.cc/150?img=11" alt="Waiter" className="w-8 h-8 rounded-full" />
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 mb-1">Waiter</p>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Waiter</p>
                         <p className="text-sm font-black text-gray-900 dark:text-white">Amit Verma</p>
                     </div>
                 </div>
@@ -203,7 +203,7 @@ const OperatorOrderDetails = () => {
                         <Clock className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-gray-400 mb-1">Order Time</p>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Order Time</p>
                         <p className="text-sm font-black text-gray-900 dark:text-white">{timeStr}</p>
                         <p className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mt-0.5">{dateStr}</p>
                     </div>
@@ -244,7 +244,7 @@ const OperatorOrderDetails = () => {
                                 </thead>
                                 <tbody>
                                     {orderItems.map((item, idx) => (
-                                        <tr key={item.id} className="border-b border-gray-50 dark:border-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50 transition-colors">
+                                        <tr key={item.id} className="border-b border-gray-50 dark:border-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50 transition-colors">
                                             <td className="py-3 px-5 text-xs font-semibold text-gray-500 dark:text-slate-400">{idx + 1}</td>
                                             <td className="py-3 px-5">
                                                 <div className="flex items-center space-x-3">
@@ -295,28 +295,28 @@ const OperatorOrderDetails = () => {
                         </div>
                         <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Bill Amount</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Bill Amount</p>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white">₹ {grandTotal.toFixed(2)}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Paid Amount</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Paid Amount</p>
                                 <p className="text-xs font-bold text-green-600">₹ {grandTotal.toFixed(2)}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Payment Method</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Payment Method</p>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white">UPI</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Payment Status</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Payment Status</p>
                                 <p className="text-xs font-bold text-green-600">Paid</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Paid At</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Paid At</p>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white">10:45 AM</p>
                                 <p className="text-[9px] text-gray-500 dark:text-slate-400">May 20, 2025</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 mb-1">Transaction ID</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Transaction ID</p>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white">UPI/512312312312</p>
                             </div>
                         </div>
@@ -339,7 +339,7 @@ const OperatorOrderDetails = () => {
                                     <div className="w-1/3 text-[11px] font-medium text-gray-600 dark:text-slate-400">
                                         {log.action}
                                     </div>
-                                    <div className="w-1/3 text-[11px] font-bold text-gray-400 text-right">
+                                    <div className="w-1/3 text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 text-right">
                                         {log.time}
                                     </div>
                                 </div>
@@ -369,10 +369,10 @@ const OperatorOrderDetails = () => {
                                         </div>
                                         <div className="ml-4 flex-1 flex justify-between items-start">
                                             <div>
-                                                <div className={`text-[11px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{item.title}</div>
-                                                <div className={`text-[10px] font-medium mt-0.5 ${item.completed ? 'text-gray-500 dark:text-slate-400' : 'text-gray-300 dark:text-slate-600'}`}>{item.desc}</div>
+                                                <div className={`text-[11px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>{item.title}</div>
+                                                <div className={`text-[10px] font-medium mt-0.5 ${item.completed ? 'text-gray-500 dark:text-slate-400' : 'text-gray-300 dark:text-slate-600 dark:text-slate-400'}`}>{item.desc}</div>
                                             </div>
-                                            {item.time && <div className={`text-[10px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500'}`}>{item.time}</div>}
+                                            {item.time && <div className={`text-[10px] font-bold ${item.completed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>{item.time}</div>}
                                         </div>
                                     </div>
                                 ))}
@@ -449,7 +449,7 @@ const OperatorOrderDetails = () => {
                                 Mark as Served
                             </button>
                         )}
-                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
+                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
                             <div className="flex items-center mb-1"><Printer className="w-4 h-4 mr-1.5" /></div>
                             Reprint Bill
                         </button>

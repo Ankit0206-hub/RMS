@@ -39,7 +39,7 @@ export default function BannerCarousel() {
   }, []);
 
   return (
-    <div className="relative mt-6 h-32 w-full overflow-hidden rounded-3xl shadow-md bg-gray-100">
+    <div className="relative mt-6 h-32 w-full overflow-hidden rounded-3xl shadow-md bg-gray-100 dark:bg-slate-800">
       <div 
         className="flex h-full w-full transition-transform duration-700 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -82,7 +82,7 @@ export default function BannerCarousel() {
             key={idx}
             onClick={() => setCurrentIndex(idx)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              idx === currentIndex ? "bg-white w-4" : "bg-white/50 w-1.5"
+              idx === currentIndex ? "bg-white dark:bg-slate-900 w-4" : "bg-white dark:bg-slate-900/50 w-1.5"
             }`}
           />
         ))}
