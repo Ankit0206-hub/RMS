@@ -215,7 +215,7 @@ const OperatorDashboard = () => {
 
                         {/* Table Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 max-h-[300px] overflow-y-auto pr-2">
-                            {tables.map(table => {
+                            {tables.filter(t => !t.parent_table_id).map(table => {
                                 let colors = { border: 'border-emerald-200', text: 'text-emerald-600', bg: 'bg-emerald-50' };
                                 if (table.status === 'Occupied') colors = { border: 'border-orange-300', text: 'text-orange-600', bg: 'bg-orange-50' };
                                 if (table.status === 'Reserved') colors = { border: 'border-purple-300', text: 'text-purple-600', bg: 'bg-purple-50' };
@@ -223,7 +223,7 @@ const OperatorDashboard = () => {
                                 if (table.status === 'Out of Service') colors = { border: 'border-gray-300 dark:border-slate-600', text: 'text-gray-500 dark:text-slate-400', bg: 'bg-gray-50 dark:bg-slate-800/50' };
 
                                 return (
-                                    <div key={table.id} className={`border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-colors ${colors.border} ${colors.bg}`}>
+                                    <div key={table.id} className={`border rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-colors ${colors.border} ${colors.bg}`} title={table.is_virtual ? `Merged Tables: ${table.name}` : ''}>
                                         <div className={`mb-1 ${colors.text}`}>
                                             {table.status === 'Cleaning' ? <Clock size={20} /> : <Users size={20} />}
                                         </div>

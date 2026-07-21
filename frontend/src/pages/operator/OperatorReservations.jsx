@@ -214,7 +214,7 @@ const OperatorReservations = () => {
             case 'Occupied': return { border: 'bg-cyan-400', text: 'text-cyan-600', badge: 'border-cyan-300 text-cyan-700' };
             case 'Available': return { border: 'bg-green-500', text: 'text-green-600', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
             case 'Reserved': return { border: 'bg-amber-400', text: 'text-amber-600', badge: 'border-amber-400 text-amber-700' };
-            case 'Merged': return { border: 'bg-gray-200 dark:bg-slate-700', text: 'text-gray-400 dark:text-slate-500 dark:text-slate-400', badge: 'border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500 dark:text-slate-400' };
+            case 'Merged': return { border: 'bg-gray-200', text: 'text-gray-400', badge: 'border-gray-200 text-gray-400' };
             default: return { border: 'bg-gray-300', text: 'text-gray-500 dark:text-slate-400', badge: 'border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400' };
         }
     };
@@ -250,23 +250,29 @@ const OperatorReservations = () => {
         handleEditReservation(res);
     };
 
-    const renderChairs = (seats, type) => {
+    const renderChairs = (seats, status) => {
         const chairs = [];
-        if (type === 'horizontal' && seats === 4) {
-            chairs.push(<div key="t1" className="absolute -top-1.5 left-4 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="t2" className="absolute -top-1.5 right-6 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-t-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="b1" className="absolute -bottom-1.5 left-4 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="b2" className="absolute -bottom-1.5 right-6 w-6 h-3 bg-gray-200 dark:bg-slate-700 rounded-b-full transition-colors group-hover:bg-indigo-100"></div>);
-        } else if (type === 'vertical' && seats === 6) {
-            chairs.push(<div key="l1" className="absolute top-4 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="l2" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="l3" className="absolute bottom-4 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r1" className="absolute top-4 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r2" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r3" className="absolute bottom-4 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
-        } else if (type === 'square' && seats === 2) {
-            chairs.push(<div key="l1" className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-l-full transition-colors group-hover:bg-indigo-100"></div>);
-            chairs.push(<div key="r1" className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-6 bg-gray-200 dark:bg-slate-700 rounded-r-full transition-colors group-hover:bg-indigo-100"></div>);
+        const topSeats = Math.ceil(seats / 2);
+        const bottomSeats = Math.floor(seats / 2);
+        
+        const occupiedSeatsCount = status === 'Occupied' ? Math.max(1, seats - 1) : status === 'Reserved' ? seats : 0;
+        let highlightedCount = 0;
+
+        for (let i = 0; i < topSeats; i++) {
+            const leftPct = (100 / (topSeats + 1)) * (i + 1);
+            const isOccupied = highlightedCount < occupiedSeatsCount;
+            if (isOccupied) highlightedCount++;
+            const chairColor = (status === 'Reserved' && isOccupied) ? 'bg-amber-400' : (status === 'Occupied' && isOccupied) ? 'bg-cyan-400' : 'bg-gray-200 dark:bg-slate-700';
+            
+            chairs.push(<div key={`t${i}`} className={`absolute -top-1.5 w-6 h-3 rounded-t-full transition-colors group-hover:opacity-80 ${chairColor}`} style={{ left: `calc(${leftPct}% - 12px)` }}></div>);
+        }
+        for (let i = 0; i < bottomSeats; i++) {
+            const leftPct = (100 / (bottomSeats + 1)) * (i + 1);
+            const isOccupied = highlightedCount < occupiedSeatsCount;
+            if (isOccupied) highlightedCount++;
+            const chairColor = (status === 'Reserved' && isOccupied) ? 'bg-amber-400' : (status === 'Occupied' && isOccupied) ? 'bg-cyan-400' : 'bg-gray-200 dark:bg-slate-700';
+            
+            chairs.push(<div key={`b${i}`} className={`absolute -bottom-1.5 w-6 h-3 rounded-b-full transition-colors group-hover:opacity-80 ${chairColor}`} style={{ left: `calc(${leftPct}% - 12px)` }}></div>);
         }
         return chairs;
     };
@@ -310,13 +316,13 @@ const OperatorReservations = () => {
                             placeholder="Search Guest"
                             className="w-full bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                         />
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
+                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {loading ? (
-                        <div className="p-4 flex justify-center text-sm text-gray-500 dark:text-slate-400">Loading...</div>
+                        <div className="p-4 flex justify-center text-sm text-gray-500">Loading...</div>
                     ) : (
                         <>
                             {/* Seated List */}
@@ -334,7 +340,7 @@ const OperatorReservations = () => {
                                         <div 
                                             key={guest.id}
                                             onClick={() => handleGuestClick(guest)}
-                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-indigo-50/50 border-indigo-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                         >
                                             <div className="flex items-start space-x-3">
                                                 <div className="text-right w-14 pt-0.5">
@@ -343,7 +349,7 @@ const OperatorReservations = () => {
                                                 <div>
                                                     <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.customer_name}</div>
                                                     <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.contact_number}</div>
-                                                    <div className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
+                                                    <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end space-y-2">
@@ -371,7 +377,7 @@ const OperatorReservations = () => {
                                         <div 
                                             key={guest.id}
                                             onClick={() => handleGuestClick(guest)}
-                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                         >
                                             <div className="flex items-start space-x-3">
                                                 <div className="text-right w-14 pt-0.5">
@@ -380,7 +386,7 @@ const OperatorReservations = () => {
                                                 <div>
                                                     <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.customer_name}</div>
                                                     <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.contact_number}</div>
-                                                    <div className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
+                                                    <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-end space-y-2">
@@ -411,7 +417,7 @@ const OperatorReservations = () => {
                             <ChevronRight className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
                         </div>
                         
-                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
+                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
                             <span>Dinner</span>
                             <ChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
                         </div>
@@ -452,10 +458,10 @@ const OperatorReservations = () => {
                             </div>
                         </div>
                         
-                        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700"></div>
+                        <div className="h-6 w-px bg-gray-200"></div>
 
                         <div className="flex space-x-3">
-                            <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
+                            <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
                                 <Calendar className="w-4 h-4" />
                             </button>
                             
@@ -464,7 +470,7 @@ const OperatorReservations = () => {
                                     setIsMergeMode(!isMergeMode);
                                     setSelectedTablesForMerge([]);
                                 }}
-                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
+                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-white border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                             >
                                 {isMergeMode ? 'Cancel Merge' : 'Merge Tables'}
                             </button>
@@ -500,122 +506,60 @@ const OperatorReservations = () => {
                 <div className="flex-1 p-8 overflow-auto relative">
                     <div className="max-w-5xl mx-auto min-w-[800px]">
                         
-                        {/* Grid Layout matching the mockup */}
-                        <div className="grid grid-cols-4 gap-x-12 gap-y-16">
-                            
-                            {/* Column 1 */}
-                            <div className="flex flex-col space-y-12 items-center">
-                                {floorPlanTables.filter(t => ['T1', 'T2', 'T3'].includes(t.id)).map(table => {
-                                    const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
-                                    return (
+                        {/* Dynamic Grid Layout matching Table Assignment */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-x-4 gap-y-8">
+                            {[...floorPlanTables].sort((a, b) => a.seats - b.seats).map(table => {
+                                const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
+                                const isSelected = selectedTable === table.id && !isMergeMode;
+                                
+                                let borderClass = getStatusColor(table.status, table.isAvailableWithFutureRes).border;
+                                let textClass = getStatusColor(table.status, table.isAvailableWithFutureRes).text;
+                                
+                                let colSpanClass = 'col-span-1';
+                                if (table.seats >= 5 && table.seats <= 8) {
+                                    colSpanClass = 'col-span-1 sm:col-span-2';
+                                } else if (table.seats > 8) {
+                                    colSpanClass = 'col-span-2 sm:col-span-3';
+                                }
+                                
+                                return (
                                     <div 
                                         key={table.id}
                                         onClick={() => handleTableClick(table)}
-                                        className={`relative w-36 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border transition-all flex group ${table.isMerged ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
-                                            ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : selectedTable === table.id && !isMergeMode ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
+                                        className={`relative w-full h-24 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex ${colSpanClass}
+                                            ${table.isMerged ? 'opacity-50 grayscale cursor-not-allowed' : ''}
+                                            ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : isSelected ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900 border-indigo-200 dark:border-indigo-800' : 'border-gray-200 dark:border-slate-700'}`}
                                     >
-                                        <div className={`w-3 shrink-0 rounded-l-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
+                                        <div className={`w-3 shrink-0 rounded-l-2xl ${borderClass}`}></div>
                                         
-                                        <div className="flex-1 p-3 flex flex-col justify-center">
-                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate max-w-full block">{table.guest}</span>}
-                                            <span className={`text-[10px] font-bold mt-0.5 ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
-                                                {table.status} {table.isAvailableWithFutureRes && '(Available Now)'}
-                                            </span>
-                                            {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold">Res: {table.time}</span>}
-                                        </div>
-
-                                        {renderChairs(table.seats, table.type)}
-                                    </div>
-                                )})}
-                            </div>
-
-                            {/* Column 2 (Vertical Tables) */}
-                            <div className="flex flex-col space-y-8 items-center justify-center">
-                                {floorPlanTables.filter(t => ['T4', 'T5'].includes(t.id)).map(table => {
-                                    const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
-                                    return (
-                                    <div 
-                                        key={table.id}
-                                        onClick={() => handleTableClick(table)}
-                                        className={`relative w-20 h-44 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border transition-all flex flex-col group ${table.isMerged ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
-                                            ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : selectedTable === table.id && !isMergeMode ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
-                                    >
-                                        <div className="flex-1 p-3 flex flex-col items-center justify-between py-6">
-                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
-                                            <div className="flex flex-col items-center text-center">
-                                                {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[10px] truncate max-w-[60px]">{table.guest}</span>}
-                                                <span className={`text-[10px] font-bold ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
-                                                    {table.status}
-                                                </span>
-                                                {table.isAvailableWithFutureRes && <span className="text-green-600 text-[8px] font-bold">(Now)</span>}
-                                                {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold">{table.time}</span>}
+                                        <div className="flex-1 min-w-0 p-3.5 flex flex-col justify-between">
+                                            <div className="flex flex-col items-start gap-0.5">
+                                                <span className="text-gray-400 dark:text-slate-500 font-bold text-[10px] lg:text-[11px] 2xl:text-xs truncate w-full">{table.id}</span>
+                                                <div className="flex space-x-1 items-center w-full">
+                                                    <span className={`text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold ${textClass} truncate max-w-full`}>
+                                                        {table.status} {table.isAvailableWithFutureRes && '(Now)'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex flex-col w-full">
+                                                {table.guest ? (
+                                                    <span className="text-gray-900 dark:text-white font-bold text-xs lg:text-[14px] 2xl:text-base truncate w-full block leading-tight">
+                                                        {table.guest}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400 dark:text-slate-500 font-bold text-xs lg:text-[14px] 2xl:text-base truncate w-full block leading-tight italic opacity-60">
+                                                        No Reservation
+                                                    </span>
+                                                )}
+                                                {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold mt-0.5">Res: {table.time}</span>}
                                             </div>
                                         </div>
 
-                                        <div className={`h-full w-3 shrink-0 absolute right-0 top-0 rounded-r-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
-                                        
-                                        {renderChairs(table.seats, table.type)}
+                                        {renderChairs(table.seats, table.status)}
                                     </div>
-                                )})}
-                            </div>
-
-                            {/* Column 3 (Small Square Tables) */}
-                            <div className="flex flex-col space-y-12 items-center justify-center pt-8">
-                                {floorPlanTables.filter(t => ['T12', 'T6', 'T7', 'T8'].includes(t.id)).map(table => {
-                                    const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
-                                    return (
-                                    <div 
-                                        key={table.id}
-                                        onClick={() => handleTableClick(table)}
-                                        className={`relative w-20 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border transition-all flex group ${table.isMerged ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
-                                            ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : selectedTable === table.id && !isMergeMode ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
-                                    >
-                                        <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
-                                        
-                                        <div className="flex-1 p-2 flex flex-col items-center justify-center pr-3">
-                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs mb-1">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-[9px] truncate max-w-[50px]">{table.guest}</span>}
-                                            <span className={`text-[9px] font-bold mt-0.5 text-center ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
-                                                {table.status} {table.isAvailableWithFutureRes && ' (Now)'}
-                                            </span>
-                                            {table.time && <span className="text-gray-500 dark:text-slate-400 text-[8px] font-bold">{table.time}</span>}
-                                        </div>
-
-                                        {renderChairs(table.seats, table.type)}
-                                    </div>
-                                )})}
-                            </div>
-
-                            {/* Column 4 */}
-                            <div className="flex flex-col space-y-12 items-center pt-10">
-                                {floorPlanTables.filter(t => ['T9', 'T10', 'T11'].includes(t.id)).map(table => {
-                                    const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
-                                    return (
-                                    <div 
-                                        key={table.id}
-                                        onClick={() => handleTableClick(table)}
-                                        className={`relative w-36 h-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border transition-all flex group ${table.isMerged ? 'opacity-50 grayscale cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}
-                                            ${isSelectedForMerge ? 'ring-2 ring-amber-500 ring-offset-2 border-amber-200' : selectedTable === table.id && !isMergeMode ? 'ring-2 ring-indigo-500 ring-offset-2 border-indigo-200' : 'border-gray-200 dark:border-slate-700'}`}
-                                    >
-                                        <div className={`w-3 shrink-0 absolute right-0 top-0 h-full rounded-r-2xl ${getStatusColor(table.status, table.isAvailableWithFutureRes).border}`}></div>
-                                        
-                                        <div className="flex-1 p-3 flex flex-col justify-center pr-4">
-                                            <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-xs">{table.id}</span>
-                                            {table.guest && <span className="text-gray-900 dark:text-white font-bold text-xs mt-1 truncate block">{table.guest}</span>}
-                                            <div className="flex space-x-1 items-center mt-0.5">
-                                                <span className={`text-[10px] font-bold ${getStatusColor(table.status, table.isAvailableWithFutureRes).text}`}>
-                                                    {table.status} {table.isAvailableWithFutureRes && '(Now)'}
-                                                </span>
-                                                {table.time && <span className="text-gray-500 dark:text-slate-400 text-[9px] font-bold ml-1">{table.time}</span>}
-                                            </div>
-                                        </div>
-
-                                        {renderChairs(table.seats, table.type)}
-                                    </div>
-                                )})}
-                            </div>
-
+                                );
+                            })}
                         </div>
 
                         {/* Merged Tables Section */}
@@ -631,18 +575,19 @@ const OperatorReservations = () => {
                                             key={table.id}
                                             onClick={() => handleTableClick({ id: table.table_number, isMerged: false, dbId: table.id, status: table.status })}
                                             className={`relative w-48 h-24 bg-indigo-50/50 dark:bg-slate-800 rounded-2xl shadow-sm border border-indigo-200 dark:border-indigo-900 cursor-pointer transition-all hover:shadow-md flex items-center justify-center`}
+                                            title={`Merged Tables: ${table.name}`}
                                         >
                                             <div className={`w-3 shrink-0 absolute left-0 top-0 h-full rounded-l-2xl ${getStatusColor(table.status, false).border}`}></div>
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-indigo-900 dark:text-indigo-200 font-bold text-sm">{table.table_number}</span>
-                                                <span className="text-indigo-600 dark:text-indigo-400 text-xs font-semibold mt-1">{table.capacity} Seats</span>
-                                                <span className={`text-[10px] font-bold mt-1 px-2 py-0.5 rounded border ${getStatusColor(table.status, false).badge}`}>
+                                            <div className="flex flex-col items-center w-full px-8">
+                                                <span className="text-indigo-900 dark:text-indigo-200 font-bold text-sm truncate w-full text-center">{table.table_number}</span>
+                                                <span className="text-indigo-600 dark:text-indigo-400 text-[11px] font-semibold mt-0.5">{table.capacity} Seats</span>
+                                                <span className={`text-[9px] font-bold mt-1 px-2 py-0.5 rounded border ${getStatusColor(table.status, false).badge}`}>
                                                     {table.status}
                                                 </span>
                                             </div>
                                             <button
                                                 onClick={(e) => handleUnmerge(e, table.id)}
-                                                className="absolute top-2 right-2 p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-red-500 bg-white dark:bg-slate-900/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
+                                                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
                                                 title="Split Table"
                                             >
                                                 <Unlink className="w-3 h-3" />

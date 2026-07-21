@@ -80,7 +80,7 @@ const TableAssignment = () => {
 
     const tables = tablesData || [];
     const uniqueFloors = ['All', ...new Set(tables.map(t => t.floor || 'Main Hall'))];
-    const filteredTablesByFloor = tables.filter(t => selectedFloor === 'All' || (t.floor || 'Main Hall') === selectedFloor);
+    const filteredTablesByFloor = tables.filter(t => !t.parent_table_id && (selectedFloor === 'All' || (t.floor || 'Main Hall') === selectedFloor));
 
     const waiters = (employeesData || [])
         .filter(e => e.role_name?.toLowerCase() === 'waiter' || e.role_id === 2 || e.role_id === 3)
@@ -320,6 +320,7 @@ const TableAssignment = () => {
                                         onClick={() => setSelectedTables(prev => prev.some(t => t.id === table.id) ? prev.filter(t => t.id !== table.id) : [...prev, table])}
                                         className={`relative w-full h-24 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border cursor-pointer transition-all hover:shadow-md group flex ${colSpanClass}
                                             ${isSelected ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900 border-indigo-200 dark:border-indigo-800' : 'border-gray-200 dark:border-slate-700'}`}
+                                        title={table.is_virtual ? `Merged Tables: ${table.name}` : ''}
                                     >
                                         {/* Colored Status Stripe */}
                                         <div className={`w-3 shrink-0 rounded-l-2xl ${borderClass}`}></div>
