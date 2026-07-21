@@ -15,6 +15,25 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403 || error.response.status === 404)) {
+            // Only force clear session if it's an authorization/session-level error, wait, 404 might be for specific entities, not just session.
+            // Let's only do it for 401/403.
+            if (error.response.status === 401 || error.response.status === 403) {
+                localStorage.removeItem('customer_token');
+                localStorage.removeItem('customerSession');
+                // Redirect if not already on the splash/landing page
+                if (!window.location.pathname.match(/^\/customer(\/landing)?$/)) {
+                    window.location.href = '/customer';
+                }
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const customerApi = {
     // Tables
     getTables: async () => {

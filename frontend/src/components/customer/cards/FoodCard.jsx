@@ -7,7 +7,7 @@ export default function FoodCard({
   rating,
 }) {
   return (
-    <div className="w-full rounded-2xl border border-gray-100 bg-white p-2 shadow-sm">
+    <div className="w-full rounded-2xl border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-sm">
       {/* Image */}
       <div className="relative">
         <img
@@ -16,11 +16,11 @@ export default function FoodCard({
           className="h-24 w-full rounded-xl object-cover"
         />
 
-        <button className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow">
-          <Heart size={14} className="text-gray-500" />
+        <button className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow">
+          <Heart size={14} className="text-gray-500 dark:text-slate-400" />
         </button>
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-white px-2 py-1 shadow">
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 px-2 py-1 shadow">
           <Star size={11} className="fill-yellow-400 text-yellow-400" />
           <span className="text-[10px] font-medium">{rating}</span>
         </div>

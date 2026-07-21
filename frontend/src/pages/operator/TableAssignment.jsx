@@ -157,7 +157,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Total Tables</p>
                         <h4 className="text-lg lg:text-xl 2xl:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{totalTables}</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium">All Tables</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">All Tables</p>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex items-center">
@@ -165,7 +165,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Assigned Tables</p>
                         <h4 className="text-lg lg:text-xl 2xl:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{assignedTables}</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium">{assignedPercentage}% of total</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{assignedPercentage}% of total</p>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex items-center">
@@ -173,7 +173,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Unassigned Tables</p>
                         <h4 className="text-lg lg:text-xl 2xl:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{unassignedTables}</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium">{unassignedPercentage}% of total</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{unassignedPercentage}% of total</p>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex items-center">
@@ -181,7 +181,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Active Waiters</p>
                         <h4 className="text-lg lg:text-xl 2xl:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{activeWaiters}</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium">On Duty</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">On Duty</p>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex items-center">
@@ -189,7 +189,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Available Waiters</p>
                         <h4 className="text-lg lg:text-xl 2xl:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{availableWaiters}</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium">Available Now</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">Available Now</p>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm flex items-center">
@@ -197,7 +197,7 @@ const TableAssignment = () => {
                     <div>
                         <p className="text-[10px] lg:text-[11px] 2xl:text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mb-0.5">Current Shift</p>
                         <h4 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white leading-tight mt-1">Morning Shift</h4>
-                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 font-medium mt-1">07:00 AM - 03:00 PM</p>
+                        <p className="text-[9px] lg:text-[10px] 2xl:text-[11px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium mt-1">07:00 AM - 03:00 PM</p>
                     </div>
                 </div>
             </div>
@@ -214,7 +214,7 @@ const TableAssignment = () => {
                                     Restaurant Floor
                                 </h3>
                                 <select 
-                                    className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                                    className="bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
                                     value={selectedFloor}
                                     onChange={(e) => {
                                         setSelectedFloor(e.target.value);
@@ -230,7 +230,7 @@ const TableAssignment = () => {
                                 {selectedTables.length > 0 && (
                                     <button 
                                         onClick={() => setSelectedTables([])}
-                                        className="flex items-center px-3 py-1.5 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
+                                        className="flex items-center px-3 py-1.5 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-700 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
                                     >
                                         Clear Selection ({selectedTables.length})
                                     </button>
@@ -327,7 +327,7 @@ const TableAssignment = () => {
                                         {/* Table Content */}
                                         <div className="flex-1 min-w-0 p-3.5 flex flex-col justify-between">
                                             <div className="flex flex-col items-start gap-0.5">
-                                                <span className="text-gray-400 dark:text-slate-500 font-bold text-[10px] lg:text-[11px] 2xl:text-xs truncate w-full">{table.table_number}</span>
+                                                <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold text-[10px] lg:text-[11px] 2xl:text-xs truncate w-full">{table.table_number}</span>
                                                 <span className={`text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold ${textClass} truncate w-full`}>
                                                     {table.status === 'Reserved' ? `Reserved for ${table.capacity}` : table.status}
                                                 </span>
@@ -353,7 +353,7 @@ const TableAssignment = () => {
                             <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mb-4">Waiters ({waiters.length})</h3>
                             <div className="flex items-center space-x-2">
                                 <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                                     <input 
                                         type="text" 
                                         placeholder="Search waiter..." 
@@ -362,7 +362,7 @@ const TableAssignment = () => {
                                         className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-xs lg:text-[13px] 2xl:text-sm focus:outline-none focus:border-indigo-500"
                                     />
                                 </div>
-                                <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"><Filter size={16}/></button>
+                                <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"><Filter size={16}/></button>
                             </div>
                         </div>
                         
@@ -380,16 +380,16 @@ const TableAssignment = () => {
                                         key={waiter.id} 
                                         onClick={() => !isDisabled && setSelectedWaiter(waiter.id.toString())}
                                         className={`flex items-center p-3 rounded-xl transition-colors border 
-                                            ${isDisabled ? 'opacity-50 cursor-not-allowed border-transparent bg-gray-50/50 dark:bg-slate-800/30' : 
+                                            ${isDisabled ? 'opacity-50 cursor-not-allowed border-transparent bg-gray-50 dark:bg-slate-800/50/50 dark:bg-slate-800/30' : 
                                             selectedWaiter === waiter.id.toString() ? 'border-indigo-500 bg-indigo-50/30 cursor-pointer' : 
-                                            'border-transparent hover:border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 cursor-pointer'}`}
+                                            'border-transparent hover:border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 cursor-pointer'}`}
                                     >
                                         <div className="text-gray-300 mr-2"><MoreVertical size={16} /></div>
                                         <img src={`https://ui-avatars.com/api/?name=${waiter.full_name}&background=random`} alt={waiter.full_name} className="w-10 h-10 rounded-full mr-3 border border-gray-200 dark:border-slate-700" />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <h4 className="text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-900 dark:text-white truncate pr-2">
-                                                    {waiter.full_name} {isDisabled && <span className="text-[10px] text-gray-500 font-normal">(Assigned)</span>}
+                                                    {waiter.full_name} {isDisabled && <span className="text-[10px] text-gray-500 dark:text-slate-400 font-normal">(Assigned)</span>}
                                                 </h4>
                                                 <span className={`text-[9px] 2xl:text-[10px] font-bold px-1.5 py-0.5 rounded-full ${statusClass}`}>{statusText}</span>
                                             </div>
@@ -494,7 +494,7 @@ const TableAssignment = () => {
                                     {assignedTables} Assigned ({assignedPercentage}%)
                                 </div>
                                 <div className="flex items-center text-[10px] lg:text-[11px] 2xl:text-xs font-bold text-gray-600 dark:text-slate-400">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-gray-200 mr-2"></span> 
+                                    <span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-slate-700 mr-2"></span> 
                                     {unassignedTables} Unassigned ({unassignedPercentage}%)
                                 </div>
                             </div>
@@ -560,7 +560,7 @@ const TableAssignment = () => {
                         <button 
                             onClick={() => setIsConfirmClearOpen(false)}
                             disabled={clearAllAssignmentsMutation.isPending}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 transition-colors"
                         >
                             Cancel
                         </button>
@@ -582,7 +582,7 @@ const TableAssignment = () => {
                     <div className="mb-6">
                         <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2">Select Destination Table</label>
                         <select 
-                            className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500"
+                            className="w-full bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500"
                             value={targetTransferTable}
                             onChange={(e) => setTargetTransferTable(e.target.value)}
                         >
@@ -596,7 +596,7 @@ const TableAssignment = () => {
                         <button 
                             onClick={() => setIsTransferModalOpen(false)}
                             disabled={transferMutation.isPending}
-                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                            className="flex-1 px-4 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-bold text-sm rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 transition-colors"
                         >
                             Cancel
                         </button>

@@ -25,10 +25,10 @@ export default function Loyalty() {
 
   return (
     <MobileContainer>
-      <div className="flex h-full flex-col bg-gray-50 overflow-y-auto">
+      <div className="flex h-full flex-col bg-gray-50 dark:bg-slate-800/50 overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-center gap-3 bg-white px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 px-5 py-4 border-b border-gray-100 dark:border-slate-800">
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
@@ -63,7 +63,7 @@ export default function Loyalty() {
               </div>
 
               <div className="mt-2 h-2 rounded-full bg-orange-300">
-                <div className="h-full w-4/5 rounded-full bg-white"></div>
+                <div className="h-full w-4/5 rounded-full bg-white dark:bg-slate-900"></div>
               </div>
             </div>
 
@@ -82,7 +82,7 @@ export default function Loyalty() {
             {rewards.map((reward) => (
               <div
                 key={reward.id}
-                className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm"
+                className="flex items-center justify-between rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm"
               >
                 <div className="flex items-center gap-4">
 
@@ -95,7 +95,7 @@ export default function Loyalty() {
                       {reward.title}
                     </h3>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       {reward.points}
                     </p>
                   </div>

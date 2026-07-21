@@ -167,7 +167,7 @@ const OperatorOrders = () => {
           <div className="flex items-center space-x-1.5">
             <div className="w-4 h-4 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center shrink-0">
               <svg
-                className="w-2.5 h-2.5 text-gray-400 dark:text-slate-500"
+                className="w-2.5 h-2.5 text-gray-400 dark:text-slate-500 dark:text-slate-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -250,7 +250,7 @@ const OperatorOrders = () => {
                 e.stopPropagation();
                 setActiveDropdown(activeDropdown === row.rawId ? null : row.rawId);
               }}
-              className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400 transition-colors"
+              className="p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:text-slate-400 transition-colors"
             >
               <MoreVertical className="h-3.5 w-3.5" />
             </button>
@@ -265,7 +265,7 @@ const OperatorOrders = () => {
                   }}
                 ></div>
                 <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-lg shadow-lg z-50 py-1 overflow-hidden">
-                  <div className="px-3 py-1 text-[9px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-slate-800/50">Update Status</div>
+                  <div className="px-3 py-1 text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-gray-50 dark:bg-slate-800/50">Update Status</div>
                   {row.status === 'Verification Pending' && (
                     <button 
                       onClick={(e) => {
@@ -389,7 +389,7 @@ const OperatorOrders = () => {
               <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white leading-none">
                 {totalOrders}
               </p>
-              <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 mb-0.5">
+              <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-0.5">
                 Today
               </p>
             </div>
@@ -409,7 +409,7 @@ const OperatorOrders = () => {
                 {newOrders}
               </p>
             </div>
-            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 mt-1 truncate">
+            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-1 truncate">
               Need Confirmation
             </p>
           </div>
@@ -428,7 +428,7 @@ const OperatorOrders = () => {
                 {preparingOrders}
               </p>
             </div>
-            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 mt-1 truncate">
+            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-1 truncate">
               In Kitchen
             </p>
           </div>
@@ -447,7 +447,7 @@ const OperatorOrders = () => {
                 {readyOrders}
               </p>
             </div>
-            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 mt-1 truncate">
+            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-1 truncate">
               Ready for Waiter
             </p>
           </div>
@@ -466,7 +466,7 @@ const OperatorOrders = () => {
                 {servedOrders}
               </p>
             </div>
-            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 mt-1 truncate">
+            <p className="text-[9px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-1 truncate">
               Completed Orders
             </p>
           </div>
@@ -478,7 +478,7 @@ const OperatorOrders = () => {
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex flex-wrap gap-3 items-end bg-white dark:bg-slate-900">
           <div className="relative w-full sm:w-72 shrink-0">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search by Order ID, Table or Customer..."
@@ -490,7 +490,7 @@ const OperatorOrders = () => {
 
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center shrink-0 border px-3 h-[38px] rounded-lg text-[11px] font-bold transition-colors ${showFilters ? 'bg-indigo-50 border-[#5e5ce6] text-[#5e5ce6]' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+            className={`flex items-center shrink-0 border px-3 h-[38px] rounded-lg text-[11px] font-bold transition-colors ${showFilters ? 'bg-indigo-50 border-[#5e5ce6] text-[#5e5ce6]' : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800'}`}
           >
             <Filter className="w-3.5 h-3.5 mr-1.5" />
             Filters
@@ -503,7 +503,7 @@ const OperatorOrders = () => {
           >
             <div className="flex items-end gap-3 w-max">
               <div className="flex flex-col space-y-1 shrink-0">
-                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500">
+                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   Date
                 </label>
                 <input 
@@ -515,7 +515,7 @@ const OperatorOrders = () => {
               </div>
 
               <div className="flex flex-col space-y-1 shrink-0">
-                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500">
+                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   Order Type
                 </label>
                 <select 
@@ -530,7 +530,7 @@ const OperatorOrders = () => {
               </div>
 
               <div className="flex flex-col space-y-1 shrink-0">
-                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500">
+                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   Table
                 </label>
                 <select 
@@ -545,7 +545,7 @@ const OperatorOrders = () => {
               </div>
 
               <div className="flex flex-col space-y-1 shrink-0">
-                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500">
+                <label className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">
                   Status
                 </label>
                 <select 
@@ -567,7 +567,7 @@ const OperatorOrders = () => {
                 <div className="flex items-end shrink-0">
                   <button 
                     onClick={handleResetFilters}
-                    className="flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 w-[38px] h-[38px] rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                    className="flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 w-[38px] h-[38px] rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 transition-colors"
                     title="Reset Filters"
                   >
                     <RotateCcw className="w-4 h-4" />

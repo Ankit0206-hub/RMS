@@ -31,7 +31,7 @@ export default function CallWaiter() {
     {
       id: "tissue",
       title: "Need Tissue",
-      icon: <Receipt size={28} className="text-gray-500" />,
+      icon: <Receipt size={28} className="text-gray-500 dark:text-slate-400" />,
     },
     {
       id: "other",
@@ -41,22 +41,22 @@ export default function CallWaiter() {
   ];
 
   return (
-    <PageLayout className="bg-gray-50 flex flex-col relative">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col relative">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-1">
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Request Waiter</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Request Waiter</h1>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-6">
-        <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
           How can we help you?
         </h2>
-        <p className="text-sm text-gray-500 mt-2 mb-8 font-medium">
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-2 mb-8 font-medium">
           Select an option below to notify the waiter
         </p>
 
@@ -68,11 +68,11 @@ export default function CallWaiter() {
               className={`rounded-3xl border-2 p-6 flex flex-col items-center justify-center transition-all ${
                 selected === service.id
                   ? "border-orange-500 bg-orange-50 shadow-sm shadow-orange-100"
-                  : "border-transparent bg-white shadow-sm"
+                  : "border-transparent bg-white dark:bg-slate-900 shadow-sm"
               }`}
             >
               <div className="mb-3">{service.icon}</div>
-              <span className={`text-sm font-bold ${selected === service.id ? "text-orange-600" : "text-gray-700"}`}>
+              <span className={`text-sm font-bold ${selected === service.id ? "text-orange-600" : "text-gray-700 dark:text-slate-300"}`}>
                 {service.title}
               </span>
             </button>
@@ -81,7 +81,7 @@ export default function CallWaiter() {
 
         {/* Additional Note */}
         <div>
-          <h3 className="text-base font-bold text-gray-900 mb-3 px-1">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3 px-1">
             Additional Note (Optional)
           </h3>
           <textarea
@@ -89,13 +89,13 @@ export default function CallWaiter() {
             placeholder="Type your request here..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-900 outline-none focus:border-orange-500 shadow-sm transition"
+            className="w-full resize-none rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 text-sm text-gray-900 dark:text-white outline-none focus:border-orange-500 shadow-sm transition"
           />
         </div>
       </div>
 
       {/* Bottom Button */}
-      <div className="border-t border-gray-100 bg-white p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
+      <div className="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
         <button
           disabled={!selected}
           onClick={() => {
@@ -118,18 +118,18 @@ export default function CallWaiter() {
       {/* Success Modal Overlay */}
       {showSuccess && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm px-6">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl animate-[fadeIn_.2s_ease-out]">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 p-8 text-center shadow-2xl animate-[fadeIn_.2s_ease-out]">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-50 mb-6">
               <CheckCircle2 size={44} strokeWidth={2.5} className="text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Waiter Notified
             </h2>
-            <p className="text-sm font-medium leading-relaxed text-gray-500 mb-6">
+            <p className="text-sm font-medium leading-relaxed text-gray-500 dark:text-slate-400 mb-6">
               Your request has been sent successfully.<br />
               A waiter will be with you shortly.
             </p>
-            <div className="rounded-2xl bg-gray-50 py-3.5 text-sm font-bold text-gray-700">
+            <div className="rounded-2xl bg-gray-50 dark:bg-slate-800/50 py-3.5 text-sm font-bold text-gray-700 dark:text-slate-300">
               Thank you for your patience
             </div>
           </div>

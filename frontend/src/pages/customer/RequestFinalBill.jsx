@@ -32,14 +32,14 @@ export default function RequestFinalBill() {
   };
 
   return (
-    <PageLayout className="bg-white">
+    <PageLayout className="bg-white dark:bg-slate-900">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-1">
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Request Bill</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Request Bill</h1>
         </div>
       </div>
 
@@ -59,10 +59,10 @@ export default function RequestFinalBill() {
         </div>
 
         {/* Title & Description */}
-        <h2 className="text-2xl font-bold text-gray-900 text-center mb-3 leading-snug">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3 leading-snug">
           Request Final Bill
         </h2>
-        <p className="text-sm font-medium text-gray-500 text-center mb-10 max-w-[280px] leading-relaxed">
+        <p className="text-sm font-medium text-gray-500 dark:text-slate-400 text-center mb-10 max-w-[280px] leading-relaxed">
           Once you request, our operator will generate the final bill for your table.
         </p>
 
@@ -79,7 +79,7 @@ export default function RequestFinalBill() {
           {!requested && (
             <button
               onClick={() => navigate(-1)}
-              className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-gray-200 font-bold text-gray-700 transition hover:bg-gray-50 active:scale-[0.98]"
+              className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-gray-200 dark:border-slate-700 font-bold text-gray-700 dark:text-slate-300 transition hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 active:scale-[0.98]"
             >
               Cancel
             </button>

@@ -1,17 +1,19 @@
 import { Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
 
 export default function OrderSuccess() {
   const navigate = useNavigate();
-  const { cartItems } = useApp();
+  const location = useLocation();
+  const { customerSession } = useApp();
   
-  // Total items quantity
-  const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const orderId = location.state?.orderId || "Pending";
+  const totalItems = location.state?.itemCount || 0;
+  const tableId = customerSession?.tableId || "TA";
 
   return (
-    <PageLayout className="bg-white">
+    <PageLayout className="bg-white dark:bg-slate-900">
       <div className="flex h-full flex-col items-center px-6 pt-20 pb-8">
 
         {/* Success Icon */}
@@ -29,25 +31,25 @@ export default function OrderSuccess() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-gray-900 text-center mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-8">
           Order Placed<br />Successfully
         </h1>
 
         {/* Order Details Card */}
-        <div className="w-full rounded-3xl bg-gray-50 border border-gray-100 p-6 space-y-5">
-          <div className="flex justify-between items-center pb-5 border-b border-gray-200 border-dashed">
-            <span className="text-sm font-semibold text-gray-500">Order</span>
-            <span className="text-base font-bold text-gray-900">#1425</span>
+        <div className="w-full rounded-3xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 p-6 space-y-5">
+          <div className="flex justify-between items-center pb-5 border-b border-gray-200 dark:border-slate-700 border-dashed">
+            <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Order</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white">#{orderId}</span>
           </div>
           
-          <div className="flex justify-between items-center pb-5 border-b border-gray-200 border-dashed">
-            <span className="text-sm font-semibold text-gray-500">Table</span>
-            <span className="text-base font-bold text-gray-900">07</span>
+          <div className="flex justify-between items-center pb-5 border-b border-gray-200 dark:border-slate-700 border-dashed">
+            <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Table</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white">{tableId}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-sm font-semibold text-gray-500">Items</span>
-            <span className="text-base font-bold text-gray-900">{totalItems || 3} Items</span>
+            <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Items</span>
+            <span className="text-base font-bold text-gray-900 dark:text-white">{totalItems} Items</span>
           </div>
         </div>
 

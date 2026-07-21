@@ -15,11 +15,11 @@ export default function BottomNav({ active = "home" }) {
 
   const cartItemCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
   return (
-    <div className="h-16 border-t border-black/5 bg-white flex items-center">
+    <div className="h-16 border-t border-black/5 bg-white dark:bg-slate-900 flex items-center">
       {/* Home */}
       <button 
         onClick={() => navigate("/customer/home")}
-        className={`flex flex-1 flex-col items-center justify-center ${active === "home" ? "text-orange-500" : "text-gray-400"}`}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "home" ? "text-orange-500" : "text-gray-400 dark:text-slate-500 dark:text-slate-400"}`}
       >
         <Home size={18} />
         <span className="mt-1 text-xs font-medium">
@@ -30,7 +30,7 @@ export default function BottomNav({ active = "home" }) {
       {/* Categories */}
       <button
         onClick={() => navigate("/customer/categories")}
-        className={`flex flex-1 flex-col items-center justify-center ${active === "categories" ? "text-orange-500" : "text-gray-400"}`}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "categories" ? "text-orange-500" : "text-gray-400 dark:text-slate-500 dark:text-slate-400"}`}
       >
         <Grid2x2 size={18} />
         <span className="mt-1 text-xs font-medium">
@@ -40,7 +40,7 @@ export default function BottomNav({ active = "home" }) {
       {/* Cart */}
       <button
         onClick={() => navigate("/customer/cart")}
-        className={`relative flex flex-1 flex-col items-center justify-center ${active === "cart" ? "text-orange-500" : "text-gray-400"
+        className={`relative flex flex-1 flex-col items-center justify-center ${active === "cart" ? "text-orange-500" : "text-gray-400 dark:text-slate-500 dark:text-slate-400"
           }`}
       >
         <div className="relative">
@@ -61,7 +61,7 @@ export default function BottomNav({ active = "home" }) {
         onClick={() => navigate("/customer/orders")}
         className={`flex flex-1 flex-col items-center justify-center ${active === "orders"
             ? "text-orange-500"
-            : "text-gray-400"
+            : "text-gray-400 dark:text-slate-500 dark:text-slate-400"
           }`}
       >
         <ClipboardList size={18} />
@@ -72,7 +72,7 @@ export default function BottomNav({ active = "home" }) {
       {/* Settings */}
       <button
         onClick={() => navigate("/customer/settings")}
-        className={`flex flex-1 flex-col items-center justify-center ${active === "settings" ? "text-orange-500" : "text-gray-400"}`}
+        className={`flex flex-1 flex-col items-center justify-center ${active === "settings" ? "text-orange-500" : "text-gray-400 dark:text-slate-500 dark:text-slate-400"}`}
       >
         <SettingsIcon size={18} />
         <span className="mt-1 text-xs font-medium">Settings</span>

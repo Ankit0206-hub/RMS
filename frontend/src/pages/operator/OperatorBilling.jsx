@@ -321,7 +321,7 @@ const OperatorBilling = () => {
       case "Billed":
         return "bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20";
       default:
-        return "bg-gray-500/10 text-gray-600 border-gray-200/50 dark:border-gray-500/20";
+        return "bg-gray-500/10 text-gray-600 dark:text-slate-400 border-gray-200 dark:border-slate-700/50 dark:border-gray-500/20";
     }
   };
 
@@ -331,7 +331,7 @@ const OperatorBilling = () => {
         position="top-right"
         toastOptions={{
           className:
-            "backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700 shadow-xl rounded-2xl",
+            "backdrop-blur-xl bg-white dark:bg-slate-900/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700 shadow-xl rounded-2xl",
           style: { color: "inherit" },
         }}
       />
@@ -347,7 +347,7 @@ const OperatorBilling = () => {
         <div className="w-full lg:w-[320px] flex flex-col space-y-4 shrink-0">
           {/* Search */}
           <div className="relative group">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500 dark:text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
             <input
               type="text"
               value={searchQuery}
@@ -357,7 +357,7 @@ const OperatorBilling = () => {
                   ? "Search table or session..."
                   : "Search bill number..."
               }
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 dark:border-slate-800 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
             />
           </div>
 
@@ -365,26 +365,26 @@ const OperatorBilling = () => {
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full flex items-center justify-between bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center justify-between bg-white dark:bg-slate-900 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-700 transition-colors"
             >
               <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-wider flex items-center">
                 <SplitSquareHorizontal className="w-4 h-4 mr-2" />{" "}
                 {mainTab === "Active" ? "ACTIVE BILLS" : "RECENT BILLS"}
               </span>
               <ChevronDown
-                className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                className={`w-4 h-4 text-gray-400 dark:text-slate-500 dark:text-slate-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-10 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-lg z-10 overflow-hidden">
                 <button
                   onClick={() => {
                     setMainTab("Active");
                     setIsDropdownOpen(false);
                     setSelectedId(null);
                   }}
-                  className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${mainTab === "Active" ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-600 dark:text-slate-300"}`}
+                  className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-700 transition-colors ${mainTab === "Active" ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-600 dark:text-slate-400 dark:text-slate-300"}`}
                 >
                   ACTIVE BILLS
                 </button>
@@ -394,7 +394,7 @@ const OperatorBilling = () => {
                     setIsDropdownOpen(false);
                     setSelectedId(null);
                   }}
-                  className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors ${mainTab === "Recent" ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-600 dark:text-slate-300"}`}
+                  className={`w-full text-left px-4 py-3 text-xs font-bold tracking-wider hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-700 transition-colors ${mainTab === "Recent" ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/10" : "text-gray-600 dark:text-slate-400 dark:text-slate-300"}`}
                 >
                   RECENT BILLS
                 </button>
@@ -407,9 +407,9 @@ const OperatorBilling = () => {
             {displayedList.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-center px-4">
                 <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
-                  <FileText className="w-6 h-6 text-gray-400" />
+                  <FileText className="w-6 h-6 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                 </div>
-                <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">
+                <p className="text-sm font-semibold text-gray-600 dark:text-slate-400 dark:text-slate-300">
                   No {mainTab.toLowerCase()} items found
                 </p>
               </div>
@@ -426,7 +426,7 @@ const OperatorBilling = () => {
                     className={`relative overflow-hidden rounded-2xl p-4 border-l-4 transition-all duration-300 cursor-pointer ${
                       isSelected
                         ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-600 shadow-sm"
-                        : "bg-white dark:bg-slate-900 border-l-transparent border-gray-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md"
+                        : "bg-white dark:bg-slate-900 border-l-transparent border-gray-200 dark:border-slate-700 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md"
                     }`}
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -470,7 +470,7 @@ const OperatorBilling = () => {
                 onClick={() =>
                   toast("Please start a new session from Floor Plan")
                 }
-                className="w-full mt-4 py-3.5 bg-white dark:bg-slate-900/50 border border-dashed border-gray-300 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold text-xs flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                className="w-full mt-4 py-3.5 bg-white dark:bg-slate-900/50 border border-dashed border-gray-300 dark:border-slate-600 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold text-xs flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 transition-colors"
               >
                 <Plus className="w-4 h-4 mr-1.5" />
                 Walk-in Order
@@ -482,7 +482,7 @@ const OperatorBilling = () => {
         {/* ----------------- MIDDLE COLUMN: Order Details ----------------- */}
         <div className="flex-1 flex flex-col min-w-0">
           {selectedItem ? (
-            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-indigo-100/20 dark:shadow-none flex flex-col h-full overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-xl shadow-indigo-100/20 dark:shadow-none flex flex-col h-full overflow-hidden">
               {/* Middle Header */}
               <div className="p-6 border-b border-gray-100 dark:border-slate-800/80 flex justify-between items-center bg-white dark:bg-slate-900">
                 <div className="flex items-center space-x-4">
@@ -517,7 +517,7 @@ const OperatorBilling = () => {
                         setIsReceiptOpen(true);
                       }
                     }}
-                    className="p-2.5 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                    className="p-2.5 bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 dark:text-slate-300 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
                     title="Print Bill"
                   >
                     <Printer className="w-5 h-5" />
@@ -526,7 +526,7 @@ const OperatorBilling = () => {
               </div>
 
               {/* Customer Info Meta */}
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800/80 grid grid-cols-4 gap-4 bg-gray-50/50 dark:bg-slate-900/30">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800/80 grid grid-cols-4 gap-4 bg-gray-50 dark:bg-slate-800/50/50 dark:bg-slate-900/30">
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
                     Customer
@@ -586,7 +586,7 @@ const OperatorBilling = () => {
                 </div>
 
                 {/* List Header */}
-                <div className="grid grid-cols-12 gap-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-2">
+                <div className="grid grid-cols-12 gap-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">
                   <div className="col-span-6">Item Name</div>
                   <div className="col-span-2 text-center">Qty</div>
                   <div className="col-span-2 text-right">Price</div>
@@ -597,7 +597,7 @@ const OperatorBilling = () => {
                 <div className="space-y-2">
                   {currentOrderItems.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
-                      <Coffee className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                      <Coffee className="w-8 h-8 text-gray-300 dark:text-slate-600 dark:text-slate-400 mx-auto mb-3" />
                       <p className="text-gray-500 dark:text-slate-400 font-semibold text-sm">
                         No items ordered yet.
                       </p>
@@ -612,14 +612,14 @@ const OperatorBilling = () => {
                           <img
                             src={item.img}
                             alt={item.name}
-                            className="w-10 h-10 rounded-xl object-cover border border-gray-100 dark:border-slate-700 shadow-sm"
+                            className="w-10 h-10 rounded-xl object-cover border border-gray-100 dark:border-slate-800 dark:border-slate-700 shadow-sm"
                           />
                           <span className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {item.name}
                           </span>
                         </div>
                         <div className="col-span-2 flex justify-center">
-                          <div className="flex items-center bg-gray-50 dark:bg-slate-800 rounded-lg px-2 py-1 font-mono">
+                          <div className="flex items-center bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 rounded-lg px-2 py-1 font-mono">
                             <span className="px-3 text-xs font-bold text-gray-900 dark:text-white">
                               {item.qty}
                             </span>
@@ -638,7 +638,7 @@ const OperatorBilling = () => {
               </div>
             </div>
           ) : (
-            <div className="h-full bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-sm flex flex-col items-center justify-center p-8 text-center">
+            <div className="h-full bg-white dark:bg-slate-900/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-white dark:border-slate-800 shadow-sm flex flex-col items-center justify-center p-8 text-center">
               <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
                 <Receipt className="w-10 h-10 text-indigo-300 dark:text-indigo-500/50" />
               </div>
@@ -726,9 +726,9 @@ const OperatorBilling = () => {
 
               {/* Grand Total Banner */}
               <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 flex justify-between items-center mb-auto shadow-lg relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white dark:bg-slate-900/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div className="relative z-10">
-                  <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">
+                  <span className="block text-gray-400 dark:text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
                     To Pay
                   </span>
                   <span className="font-black text-white text-3xl tracking-tighter font-mono">
@@ -747,7 +747,7 @@ const OperatorBilling = () => {
                 {selectedItem?.status === "Billed" ? (
                   <button 
                     onClick={() => setIsReceiptOpen(true)}
-                    className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                    className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-700 transition-colors"
                   >
                     <Download className="w-4 h-4 mr-2" /> Download Invoice
                   </button>

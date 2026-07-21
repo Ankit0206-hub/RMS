@@ -60,9 +60,9 @@ export default function SearchPage() {
               <ArrowLeft size={22} />
             </button>
 
-            <div className="flex h-11 flex-1 items-center rounded-xl bg-white px-3 shadow-sm border">
+            <div className="flex h-11 flex-1 items-center rounded-xl bg-white dark:bg-slate-900 px-3 shadow-sm border">
 
-              <Search size={18} className="text-gray-400" />
+              <Search size={18} className="text-gray-400 dark:text-slate-500 dark:text-slate-400" />
 
               <input
                 autoFocus
@@ -87,7 +87,7 @@ export default function SearchPage() {
                     <div
                       key={food.id}
                       onClick={() => navigate("/customer/food-details", { state: { food } })}
-                      className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm active:scale-[0.99] transition cursor-pointer"
+                      className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm active:scale-[0.99] transition cursor-pointer"
                     >
                       {/* Image */}
                       <img
@@ -97,8 +97,8 @@ export default function SearchPage() {
                       />
                       {/* Info */}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{food.name}</h3>
-                        <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{food.name}</h3>
+                        <div className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                           <Star size={14} className="fill-yellow-400 text-yellow-400" />
                           {food.rating}
                         </div>
@@ -108,24 +108,24 @@ export default function SearchPage() {
                       {/* Action */}
                       <div className="flex items-center justify-end">
                         {(() => {
-                          const cartItem = cartItems.find((item) => item.id === food.id);
+                          const cartItem = cartItems.find((item) => item.id === food.id || item.originalId === food.id || item.name === food.name);
                           if (cartItem) {
                             return (
-                              <div className="flex items-center gap-1 sm:gap-2 rounded-full bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white">
+                              <div className="flex items-center gap-1 sm:gap-2 rounded-lg bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white shadow-sm">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    decreaseQuantity(food.id);
+                                    decreaseQuantity(cartItem.id || food.id);
                                   }}
                                   className="p-1"
                                 >
                                   <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                 </button>
-                                <span className="text-xs sm:text-sm font-semibold text-center">{cartItem.quantity}</span>
+                                <span className="text-xs sm:text-sm font-bold text-center px-1">{cartItem.quantity}</span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    increaseQuantity(food.id);
+                                    increaseQuantity(cartItem.id || food.id);
                                   }}
                                   className="p-1"
                                 >
@@ -151,7 +151,7 @@ export default function SearchPage() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-10 text-center text-gray-500">
+                <div className="mt-10 text-center text-gray-500 dark:text-slate-400">
                   <p>No food found matching "{searchQuery}"</p>
                 </div>
               )}

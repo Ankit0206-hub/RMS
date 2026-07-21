@@ -6,14 +6,14 @@ export default function AddMoreItems() {
   const navigate = useNavigate();
 
   return (
-    <PageLayout className="bg-white">
+    <PageLayout className="bg-white dark:bg-slate-900">
       {/* Header */}
-      <div className="bg-white px-4 py-4 shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="p-1">
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-xl font-bold text-gray-900">Add More Items</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add More Items</h1>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default function AddMoreItems() {
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-gray-900 text-center mb-10 max-w-[250px] leading-snug">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-10 max-w-[250px] leading-snug">
           Would you like to add more items to your order?
         </h2>
 

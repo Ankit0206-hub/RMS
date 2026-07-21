@@ -139,7 +139,7 @@ const OperatorLayout = () => {
                 {/* Interactive Toggle Button */}
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="absolute -right-3 top-8 z-50 hidden lg:flex h-6 w-6 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 hover:text-cyan-600 hover:border-cyan-500 hover:scale-110 shadow-sm transition-all duration-200"
+                    className="absolute -right-3 top-8 z-50 hidden lg:flex h-6 w-6 items-center justify-center rounded-full bg-white dark:bg-slate-900 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:text-cyan-600 hover:border-cyan-500 hover:scale-110 shadow-sm transition-all duration-200"
                 >
                     {isSidebarOpen ? (
                         <ChevronLeft className="h-3.5 w-3.5" />
@@ -161,7 +161,7 @@ const OperatorLayout = () => {
                     {isSidebarOpen && (
                         <button 
                             onClick={() => setIsSidebarOpen(false)}
-                            className="lg:hidden p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors"
+                            className="lg:hidden p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors"
                         >
                             <X size={20} />
                         </button>
@@ -198,7 +198,7 @@ const OperatorLayout = () => {
                             return (
                                 <div
                                     key={index}
-                                    className={`text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3.5 mt-5 mb-1.5 ${!isSidebarOpen && 'hidden'}`}
+                                    className={`text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider px-3.5 mt-5 mb-1.5 ${!isSidebarOpen && 'hidden'}`}
                                 >
                                     {item.label}
                                 </div>
@@ -213,10 +213,10 @@ const OperatorLayout = () => {
                                 <div key={item.label}>
                                     <div
                                         onClick={() => isSidebarOpen && toggleMenu(item.label)}
-                                        className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
+                                        className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
                                         title={!isSidebarOpen ? item.label : undefined}
                                     >
-                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors text-gray-400 group-hover:text-gray-600 dark:text-slate-400 ${isSidebarOpen ? 'mr-3.5' : ''}`} />
+                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors text-gray-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-gray-600 dark:text-slate-400 ${isSidebarOpen ? 'mr-3.5' : ''}`} />
                                         {isSidebarOpen && (
                                             <>
                                                 <span className="whitespace-nowrap flex-1">{item.label}</span>
@@ -225,16 +225,16 @@ const OperatorLayout = () => {
                                         )}
                                     </div>
                                     {isSidebarOpen && isExpanded && (
-                                        <div className="ml-7 mt-1 space-y-1 relative before:absolute before:left-[-11px] before:top-0 before:bottom-0 before:w-px before:bg-gray-200">
+                                        <div className="ml-7 mt-1 space-y-1 relative before:absolute before:left-[-11px] before:top-0 before:bottom-0 before:w-px before:bg-gray-200 dark:bg-slate-700">
                                             {item.children.map(child => (
                                                 <NavLink key={child.path} to={child.path}>
                                                     {({ isActive }) => (
                                                         <div className={`relative flex items-center px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${isActive
                                                                 ? 'bg-gray-100 dark:bg-slate-800/80 text-gray-900 dark:text-white font-bold'
-                                                                : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white'
+                                                                : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white'
                                                             }`}>
                                                             {/* Line indicator for child item */}
-                                                            <div className="absolute left-[-11px] top-1/2 w-2.5 h-px bg-gray-200"></div>
+                                                            <div className="absolute left-[-11px] top-1/2 w-2.5 h-px bg-gray-200 dark:bg-slate-700"></div>
                                                             <span className="whitespace-nowrap">{child.label}</span>
                                                         </div>
                                                     )}
@@ -255,9 +255,9 @@ const OperatorLayout = () => {
                                 {({ isActive }) => (
                                     <div className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer ${isActive
                                             ? 'bg-cyan-50/50 text-cyan-700 font-bold'
-                                            : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white'
+                                            : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white'
                                         } ${!isSidebarOpen ? 'justify-center' : ''}`}>
-                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isSidebarOpen ? 'mr-3.5' : ''} ${isActive ? 'text-cyan-600' : 'text-gray-400 group-hover:text-gray-600 dark:text-slate-400'
+                                        <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors ${isSidebarOpen ? 'mr-3.5' : ''} ${isActive ? 'text-cyan-600' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-gray-600 dark:text-slate-400'
                                             }`} />
                                         {isSidebarOpen && <span className="whitespace-nowrap">{item.label}</span>}
                                         {isSidebarOpen && item.badge && (
@@ -283,7 +283,7 @@ const OperatorLayout = () => {
                     <div className="flex items-center">
                         <button 
                             onClick={() => setIsSidebarOpen(true)}
-                            className="mr-3 p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors lg:hidden"
+                            className="mr-3 p-1.5 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-800 dark:hover:text-white rounded-lg transition-colors lg:hidden"
                         >
                             <Menu size={20} />
                         </button>
@@ -296,7 +296,7 @@ const OperatorLayout = () => {
                         {/* Sun/Light-dark Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
-                            className="p-2 text-gray-400 hover:text-orange-500 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-orange-500 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                         >
                             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                         </button>

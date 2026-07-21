@@ -52,7 +52,7 @@ export default function TrendingFood() {
           <div
             key={food.id}
             onClick={() => navigate("/customer/food-details", { state: { food } })}
-            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm active:scale-[0.99] transition cursor-pointer"
+            className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm active:scale-[0.99] transition cursor-pointer"
           >
 
             {/* Image */}
@@ -65,11 +65,11 @@ export default function TrendingFood() {
             {/* Info */}
             <div className="flex-1">
 
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
                 {food.name}
               </h3>
 
-              <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+              <div className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                 <Star size={14} className="fill-yellow-400 text-yellow-400" />
                 {food.rating}
               </div>
@@ -83,14 +83,14 @@ export default function TrendingFood() {
             {/* Action */}
             <div className="flex items-center justify-end">
               {(() => {
-                const cartItem = cartItems.find((item) => item.id === food.id);
+                const cartItem = cartItems.find((item) => item.id === food.id || item.originalId === food.id || item.name === food.name);
                 if (cartItem) {
                   return (
                     <div className="flex items-center gap-1 sm:gap-2 rounded-full bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          decreaseQuantity(food.id);
+                          decreaseQuantity(cartItem.id || food.id);
                         }}
                         className="p-1"
                       >
@@ -100,7 +100,7 @@ export default function TrendingFood() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          increaseQuantity(food.id);
+                          increaseQuantity(cartItem.id || food.id);
                         }}
                         className="p-1"
                       >

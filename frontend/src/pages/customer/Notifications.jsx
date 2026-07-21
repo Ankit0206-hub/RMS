@@ -46,7 +46,7 @@ export default function Notifications() {
         <div
             className={`rounded-2xl p-4 mb-4 flex gap-4 shadow-sm ${item.unread
                     ? "bg-orange-50 border border-orange-200"
-                    : "bg-white"
+                    : "bg-white dark:bg-slate-900"
                 }`}
         >
             <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
@@ -61,16 +61,16 @@ export default function Notifications() {
 
             <div className="flex-1">
                 <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
                         {item.title}
                     </h3>
 
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                         {item.time}
                     </span>
                 </div>
 
-                <p className="text-sm text-gray-500 mt-1 leading-5">
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 leading-5">
                     {item.message}
                 </p>
             </div>
@@ -78,11 +78,11 @@ export default function Notifications() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50">
 
             {/* Header */}
 
-            <div className="bg-white shadow-sm px-5 py-4 flex items-center">
+            <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
                 <button onClick={() => navigate(-1)}>
                     <ArrowLeft size={22} />

@@ -64,7 +64,7 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
                 {/* Header */}
                 <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">Order Details</h2>
-                    <button onClick={onClose} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400 transition-colors">
+                    <button onClick={onClose} className="p-1.5 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400 transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -90,16 +90,16 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
                     {/* Table, Waiter, Customer */}
                     <div className="grid grid-cols-3 gap-3">
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                            <p className="text-[10px] font-semibold text-gray-400 mb-1">Table</p>
+                            <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Table</p>
                             <p className="text-xs font-bold text-gray-900 dark:text-white">{table}</p>
                             <p className="text-[10px] font-medium text-gray-500 dark:text-slate-400">4 Seats</p>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                            <p className="text-[10px] font-semibold text-gray-400 mb-1">Waiter</p>
+                            <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Waiter</p>
                             <p className="text-xs font-bold text-gray-900 dark:text-white">{waiterName || '-'}</p>
                         </div>
                         <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
-                            <p className="text-[10px] font-semibold text-gray-400 mb-1">Customer</p>
+                            <p className="text-[10px] font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Customer</p>
                             <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{customerName}</p>
                             <p className="text-[10px] font-medium text-gray-500 dark:text-slate-400 truncate">{customerPhone}</p>
                         </div>
@@ -112,10 +112,10 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="border-b border-gray-50 dark:border-slate-800/50">
-                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400">Item</th>
-                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 text-center">Qty</th>
-                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 text-right">Price</th>
-                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 text-right">Amount</th>
+                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">Item</th>
+                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 text-center">Qty</th>
+                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 text-right">Price</th>
+                                        <th className="py-2.5 px-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 text-right">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -175,50 +175,50 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
                                     <div className="ml-3 flex-1 flex justify-between items-start">
                                         <div>
                                             <div className="text-[11px] font-bold text-gray-900 dark:text-white">Order Placed</div>
-                                            <div className="text-[9px] text-gray-400 font-semibold mt-0.5">New Order Received</div>
+                                            <div className="text-[9px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-semibold mt-0.5">New Order Received</div>
                                         </div>
                                         <div className="text-[10px] font-bold text-gray-900 dark:text-white">{time}</div>
                                     </div>
                                 </div>
 
                                 <div className="flex items-start">
-                                    <div className="w-6 h-6 rounded-full bg-gray-200 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
                                     </div>
                                     <div className="ml-3 flex-1 flex justify-between items-start">
                                         <div>
-                                            <div className="text-[11px] font-bold text-gray-400">Confirmed</div>
+                                            <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">Confirmed</div>
                                         </div>
-                                        <div className="text-[10px] font-bold text-gray-400">-</div>
+                                        <div className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">-</div>
                                     </div>
                                 </div>
                                 <div className="flex items-start">
-                                    <div className="w-6 h-6 rounded-full bg-gray-200 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
                                     </div>
                                     <div className="ml-3 flex-1 flex justify-between items-start">
                                         <div>
-                                            <div className="text-[11px] font-bold text-gray-400">Preparing</div>
+                                            <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">Preparing</div>
                                         </div>
-                                        <div className="text-[10px] font-bold text-gray-400">-</div>
+                                        <div className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">-</div>
                                     </div>
                                 </div>
                                 <div className="flex items-start">
-                                    <div className="w-6 h-6 rounded-full bg-gray-200 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
                                     </div>
                                     <div className="ml-3 flex-1 flex justify-between items-start">
                                         <div>
-                                            <div className="text-[11px] font-bold text-gray-400">Ready to Serve</div>
+                                            <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">Ready to Serve</div>
                                         </div>
-                                        <div className="text-[10px] font-bold text-gray-400">-</div>
+                                        <div className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">-</div>
                                     </div>
                                 </div>
                                 <div className="flex items-start">
-                                    <div className="w-6 h-6 rounded-full bg-gray-200 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 text-white flex items-center justify-center shrink-0 z-10 border-2 border-white shadow-sm mt-0.5">
                                     </div>
                                     <div className="ml-3 flex-1 flex justify-between items-start">
                                         <div>
-                                            <div className="text-[11px] font-bold text-gray-400">Served</div>
+                                            <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">Served</div>
                                         </div>
-                                        <div className="text-[10px] font-bold text-gray-400">-</div>
+                                        <div className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">-</div>
                                     </div>
                                 </div>
                             </div>

@@ -1,168 +1,183 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, ChefHat, FileText, Download } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
-import Button from "../../components/customer/ui/Button";
 
 export default function OrderDetails() {
   const navigate = useNavigate();
   const location = useLocation();
-
   const order = location.state?.order;
 
   if (!order) {
     return (
-      <PageLayout className="bg-gray-50">
-        <div className="flex h-full items-center justify-center">
-          <Button onClick={() => navigate("/customer/orders")}>
-            Back to Orders
-          </Button>
-        </div>
+      <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex items-center justify-center">
+        <button 
+          onClick={() => navigate("/customer/orders")}
+          className="bg-orange-500 text-white px-6 py-3 rounded-2xl font-bold"
+        >
+          Back to Orders
+        </button>
       </PageLayout>
     );
   }
 
-  const subtotal = order.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
+  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const gst = Math.round(subtotal * 0.05);
-  const serviceCharge = 30;
+  const serviceCharge = order.items.length > 0 ? 30 : 0;
   const total = subtotal + gst + serviceCharge;
 
+  // Status mapping for the progress tracker
+  const getStatusStep = () => {
+    if (order.status === "Cancelled") return -1;
+    if (order.rawStatus === "Verification Pending" || order.rawStatus === "Pending") return 1;
+    if (order.rawStatus === "Preparing" || order.rawStatus === "Cooked") return 2;
+    return 3; // Delivered/Served/Completed
+  };
+  const step = getStatusStep();
+
   return (
-    <PageLayout className="bg-gray-50">
-      <div className="flex h-full flex-col">
-        {/* Header */}
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col h-full">
+      {/* Header */}
+      <div className="sticky top-0 z-20 bg-white dark:bg-slate-900/80 backdrop-blur-md px-5 py-4 shadow-sm flex items-center">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+          <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
+        </button>
+        <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">
+          Order #{order.id}
+        </h1>
+      </div>
 
-        <div className="flex items-center bg-white px-5 py-4 shadow-sm">
-          <button onClick={() => navigate(-1)}>
-            <ArrowLeft size={22} />
-          </button>
-
-          <h1 className="flex-1 text-center text-lg font-semibold mr-6">
-            Order Details
-          </h1>
-        </div>
-
-        {/* Content */}
-
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
-          {/* Order Info */}
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+        
+        {/* Status Tracker Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 shadow-sm border border-gray-100 dark:border-slate-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+          
+          <h2 className="text-sm font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-6">Order Status</h2>
+          
+          {order.status === "Cancelled" ? (
+            <div className="flex items-center gap-4 text-red-500 bg-red-50 p-4 rounded-2xl">
+              <CheckCircle2 size={32} />
               <div>
-                <h2 className="text-lg font-semibold">
-                  #{order.id}
-                </h2>
+                <h3 className="font-bold text-lg">Order Cancelled</h3>
+                <p className="text-sm font-medium text-red-400">This order has been cancelled.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="relative flex justify-between items-center z-10">
+              {/* Connecting Line */}
+              <div className="absolute left-6 right-6 top-5 h-1 bg-gray-100 dark:bg-slate-800 -z-10 rounded-full"></div>
+              <div className="absolute left-6 top-5 h-1 bg-orange-500 -z-10 rounded-full transition-all duration-1000" style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}></div>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  {order.date}
-                </p>
+              {/* Step 1 */}
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-500 ${step >= 1 ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>
+                  <Clock size={20} strokeWidth={2.5} />
+                </div>
+                <span className={`text-xs font-bold ${step >= 1 ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>Placed</span>
               </div>
 
-              <span
-                className={`rounded-full px-3 py-1 text-sm font-medium ${
-                  order.status === "Delivered"
-                    ? "bg-green-100 text-green-600"
-                    : "bg-red-100 text-red-600"
-                }`}
-              >
-                {order.status}
-              </span>
-            </div>
-          </div>
-
-          {/* Ordered Items */}
-
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold">
-              Ordered Items
-            </h2>
-
-            {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between border-b py-3 last:border-none"
-              >
-                <div>
-                  <h3 className="font-medium">
-                    {item.name}
-                  </h3>
-
-                  <p className="text-sm text-gray-500">
-                    Qty: {item.quantity}
-                  </p>
+              {/* Step 2 */}
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-500 ${step >= 2 ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>
+                  <ChefHat size={20} strokeWidth={2.5} />
                 </div>
+                <span className={`text-xs font-bold ${step >= 2 ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>Preparing</span>
+              </div>
 
-                <span className="font-semibold">
-                  ₹{item.price * item.quantity}
-                </span>
+              {/* Step 3 */}
+              <div className="flex flex-col items-center gap-2">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-500 ${step >= 3 ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>
+                  <CheckCircle2 size={20} strokeWidth={2.5} />
+                </div>
+                <span className={`text-xs font-bold ${step >= 3 ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-slate-500 dark:text-slate-400'}`}>Delivered</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Ordered Items List */}
+        <div>
+          <h2 className="text-sm font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Ordered Items</h2>
+          <div className="space-y-3">
+            {order.items.map((item) => (
+              <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] p-3 shadow-sm border border-gray-100 dark:border-slate-800 flex gap-4 items-center">
+                <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-800/50 flex-shrink-0 overflow-hidden shadow-sm">
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">🍽️</div>
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base line-clamp-1">{item.name}</h3>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-sm font-medium text-gray-500 dark:text-slate-400">Qty: {item.quantity}</p>
+                    <span className="font-bold text-gray-900 dark:text-white">₹{item.price * item.quantity}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Bill Summary */}
+        {/* Receipt Section */}
+        <div>
+          <h2 className="text-sm font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Bill Summary</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 shadow-sm border border-gray-100 dark:border-slate-800 relative">
+            
+            {/* Scalloped edge effect at the top */}
+            <div className="absolute top-0 left-0 right-0 flex justify-between px-2 -mt-2">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="w-4 h-4 bg-gray-50 dark:bg-slate-800/50 rounded-full"></div>
+              ))}
+            </div>
 
-          <div className="rounded-2xl bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold">
-              Bill Summary
-            </h2>
-
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Subtotal
-                </span>
-
+            <div className="pt-2 space-y-3">
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
+                <span>Item Total</span>
                 <span>₹{subtotal}</span>
               </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  GST (5%)
-                </span>
-
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
+                <span>GST (5%)</span>
                 <span>₹{gst}</span>
               </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Service Charge
-                </span>
-
+              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
+                <span>Service Charge</span>
                 <span>₹{serviceCharge}</span>
               </div>
-
-              <hr />
-
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-
-                <span className="text-orange-500">
-                  ₹{total}
-                </span>
+              
+              <div className="border-t-2 border-dashed border-gray-200 dark:border-slate-700 my-4"></div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-base font-bold text-gray-900 dark:text-white">Grand Total</span>
+                <span className="text-2xl font-black text-orange-500">₹{total}</span>
               </div>
+            </div>
+            
+            <div className="mt-6 flex items-center gap-2 justify-center text-xs font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+              <FileText size={14} />
+              <span>Paid via Cash/Card</span>
             </div>
           </div>
         </div>
-
-        {/* Bottom Button */}
-
-        <div className="border-t bg-white p-5">
-          <Button
-            onClick={() =>
-              navigate("/customer/invoice", {
-                state: { order },
-              })
-            }
-          >
-            Download Invoice
-          </Button>
-        </div>
+        
+        {/* Extra spacing at bottom for the floating button */}
+        <div className="h-20"></div>
       </div>
+
+      {/* Floating Action Button */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 dark:from-slate-950 via-gray-50 dark:via-slate-950 to-transparent">
+        <button
+          onClick={() => navigate("/customer/invoice", { state: { order } })}
+          className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-slate-800 text-white rounded-2xl py-4 font-bold shadow-xl shadow-gray-200 dark:shadow-slate-900/50 active:scale-[0.98] transition-transform"
+        >
+          <Download size={20} />
+          Download Invoice
+        </button>
+      </div>
+
     </PageLayout>
   );
 }

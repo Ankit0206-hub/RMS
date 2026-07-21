@@ -60,7 +60,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Total Tables</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{totalTables}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">All Tables</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">All Tables</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 flex items-center shadow-sm">
@@ -68,7 +68,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Available</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{available}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">{Math.round((available/totalTables)*100 || 0)}%</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{Math.round((available/totalTables)*100 || 0)}%</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 flex items-center shadow-sm">
@@ -76,7 +76,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Occupied</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{occupied}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">{Math.round((occupied/totalTables)*100 || 0)}%</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{Math.round((occupied/totalTables)*100 || 0)}%</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 flex items-center shadow-sm">
@@ -84,7 +84,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Reserved</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{reserved}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">{Math.round((reserved/totalTables)*100 || 0)}%</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{Math.round((reserved/totalTables)*100 || 0)}%</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 flex items-center shadow-sm">
@@ -92,7 +92,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Cleaning</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{cleaning}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">{Math.round((cleaning/totalTables)*100 || 0)}%</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{Math.round((cleaning/totalTables)*100 || 0)}%</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 flex items-center shadow-sm">
@@ -100,7 +100,7 @@ const Tables = () => {
                             <div>
                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase">Out of Service</p>
                                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{outOfService}</h4>
-                                <p className="text-[10px] text-gray-400 font-medium">{Math.round((outOfService/totalTables)*100 || 0)}%</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">{Math.round((outOfService/totalTables)*100 || 0)}%</p>
                             </div>
                         </div>
                     </div>
@@ -109,7 +109,7 @@ const Tables = () => {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col">
                         <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex flex-wrap gap-4 items-center justify-between rounded-t-2xl">
                             <div className="relative flex-1 min-w-[200px] max-w-md">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                                 <input 
                                     type="text" 
                                     placeholder="Search table by number or section..." 
@@ -121,7 +121,7 @@ const Tables = () => {
                             
                             <div className="flex flex-wrap items-center gap-3">
                                 <div>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-1 ml-1">Section</p>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase mb-1 ml-1">Section</p>
                                     <select className="border border-gray-200 dark:border-slate-700 text-xs font-semibold rounded-lg px-3 py-2 bg-white dark:bg-slate-900 outline-none min-w-[130px]">
                                         <option>All Sections</option>
                                         <option>Main Hall</option>
@@ -129,7 +129,7 @@ const Tables = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-1 ml-1">Status</p>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase mb-1 ml-1">Status</p>
                                     <select className="border border-gray-200 dark:border-slate-700 text-xs font-semibold rounded-lg px-3 py-2 bg-white dark:bg-slate-900 outline-none min-w-[130px]">
                                         <option>All Status</option>
                                         <option>Available</option>
@@ -137,17 +137,17 @@ const Tables = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-1 ml-1">Capacity</p>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase mb-1 ml-1">Capacity</p>
                                     <select className="border border-gray-200 dark:border-slate-700 text-xs font-semibold rounded-lg px-3 py-2 bg-white dark:bg-slate-900 outline-none min-w-[130px]">
                                         <option>All Capacity</option>
                                         <option>2 Seats</option>
                                         <option>4 Seats</option>
                                     </select>
                                 </div>
-                                <button className="mt-4 flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors">
+                                <button className="mt-4 flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors">
                                     <Filter size={14} className="mr-2" /> Filters
                                 </button>
-                                <button onClick={() => refetch()} className="mt-4 flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors">
+                                <button onClick={() => refetch()} className="mt-4 flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors">
                                     <RefreshCw size={14} className="mr-2" /> Refresh
                                 </button>
                             </div>
@@ -171,7 +171,7 @@ const Tables = () => {
                                     {filteredTables.map((table) => {
                                         const statusColors = getStatusColor(table.status);
                                         return (
-                                            <tr key={table.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50 transition-colors">
+                                            <tr key={table.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50 transition-colors">
                                                 <td className="px-5 py-3.5">
                                                     <span className="font-bold text-gray-900 dark:text-white text-[13px]">{table.table_number}</span>
                                                 </td>
@@ -193,7 +193,7 @@ const Tables = () => {
                                                             <span className="font-semibold text-gray-800 dark:text-slate-200">{table.assigned_waiter_name}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-gray-400 font-medium">-</span>
+                                                        <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">-</span>
                                                     )}
                                                 </td>
                                                 <td className="px-5 py-3.5 text-center font-semibold text-gray-600 dark:text-slate-400">
@@ -225,7 +225,7 @@ const Tables = () => {
                     <div className="h-full flex flex-col">
                         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800 shrink-0">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Table Details</h3>
-                            <button onClick={() => setSelectedTable(null)} className="text-gray-400 hover:text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 p-1.5 rounded-lg transition-colors">
+                            <button onClick={() => setSelectedTable(null)} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 p-1.5 rounded-lg transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
@@ -275,7 +275,7 @@ const Tables = () => {
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <div className="flex items-center text-gray-500 dark:text-slate-400 font-semibold"><Edit2 size={14} className="mr-2" /> Notes</div>
-                                    <div className="font-bold text-gray-400">-</div>
+                                    <div className="font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400">-</div>
                                 </div>
                             </div>
 

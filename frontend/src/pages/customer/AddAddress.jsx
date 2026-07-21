@@ -76,18 +76,18 @@ export default function Addresses() {
     };
 
     return (
-        <PageLayout className="bg-gray-50">
+        <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
             <div className="flex h-full flex-col">
 
                 {/* HEADER */}
-                <div className="bg-white px-5 py-6 shadow-sm flex items-center gap-3">
+                <div className="bg-white dark:bg-slate-900 px-5 py-6 shadow-sm flex items-center gap-3">
 
                     {/* Back Button */}
                     <button
                         onClick={() => navigate("/customer/profile")}
-                        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition"
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:bg-slate-700 transition"
                     >
-                        <ArrowLeft size={22} className="text-gray-800 font-bold" />
+                        <ArrowLeft size={22} className="text-gray-800 dark:text-slate-200 font-bold" />
                     </button>
 
                     <h1 className="text-xl font-bold">My Addresses</h1>
@@ -97,7 +97,7 @@ export default function Addresses() {
                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
                     {addresses?.length === 0 && (
-                        <p className="text-center text-gray-500">
+                        <p className="text-center text-gray-500 dark:text-slate-400">
                             No addresses added yet
                         </p>
                     )}
@@ -109,7 +109,7 @@ export default function Addresses() {
                         return (
                             <div
                                 key={item.id}
-                                className="rounded-3xl bg-white p-5 shadow-sm hover:shadow-md transition"
+                                className="rounded-3xl bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition"
                             >
                                 {/* TOP */}
                                 <div className="flex items-start justify-between">
@@ -134,12 +134,12 @@ export default function Addresses() {
                                                 )}
                                             </div>
 
-                                            <p className="mt-2 text-sm text-gray-600 leading-6">
+                                            <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 leading-6">
                                                 {item.address}
                                             </p>
 
                                             {item.landmark && (
-                                                <p className="text-xs text-gray-400 mt-1">
+                                                <p className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-1">
                                                     Landmark: {item.landmark}
                                                 </p>
                                             )}
@@ -178,7 +178,7 @@ export default function Addresses() {
                 </div>
 
                 {/* ADD BUTTON */}
-                <div className="border-t bg-white p-5">
+                <div className="border-t bg-white dark:bg-slate-900 p-5">
                     <button
                         onClick={openAddModal}
                         className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 font-semibold text-white shadow-lg hover:bg-orange-600 transition"
@@ -192,7 +192,7 @@ export default function Addresses() {
                 {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
 
-                        <div className="w-full max-w-md rounded-t-3xl bg-white p-5 shadow-2xl animate-slideUp">
+                        <div className="w-full max-w-md rounded-t-3xl bg-white dark:bg-slate-900 p-5 shadow-2xl animate-slideUp">
 
                             {/* HEADER */}
                             <div className="mb-4 flex items-center justify-between">
@@ -202,7 +202,7 @@ export default function Addresses() {
 
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="text-gray-500 text-xl"
+                                    className="text-gray-500 dark:text-slate-400 text-xl"
                                 >
                                     ✕
                                 </button>
@@ -219,7 +219,7 @@ export default function Addresses() {
                                             }
                                             className={`px-3 py-1 rounded-full text-sm border transition ${form.type === type
                                                 ? "bg-orange-500 text-white border-orange-500"
-                                                : "bg-white text-gray-600 border-gray-300"
+                                                : "bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 border-gray-300 dark:border-slate-600"
                                                 }`}
                                         >
                                             {type}

@@ -52,11 +52,11 @@ export default function Payment() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50 flex flex-col">
 
       {/* Header */}
 
-      <div className="bg-white shadow-sm px-5 py-4 flex items-center">
+      <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
         <button onClick={() => navigate(-1)}>
           <ArrowLeft size={22} />
@@ -79,7 +79,7 @@ export default function Payment() {
             onClick={() => setSelected(method.id)}
             className={`w-full rounded-2xl border p-4 flex items-center justify-between transition ${selected === method.id
                 ? "border-orange-500 bg-orange-50"
-                : "border-gray-200 bg-white"
+                : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
               }`}
           >
 
@@ -93,7 +93,7 @@ export default function Payment() {
                   {method.title}
                 </h3>
 
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   {method.subtitle}
                 </p>
 
@@ -120,7 +120,7 @@ export default function Payment() {
 
       {/* Bottom Button */}
 
-      <div className="border-t bg-white px-5 py-4">
+      <div className="border-t bg-white dark:bg-slate-900 px-5 py-4">
 
         <Button
           onClick={() => {

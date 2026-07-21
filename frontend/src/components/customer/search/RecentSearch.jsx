@@ -24,7 +24,7 @@ export default function RecentSearch() {
           <div
             key={item}
             onClick={() => navigate("/customer/search")} 
-            className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm text-gray-600 hover:bg-gray-100"
+            className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800"
           >
             <History size={16} />
             <span>{item}</span>

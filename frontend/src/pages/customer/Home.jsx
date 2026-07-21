@@ -30,7 +30,7 @@ export default function Home() {
   const popularDishes = allItems.slice(0, 4);
   const todaysSpecial = allItems.length > 0 ? allItems[0] : null;
   return (
-    <PageLayout className="bg-white flex flex-col h-full">
+    <PageLayout className="bg-white dark:bg-slate-900 flex flex-col h-full">
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4">
@@ -51,10 +51,10 @@ export default function Home() {
         {/* Today's Special */}
         {todaysSpecial && (
           <section className="mt-8 mb-4">
-            <h2 className="mb-4 text-xl font-bold text-gray-900">
+            <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
               Today's Special
             </h2>
-            <div className="flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm border border-gray-100">
+            <div className="flex items-center justify-between rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm border border-gray-100 dark:border-slate-800">
               <div className="flex items-center gap-4">
                 <img 
                   src={todaysSpecial.image_url || "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=200&q=80"} 
@@ -62,8 +62,8 @@ export default function Home() {
                   className="h-16 w-16 rounded-full object-cover shadow-sm"
                 />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{todaysSpecial.name}</h3>
-                  <p className="font-bold text-gray-900">₹{todaysSpecial.price}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{todaysSpecial.name}</h3>
+                  <p className="font-bold text-gray-900 dark:text-white">₹{todaysSpecial.price}</p>
                 </div>
               </div>
               <div className="rounded-full bg-orange-50 px-3 py-1">

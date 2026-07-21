@@ -7,12 +7,12 @@ export default function Privacy() {
   const navigate = useNavigate();
 
   return (
-    <PageLayout className="bg-gray-50">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
       <div className="flex h-full flex-col">
 
         {/* Header */}
 
-        <div className="bg-white shadow-sm px-5 py-4 flex items-center">
+        <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
@@ -28,7 +28,7 @@ export default function Privacy() {
 
         <div className="flex-1 overflow-y-auto p-5">
 
-          <div className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-6 space-y-6">
 
             <section>
 
@@ -36,7 +36,7 @@ export default function Privacy() {
                 Information We Collect
               </h2>
 
-              <p className="mt-2 text-gray-600 leading-7">
+              <p className="mt-2 text-gray-600 dark:text-slate-400 leading-7">
                 We collect your basic information such as your name,
                 phone number, email address and order history to
                 improve your food ordering experience.
@@ -50,7 +50,7 @@ export default function Privacy() {
                 How We Use Your Information
               </h2>
 
-              <p className="mt-2 text-gray-600 leading-7">
+              <p className="mt-2 text-gray-600 dark:text-slate-400 leading-7">
                 Your information is used to process orders,
                 improve our services, provide customer support
                 and personalize your experience.
@@ -64,7 +64,7 @@ export default function Privacy() {
                 Data Security
               </h2>
 
-              <p className="mt-2 text-gray-600 leading-7">
+              <p className="mt-2 text-gray-600 dark:text-slate-400 leading-7">
                 We use appropriate security measures to protect
                 your personal information against unauthorized
                 access, disclosure or misuse.
@@ -78,7 +78,7 @@ export default function Privacy() {
                 Contact
               </h2>
 
-              <p className="mt-2 text-gray-600 leading-7">
+              <p className="mt-2 text-gray-600 dark:text-slate-400 leading-7">
                 If you have any questions regarding our Privacy
                 Policy, please contact our support team.
               </p>

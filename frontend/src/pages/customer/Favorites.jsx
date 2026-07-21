@@ -16,7 +16,7 @@ export default function Favorites() {
 
         {/* Header */}
 
-        <div className="flex items-center gap-4 px-4 pt-5 pb-4 bg-white">
+        <div className="flex items-center gap-4 px-4 pt-5 pb-4 bg-white dark:bg-slate-900">
 
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
@@ -41,11 +41,11 @@ export default function Favorites() {
                 className="text-gray-300"
               />
 
-              <h2 className="mt-4 text-lg font-semibold text-gray-700">
+              <h2 className="mt-4 text-lg font-semibold text-gray-700 dark:text-slate-300">
                 No Favorites Yet
               </h2>
 
-              <p className="mt-2 text-center text-sm text-gray-500">
+              <p className="mt-2 text-center text-sm text-gray-500 dark:text-slate-400">
                 Tap the heart icon on any dish to add it here.
               </p>
 
@@ -62,7 +62,7 @@ export default function Favorites() {
                     state: { food },
                   })
                 }
-                className="mb-4 flex cursor-pointer items-center rounded-2xl bg-white p-3 shadow-sm"
+                className="mb-4 flex cursor-pointer items-center rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-sm"
               >
 
                 <img

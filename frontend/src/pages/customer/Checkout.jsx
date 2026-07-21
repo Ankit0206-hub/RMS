@@ -39,11 +39,11 @@ export default function Checkout() {
     const total = subtotal + gst + serviceCharge - discount;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50 flex flex-col">
 
             {/* Header */}
 
-            <div className="bg-white shadow-sm flex items-center px-5 py-4">
+            <div className="bg-white dark:bg-slate-900 shadow-sm flex items-center px-5 py-4">
 
                 <button onClick={() => navigate(-1)}>
                     <ArrowLeft size={22} />
@@ -61,9 +61,9 @@ export default function Checkout() {
 
                 {/* Table */}
 
-                <div className="bg-white rounded-2xl shadow-sm p-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4">
 
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400">
                         Table Number
                     </p>
 
@@ -75,7 +75,7 @@ export default function Checkout() {
 
                 {/* Customer */}
 
-                <div className="bg-white rounded-2xl shadow-sm p-4 mt-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4 mt-4">
 
                     <p className="font-semibold">
                         Customer
@@ -87,7 +87,7 @@ export default function Checkout() {
                             John Doe
                         </p>
 
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-slate-400">
                             +91 98765 43210
                         </p>
 
@@ -97,7 +97,7 @@ export default function Checkout() {
 
                 {/* Coupon */}
 
-                <div className="bg-white rounded-2xl shadow-sm p-4 mt-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4 mt-4">
 
                     <p className="font-semibold mb-3">
                         Coupons
@@ -116,7 +116,7 @@ export default function Checkout() {
                                 value={coupon}
                                 onChange={(e) => setCoupon(e.target.value)}
                                 placeholder="Enter coupon code"
-                                className="w-full rounded-xl border border-gray-200 py-3 pl-10 pr-3 outline-none"
+                                className="w-full rounded-xl border border-gray-200 dark:border-slate-700 py-3 pl-10 pr-3 outline-none"
                             />
 
                         </div>
@@ -132,7 +132,7 @@ export default function Checkout() {
                 </div>
                 {/* Bill Summary */}
 
-                <div className="bg-white rounded-2xl shadow-sm p-4 mt-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4 mt-4">
 
                     <h2 className="text-lg font-semibold mb-4">
                         Bill Summary
@@ -141,7 +141,7 @@ export default function Checkout() {
                     <div className="space-y-3 text-sm">
 
                         <div className="flex justify-between">
-                            <span className="text-gray-500">
+                            <span className="text-gray-500 dark:text-slate-400">
                                 Subtotal
                             </span>
 
@@ -151,7 +151,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="flex justify-between">
-                            <span className="text-gray-500">
+                            <span className="text-gray-500 dark:text-slate-400">
                                 GST (5%)
                             </span>
 
@@ -161,7 +161,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="flex justify-between">
-                            <span className="text-gray-500">
+                            <span className="text-gray-500 dark:text-slate-400">
                                 Service Charge
                             </span>
 
@@ -171,7 +171,7 @@ export default function Checkout() {
                         </div>
 
                         <div className="flex justify-between">
-                            <span className="text-gray-500">
+                            <span className="text-gray-500 dark:text-slate-400">
                                 Discount
                             </span>
 
@@ -198,7 +198,7 @@ export default function Checkout() {
 
             {/* Bottom Button */}
 
-            <div className="bg-white border-t px-5 py-4">
+            <div className="bg-white dark:bg-slate-900 border-t px-5 py-4">
 
                 <Button
                    
