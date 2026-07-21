@@ -25,10 +25,10 @@ const coupons = [
 export default function Offers() {
   return (
     <PageLayout>
-      <div className="flex h-full flex-col bg-white">
+      <div className="flex h-full flex-col bg-white dark:bg-slate-900">
         {/* Title */}
         <div className="px-5 pt-8 pb-4">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Offers & Coupons
           </h1>
         </div>
@@ -42,15 +42,15 @@ export default function Offers() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 pr-4">
-                  <h2 className="text-2xl font-bold tracking-wide text-gray-900">
+                  <h2 className="text-2xl font-bold tracking-wide text-gray-900 dark:text-white">
                     {coupon.code}
                   </h2>
 
-                  <p className="mt-3 text-sm leading-6 text-gray-700">
+                  <p className="mt-3 text-sm leading-6 text-gray-700 dark:text-slate-300">
                     {coupon.title}
                   </p>
 
-                  <p className="mt-5 text-xs text-gray-500">
+                  <p className="mt-5 text-xs text-gray-500 dark:text-slate-400">
                     {coupon.expiry}
                   </p>
                 </div>

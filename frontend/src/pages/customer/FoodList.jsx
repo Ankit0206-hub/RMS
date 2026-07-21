@@ -63,29 +63,29 @@ export default function FoodList() {
   });
 
   return (
-    <PageLayout className="bg-white">
+    <PageLayout className="bg-white dark:bg-slate-900">
       <div className="flex h-full flex-col">
 
         {/* Header */}
         <div className="flex items-center justify-center relative px-4 pt-6 pb-2">
           <button onClick={() => navigate("/customer/categories")} className="absolute left-4 p-2 z-10 active:scale-95 transition-transform">
-            <ArrowLeft size={24} className="text-gray-900" />
+            <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
-          <h1 className="text-lg font-bold text-gray-900 capitalize">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
             {title}
           </h1>
         </div>
 
         {/* Search Bar */}
         <div className="px-4 mt-2">
-          <div className="flex items-center rounded-2xl bg-gray-50 px-4 py-3 border border-gray-100">
-            <Search size={18} className="text-gray-400" />
+          <div className="flex items-center rounded-2xl bg-gray-50 dark:bg-slate-800/50 px-4 py-3 border border-gray-100 dark:border-slate-800">
+            <Search size={18} className="text-gray-400 dark:text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search in ${title}...`}
-              className="ml-3 flex-1 bg-transparent text-sm text-gray-900 outline-none"
+              className="ml-3 flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none"
             />
           </div>
         </div>
@@ -95,35 +95,35 @@ export default function FoodList() {
           <button
             onClick={() => toggleFilter("veg")}
             className={`flex items-center gap-2 rounded-full border px-4 py-1.5 whitespace-nowrap transition-colors ${
-              activeFilter === "veg" ? "border-orange-500 bg-orange-50" : "border-gray-200 bg-white hover:bg-gray-50"
+              activeFilter === "veg" ? "border-orange-500 bg-orange-50" : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
             }`}
           >
-            <span className="h-3 w-3 rounded-full border-2 border-green-500 bg-white flex items-center justify-center">
+            <span className="h-3 w-3 rounded-full border-2 border-green-500 bg-white dark:bg-slate-900 flex items-center justify-center">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
             </span>
-            <span className={`text-sm font-semibold ${activeFilter === "veg" ? "text-orange-500" : "text-gray-600"}`}>Veg</span>
+            <span className={`text-sm font-semibold ${activeFilter === "veg" ? "text-orange-500" : "text-gray-600 dark:text-slate-400"}`}>Veg</span>
           </button>
 
           <button
             onClick={() => toggleFilter("non-veg")}
             className={`flex items-center gap-2 rounded-full border px-4 py-1.5 whitespace-nowrap transition-colors ${
-              activeFilter === "non-veg" ? "border-orange-500 bg-orange-50" : "border-gray-200 bg-white hover:bg-gray-50"
+              activeFilter === "non-veg" ? "border-orange-500 bg-orange-50" : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
             }`}
           >
-            <span className="h-3 w-3 rounded-full border-2 border-red-500 bg-white flex items-center justify-center">
+            <span className="h-3 w-3 rounded-full border-2 border-red-500 bg-white dark:bg-slate-900 flex items-center justify-center">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
             </span>
-            <span className={`text-sm font-semibold ${activeFilter === "non-veg" ? "text-orange-500" : "text-gray-600"}`}>Non-Veg</span>
+            <span className={`text-sm font-semibold ${activeFilter === "non-veg" ? "text-orange-500" : "text-gray-600 dark:text-slate-400"}`}>Non-Veg</span>
           </button>
 
           <button
             onClick={() => toggleFilter("spicy")}
             className={`flex items-center gap-2 rounded-full border px-4 py-1.5 whitespace-nowrap transition-colors ${
-              activeFilter === "spicy" ? "border-orange-500 bg-orange-50" : "border-gray-200 bg-white hover:bg-gray-50"
+              activeFilter === "spicy" ? "border-orange-500 bg-orange-50" : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
             }`}
           >
             <span className="text-lg leading-none">🌶️</span>
-            <span className={`text-sm font-semibold ${activeFilter === "spicy" ? "text-orange-500" : "text-gray-600"}`}>Spicy</span>
+            <span className={`text-sm font-semibold ${activeFilter === "spicy" ? "text-orange-500" : "text-gray-600 dark:text-slate-400"}`}>Spicy</span>
           </button>
         </div>
 
@@ -150,25 +150,25 @@ export default function FoodList() {
                   <span className={`h-3 w-3 rounded-sm border flex items-center justify-center ${food.isVeg ? 'border-green-500' : 'border-red-500'}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${food.isVeg ? 'bg-green-500' : 'bg-red-500'}`}></span>
                   </span>
-                  <h3 className="font-bold text-gray-900 leading-tight">
+                  <h3 className="font-bold text-gray-900 dark:text-white leading-tight">
                     {food.name}
                   </h3>
                 </div>
 
                 <div className="mt-1 flex items-center gap-1">
                   <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs font-semibold text-gray-600">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-slate-400">
                     {food.rating}
                   </span>
                   {food.isSpicy && <span className="text-xs ml-1">🌶️</span>}
                 </div>
 
-                <p className="mt-1 text-xs text-gray-400 line-clamp-2">
+                <p className="mt-1 text-xs text-gray-400 dark:text-slate-500 dark:text-slate-400 line-clamp-2">
                   {food.desc}
                 </p>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <p className="font-bold text-gray-900">
+                  <p className="font-bold text-gray-900 dark:text-white">
                     ₹{food.price}
                   </p>
                   
@@ -221,7 +221,7 @@ export default function FoodList() {
           ))}
 
           {filteredData.length === 0 && (
-            <div className="mt-20 text-center text-gray-500">
+            <div className="mt-20 text-center text-gray-500 dark:text-slate-400">
               No items available.
             </div>
           )}

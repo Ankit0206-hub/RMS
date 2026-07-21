@@ -8,7 +8,7 @@ export default function Input({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
           {label}
         </label>
       )}
@@ -21,7 +21,7 @@ export default function Input({
           h-12
           rounded-xl
           border
-          border-gray-200
+          border-gray-200 dark:border-slate-700
           px-4
           outline-none
           focus:border-orange-500

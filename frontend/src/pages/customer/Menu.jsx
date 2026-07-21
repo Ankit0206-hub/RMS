@@ -104,20 +104,20 @@ const CustomerMenu = () => {
         placeOrderMutation.mutate(items);
     };
 
-    if (isLoading || !sessionId) return <div className="min-h-screen bg-white flex items-center justify-center text-gray-900">Loading Menu...</div>;
+    if (isLoading || !sessionId) return <div className="min-h-screen bg-white dark:bg-slate-900 flex items-center justify-center text-gray-900 dark:text-white">Loading Menu...</div>;
 
     const cartTotal = cart.reduce((acc, item) => acc + parseFloat(item.price), 0);
 
     return (
-        <div className="min-h-screen bg-white text-gray-900 pb-24">
+        <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-white pb-24">
             <Toaster position="top-center" toastOptions={{ style: { background: '#171717', color: '#111827', border: '1px solid #333' }}}/>
             
-            <header className="bg-gray-50 border-b border-gray-200 p-4 sticky top-0 z-10 flex justify-between items-center">
+            <header className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-4 sticky top-0 z-10 flex justify-between items-center">
                 <div className="flex items-center">
                     <Utensils className="h-6 w-6 text-cyan-600 mr-2" />
                     <h1 className="text-xl font-bold">DineOps Menu</h1>
                 </div>
-                <div className="text-sm text-gray-500">Table {tableId}</div>
+                <div className="text-sm text-gray-500 dark:text-slate-400">Table {tableId}</div>
             </header>
 
             {orderStatus && (
@@ -129,10 +129,10 @@ const CustomerMenu = () => {
 
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {menuData?.map(item => (
-                    <Card key={item.id} className="p-4 flex justify-between items-center bg-gray-50">
+                    <Card key={item.id} className="p-4 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
                         <div>
                             <h3 className="font-bold">{item.name}</h3>
-                            <p className="text-gray-500 text-sm">{item.description}</p>
+                            <p className="text-gray-500 dark:text-slate-400 text-sm">{item.description}</p>
                             <p className="text-cyan-600 font-medium mt-1">₹{parseFloat(item.price).toFixed(2)}</p>
                         </div>
                         <Button onClick={() => addToCart(item)} size="sm">Add</Button>
@@ -141,9 +141,9 @@ const CustomerMenu = () => {
             </div>
 
             {cart.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center z-20">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-slate-700 flex justify-between items-center z-20">
                     <div>
-                        <div className="text-gray-500 text-sm">{cart.length} items</div>
+                        <div className="text-gray-500 dark:text-slate-400 text-sm">{cart.length} items</div>
                         <div className="font-bold text-lg">₹{cartTotal.toFixed(2)}</div>
                     </div>
                     <Button onClick={() => setIsCartOpen(true)} className="flex items-center">
@@ -155,7 +155,7 @@ const CustomerMenu = () => {
             <Modal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} title="Your Order">
                 <div className="space-y-4">
                     {cart.map((item, idx) => (
-                        <div key={idx} className="flex justify-between border-b border-gray-200 pb-2">
+                        <div key={idx} className="flex justify-between border-b border-gray-200 dark:border-slate-700 pb-2">
                             <span>{item.name}</span>
                             <span>₹{parseFloat(item.price).toFixed(2)}</span>
                         </div>

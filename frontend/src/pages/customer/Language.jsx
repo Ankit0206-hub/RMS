@@ -30,13 +30,13 @@ export default function Language() {
   };
 
   return (
-    <PageLayout className="bg-gray-50">
+    <PageLayout className="bg-gray-50 dark:bg-slate-800/50">
 
       <div className="flex h-full flex-col">
 
         {/* Header */}
 
-        <div className="bg-white shadow-sm px-5 py-4 flex items-center">
+        <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
@@ -60,7 +60,7 @@ export default function Language() {
               className={`w-full rounded-2xl border p-4 flex items-center justify-between transition ${
                 language === item
                   ? "border-orange-500 bg-orange-50"
-                  : "border-gray-200 bg-white"
+                  : "border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900"
               }`}
             >
 
@@ -88,7 +88,7 @@ export default function Language() {
 
         {/* Bottom Button */}
 
-        <div className="border-t bg-white p-5">
+        <div className="border-t bg-white dark:bg-slate-900 p-5">
 
           <Button onClick={saveLanguage}>
             Save

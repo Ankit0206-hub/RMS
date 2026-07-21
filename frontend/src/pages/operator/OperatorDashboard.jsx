@@ -83,7 +83,7 @@ const OperatorDashboard = () => {
             {/* TOP METRICS ROW (6 Cards) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-4">
                 {/* 1. Today's Orders */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-lg text-indigo-600 mr-3">
                             <ShoppingCart size={16} strokeWidth={2.5} />
@@ -102,7 +102,7 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 2. Active Tables */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg text-emerald-600 mr-3">
                             <LayoutGrid size={16} strokeWidth={2.5} />
@@ -111,7 +111,7 @@ const OperatorDashboard = () => {
                     </div>
                     <div className="flex items-end justify-between relative z-10">
                         <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
-                            {activeTables} <span className="text-base text-gray-400 font-medium">/ {tables.length}</span>
+                            {activeTables} <span className="text-base text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">/ {tables.length}</span>
                         </h4>
                         <div className="flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
                             {tables.length > 0 ? Math.round((activeTables/tables.length)*100) : 0}% Occ
@@ -120,7 +120,7 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 3. Waiting Orders */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-lg text-orange-600 mr-3">
                             <Clock size={16} strokeWidth={2.5} />
@@ -138,7 +138,7 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 4. Preparing Orders */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg text-blue-600 mr-3">
                             <ChefHat size={16} strokeWidth={2.5} />
@@ -156,7 +156,7 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 5. Ready to Serve */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50" onClick={() => navigate('/operator/orders')}>
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg text-purple-600 mr-3">
                             <CheckCircle2 size={16} strokeWidth={2.5} />
@@ -174,7 +174,7 @@ const OperatorDashboard = () => {
                 </div>
 
                 {/* 6. Pending Bills */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 p-4 shadow-sm relative overflow-hidden flex flex-col transition-colors hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                     <div className="flex items-center mb-3 relative z-10">
                         <div className="p-2 bg-gradient-to-br from-red-50 to-red-100/50 rounded-lg text-red-500 mr-3">
                             <Receipt size={16} strokeWidth={2.5} />
@@ -304,7 +304,7 @@ const OperatorDashboard = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm whitespace-nowrap">
                                 <thead>
-                                    <tr className="text-gray-400 font-medium border-b border-gray-100 dark:border-slate-800">
+                                    <tr className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium border-b border-gray-100 dark:border-slate-800">
                                         <th className="pb-3 font-medium">Bill No.</th>
                                         <th className="pb-3 font-medium">Table</th>
                                         <th className="pb-3 font-medium">Amount (₹)</th>
@@ -318,7 +318,7 @@ const OperatorDashboard = () => {
                                         .filter(bill => new Date(bill.generated_at).toDateString() === new Date().toDateString())
                                         .slice(0, 5)
                                         .map(bill => (
-                                        <tr key={bill.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
+                                        <tr key={bill.id} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50/50">
                                             <td className="py-3 font-medium text-gray-900 dark:text-white">{bill.bill_number}</td>
                                             <td className="py-3 text-gray-600 dark:text-slate-400">
                                                 {(() => {
@@ -371,7 +371,7 @@ const OperatorDashboard = () => {
                                         key={tab} 
                                         onClick={() => setOrderTab(tab)}
                                         className={`px-3 py-2 text-xs font-bold whitespace-nowrap border-b-2 transition-colors ${
-                                            orderTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 hover:text-gray-700 dark:text-slate-300'
+                                            orderTab === tab ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
                                         }`}
                                     >
                                         {tab} ({count})
@@ -383,7 +383,7 @@ const OperatorDashboard = () => {
                         {/* List */}
                         <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                             {displayedOrders.length === 0 ? (
-                                <p className="text-sm text-gray-400 text-center py-6">No orders in this queue.</p>
+                                <p className="text-sm text-gray-400 dark:text-slate-500 dark:text-slate-400 text-center py-6">No orders in this queue.</p>
                             ) : displayedOrders.map(order => {
                                 let statusColor = 'bg-emerald-500';
                                 if (order.status === 'Pending') statusColor = 'bg-orange-500';
@@ -403,7 +403,7 @@ const OperatorDashboard = () => {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-xs font-semibold text-gray-900 dark:text-white">{formatTime(order.created_at)}</div>
-                                            <div className="text-[10px] text-gray-400 mt-0.5">{order.items?.length || 0} Items</div>
+                                            <div className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 mt-0.5">{order.items?.length || 0} Items</div>
                                         </div>
                                     </div>
                                 )
@@ -423,7 +423,7 @@ const OperatorDashboard = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs whitespace-nowrap">
                                 <thead>
-                                    <tr className="text-gray-400 border-b border-gray-100 dark:border-slate-800">
+                                    <tr className="text-gray-400 dark:text-slate-500 dark:text-slate-400 border-b border-gray-100 dark:border-slate-800">
                                         <th className="pb-2 font-medium">Waiter</th>
                                         <th className="pb-2 font-medium text-center">Orders</th>
                                         <th className="pb-2 font-medium text-right">Sales (₹)</th>
@@ -434,7 +434,7 @@ const OperatorDashboard = () => {
                                     {(analyticsData?.top_waiters || []).slice(0, 5).map((waiter, idx) => (
                                         <tr key={idx} className="border-b border-gray-50 dark:border-slate-800/50 last:border-0">
                                             <td className="py-2 flex items-center gap-2">
-                                                <img src={waiter.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-gray-200 object-cover" />
+                                                <img src={waiter.avatar} alt="Avatar" className="w-6 h-6 rounded-full bg-gray-200 dark:bg-slate-700 object-cover" />
                                                 <span className="font-semibold text-gray-800 dark:text-slate-200">{waiter.name}</span>
                                             </td>
                                             <td className="py-2 text-center text-gray-600 dark:text-slate-400 font-medium">{(waiter.sales/1000).toFixed(0)}</td>
@@ -472,7 +472,7 @@ const OperatorDashboard = () => {
                                     </PieChart>
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                                    <span className="text-[10px] text-gray-400 font-medium">Total</span>
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 dark:text-slate-400 font-medium">Total</span>
                                     <span className="text-xs font-bold text-gray-900 dark:text-white">₹ {(revenueToday/1000).toFixed(1)}k</span>
                                 </div>
                             </div>
@@ -484,7 +484,7 @@ const OperatorDashboard = () => {
                                             {method.name}
                                         </div>
                                         <div className="text-gray-900 dark:text-white font-medium whitespace-nowrap ml-2">
-                                            ₹ {method.amount.toLocaleString()} <span className="text-gray-400 font-normal ml-1">({method.percent})</span>
+                                            ₹ {method.amount.toLocaleString()} <span className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-normal ml-1">({method.percent})</span>
                                         </div>
                                     </div>
                                 ))}

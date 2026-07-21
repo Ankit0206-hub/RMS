@@ -7,9 +7,9 @@ export default function Reservation() {
 
   return (
     <MobileContainer>
-      <div className="flex h-full flex-col bg-white">
+      <div className="flex h-full flex-col bg-white dark:bg-slate-900">
         {/* Header */}
-        <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4">
+        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-800 px-5 py-4">
           <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
@@ -25,11 +25,11 @@ export default function Reservation() {
 
           {/* Date */}
           <div className="mb-5">
-            <label className="mb-2 block text-sm font-medium text-gray-600">
+            <label className="mb-2 block text-sm font-medium text-gray-600 dark:text-slate-400">
               Select Date
             </label>
 
-            <select className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-orange-500">
+            <select className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 outline-none focus:border-orange-500">
               <option>20 May 2024</option>
               <option>21 May 2024</option>
               <option>22 May 2024</option>
@@ -38,11 +38,11 @@ export default function Reservation() {
 
           {/* Time */}
           <div className="mb-5">
-            <label className="mb-2 block text-sm font-medium text-gray-600">
+            <label className="mb-2 block text-sm font-medium text-gray-600 dark:text-slate-400">
               Select Time
             </label>
 
-            <select className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-orange-500">
+            <select className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 outline-none focus:border-orange-500">
               <option>07:00 PM</option>
               <option>08:00 PM</option>
               <option>09:00 PM</option>
@@ -51,11 +51,11 @@ export default function Reservation() {
 
           {/* Persons */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-600">
+            <label className="mb-2 block text-sm font-medium text-gray-600 dark:text-slate-400">
               Number of Persons
             </label>
 
-            <select className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-orange-500">
+            <select className="w-full rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 outline-none focus:border-orange-500">
               <option>2 People</option>
               <option>3 People</option>
               <option>4 People</option>

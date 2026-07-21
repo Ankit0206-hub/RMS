@@ -94,7 +94,7 @@ const FloorPlan = () => {
                                     key={sec.name}
                                     onClick={() => setActiveSection(sec.name)}
                                     className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors ${
-                                        activeSection === sec.name ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300'
+                                        activeSection === sec.name ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-700 dark:text-slate-300'
                                     }`}
                                 >
                                     <div className="flex items-center">
@@ -128,11 +128,11 @@ const FloorPlan = () => {
                                     <option>{activeSection}</option>
                                 </select>
                                 <div className="flex items-center border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
-                                    <button onClick={() => setZoom(Math.max(50, zoom - 10))} className="p-1.5 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400"><ZoomOut size={16} /></button>
+                                    <button onClick={() => setZoom(Math.max(50, zoom - 10))} className="p-1.5 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400"><ZoomOut size={16} /></button>
                                     <span className="text-xs font-bold px-2 text-gray-700 dark:text-slate-300 w-12 text-center">{zoom}%</span>
-                                    <button onClick={() => setZoom(Math.min(200, zoom + 10))} className="p-1.5 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400"><ZoomIn size={16} /></button>
+                                    <button onClick={() => setZoom(Math.min(200, zoom + 10))} className="p-1.5 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400"><ZoomIn size={16} /></button>
                                 </div>
-                                <button className="p-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
+                                <button className="p-1.5 border border-gray-200 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400">
                                     <Maximize size={16} />
                                 </button>
                             </div>
@@ -172,7 +172,7 @@ const FloorPlan = () => {
                                     );
                                 })}
                                 {currentTables.length === 0 && (
-                                    <div className="text-gray-400 font-bold flex flex-col items-center mt-20">
+                                    <div className="text-gray-400 dark:text-slate-500 dark:text-slate-400 font-bold flex flex-col items-center mt-20">
                                         <Map size={48} className="mb-4 opacity-50" />
                                         <p>No tables configured for this section yet.</p>
                                     </div>

@@ -245,7 +245,7 @@ const Waiters = () => {
                             <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm rounded-xl md:rounded-2xl text-[13px] font-bold text-gray-700 dark:text-slate-300 w-full min-h-[44px]">
                                 <Calendar size={14} className="mr-2 text-indigo-600" />
                                 May 20, 2025
-                                <ChevronDown size={14} className="ml-2 text-gray-400" />
+                                <ChevronDown size={14} className="ml-2 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                             </div>
                             <button 
                                 onClick={() => setIsAddWaiterModalOpen(true)}
@@ -261,7 +261,7 @@ const Waiters = () => {
                         {/* Filters */}
                         <div className="p-4 md:p-5 border-b border-gray-100 dark:border-slate-800 flex flex-col gap-4">
                             <div className="relative w-full">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
                                 <input 
                                     type="text" 
                                     placeholder="Search waiter by name, phone or ID..." 
@@ -311,10 +311,10 @@ const Waiters = () => {
                                     </select>
                                 </div>
                                 <div className="flex items-end h-full pt-4 shrink-0">
-                                    <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 mr-2">
+                                    <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 mr-2">
                                         <Filter size={14} className="mr-1.5" /> Filters
                                     </button>
-                                    <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50">
+                                    <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50">
                                         <RotateCcw size={16} />
                                     </button>
                                 </div>
@@ -342,7 +342,7 @@ const Waiters = () => {
                                         <tr 
                                             key={waiter.id} 
                                             onClick={() => setSelectedWaiter(waiter)}
-                                            className={`border-b border-gray-50 dark:border-slate-800/50 cursor-pointer transition-colors ${selectedWaiter?.id === waiter.id ? 'bg-indigo-50/50' : 'hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`border-b border-gray-50 dark:border-slate-800/50 cursor-pointer transition-colors ${selectedWaiter?.id === waiter.id ? 'bg-indigo-50/50' : 'hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
                                         >
                                             <td className="py-3 px-6">
                                                 <div className="flex items-center">
@@ -368,7 +368,7 @@ const Waiters = () => {
                                                     <button className="p-1.5 text-indigo-500 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors">
                                                         <Eye size={16} />
                                                     </button>
-                                                    <button className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded transition-colors">
+                                                    <button className="p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 rounded transition-colors">
                                                         <MoreVertical size={16} />
                                                     </button>
                                                 </div>
@@ -395,7 +395,7 @@ const Waiters = () => {
                                     <button 
                                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                         disabled={currentPage === 1}
-                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
                                     >
                                         <ChevronLeft size={16}/>
                                     </button>
@@ -407,7 +407,7 @@ const Waiters = () => {
                                             className={`w-8 h-8 rounded-lg text-[13px] font-bold transition-colors ${
                                                 currentPage === i + 1 
                                                     ? 'bg-indigo-600 text-white' 
-                                                    : 'border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+                                                    : 'border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800'
                                             }`}
                                         >
                                             {i + 1}
@@ -417,7 +417,7 @@ const Waiters = () => {
                                     <button 
                                         onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                         disabled={currentPage === totalPages}
-                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
+                                        className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
                                     >
                                         <ChevronRight size={16}/>
                                     </button>
@@ -450,7 +450,7 @@ const Waiters = () => {
                     <div className="h-full flex flex-col">
                         <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-800 shrink-0">
                             <h2 className="text-[15px] font-bold text-gray-900 dark:text-white">Waiter Details</h2>
-                            <button onClick={() => setSelectedWaiter(null)} className="text-gray-400 hover:text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 p-1.5 rounded-lg transition-colors">
+                            <button onClick={() => setSelectedWaiter(null)} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 p-1.5 rounded-lg transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
@@ -473,27 +473,27 @@ const Waiters = () => {
                             {/* Contact & Info */}
                             <div className="space-y-4">
                                 <div className="flex items-center text-[13px]">
-                                    <Phone size={16} className="text-gray-400 mr-3 shrink-0" />
+                                    <Phone size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
                                     <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Phone</span>
                                     <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">{selectedWaiter.phone || '-'}</span>
                                 </div>
                                 <div className="flex items-center text-[13px]">
-                                    <Mail size={16} className="text-gray-400 mr-3 shrink-0" />
+                                    <Mail size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
                                     <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Email</span>
                                     <span className="font-bold text-gray-900 dark:text-white flex-1 text-right truncate">{selectedWaiter.email}</span>
                                 </div>
                                 <div className="flex items-center text-[13px]">
-                                    <MapPin size={16} className="text-gray-400 mr-3 shrink-0" />
+                                    <MapPin size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
                                     <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Section</span>
                                     <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">{selectedWaiter.section}</span>
                                 </div>
                                 <div className="flex items-center text-[13px]">
-                                    <Clock size={16} className="text-gray-400 mr-3 shrink-0" />
+                                    <Clock size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
                                     <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Shift</span>
                                     <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">{selectedWaiter.shift}</span>
                                 </div>
                                 <div className="flex items-center text-[13px]">
-                                    <Calendar size={16} className="text-gray-400 mr-3 shrink-0" />
+                                    <Calendar size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
                                     <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Joined On</span>
                                     <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">{selectedWaiter.joinedOn}</span>
                                 </div>
@@ -634,11 +634,11 @@ const Waiters = () => {
                             required
                         />
                     </div>
-                    <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100">
+                    <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-800">
                         <button
                             type="button"
                             onClick={() => setIsAddWaiterModalOpen(false)}
-                            className="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg transition-colors"
                         >
                             Cancel
                         </button>
