@@ -1,5 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+
+class HolidayItem(BaseModel):
+    date: str
+    reason: str
 
 class RestaurantSettingsUpdate(BaseModel):
     restaurant_name: str
@@ -11,6 +15,14 @@ class RestaurantSettingsUpdate(BaseModel):
     gst_percentage: float = Field(..., ge=0, le=100)
     service_charge_percentage: float = Field(..., ge=0, le=100)
     business_hours: str
+    opening_time: Optional[str] = None
+    closing_time: Optional[str] = None
+    is_closed_early: Optional[bool] = False
+    holidays: Optional[List[HolidayItem]] = []
+    merged_table_initial: Optional[str] = "M-"
+    table_naming_convention: Optional[str] = "Numeric"
+    total_tables: Optional[int] = 0
+    floors_or_areas: Optional[List[str]] = []
 
 class RestaurantSettingsResponse(RestaurantSettingsUpdate):
     pass

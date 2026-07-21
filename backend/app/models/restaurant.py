@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import BigInteger, String, ForeignKey, Boolean, Integer, Numeric, DateTime
+from sqlalchemy import BigInteger, String, ForeignKey, Boolean, Integer, Numeric, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 from app.models.mixins import TimestampMixin
@@ -9,7 +9,7 @@ class RestaurantSetting(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     setting_key: Mapped[str] = mapped_column(String(100), unique=True, index=True)
-    setting_value: Mapped[str] = mapped_column(String(255))
+    setting_value: Mapped[str] = mapped_column(Text)
     description: Mapped[Optional[str]] = mapped_column(String(255))
 
 class RestaurantTable(TimestampMixin, Base):

@@ -28,7 +28,7 @@ const Tables = () => {
         }
     });
 
-    const tablesData = tablesResponse?.data || [];
+    const tablesData = (tablesResponse?.data || []).filter(t => !t.is_virtual);
 
     const totalTables = tablesData.length;
     const available = tablesData.filter(t => t.status === 'Available').length;

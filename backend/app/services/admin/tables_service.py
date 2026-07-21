@@ -179,12 +179,30 @@ class TablesService:
             if t.is_virtual:
                 raise HTTPException(status_code=400, detail=f"Table {t.table_number} is already a merged table")
                 
-        combined_number = "+".join(sorted([t.table_number for t in tables]))
+        combined_name = "+".join(sorted([t.table_number for t in tables]))
         combined_capacity = sum([t.capacity for t in tables])
+        
+        # Find next available M-number
+        virtual_result = await db.execute(select(RestaurantTable).where(RestaurantTable.is_virtual == True))
+        virtual_tables = virtual_result.scalars().all()
+        
+        existing_m_numbers = []
+        for vt in virtual_tables:
+            if vt.table_number and vt.table_number.startswith('M'):
+                try:
+                    existing_m_numbers.append(int(vt.table_number.replace('M', '')))
+                except ValueError:
+                    pass
+                    
+        next_m_number = 1
+        while next_m_number in existing_m_numbers:
+            next_m_number += 1
+            
+        combined_number = f"M{next_m_number}"
         
         virtual_table = RestaurantTable(
             table_number=combined_number,
-            name=f"Merged {combined_number}",
+            name=combined_name,
             capacity=combined_capacity,
             status="Available",
             is_virtual=True

@@ -4,6 +4,9 @@ from app.db.database import get_db
 from app.api.deps import get_current_operator
 from app.models.security import Employee
 from app.schemas.admin.employees import EmployeeUpdate, EmployeeResponse
+from app.schemas.admin.settings import RestaurantSettingsUpdate, RestaurantSettingsResponse
+from app.schemas.common import StandardResponse
+from app.services.admin.settings_service import settings_service
 
 router = APIRouter(prefix="/operator", tags=["Operator Portal"])
 
@@ -35,3 +38,20 @@ async def update_me(
     # role_name property is handled if we load relations or we can just return it
     # We'll just return the updated user
     return current_user
+
+@router.get("/settings", response_model=StandardResponse[RestaurantSettingsResponse])
+async def get_operator_settings(
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_operator)
+):
+    data = await settings_service.get_settings(db)
+    return StandardResponse(data=data)
+
+@router.put("/settings", response_model=StandardResponse[RestaurantSettingsResponse])
+async def update_operator_settings(
+    settings_in: RestaurantSettingsUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_operator)
+):
+    data = await settings_service.update_settings(db, settings_in)
+    return StandardResponse(data=data)
