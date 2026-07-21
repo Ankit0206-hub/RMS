@@ -6,9 +6,12 @@ import {
   Receipt,
   MessageSquareMore,
   CheckCircle2,
+  Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
+import customerApi from "../../services/customerApi";
+import toast from "react-hot-toast";
 
 export default function CallWaiter() {
   const navigate = useNavigate();
@@ -16,6 +19,7 @@ export default function CallWaiter() {
   const [selected, setSelected] = useState("");
   const [note, setNote] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const services = [
     {
@@ -39,6 +43,33 @@ export default function CallWaiter() {
       icon: <MessageSquareMore size={28} className="text-purple-500" />,
     },
   ];
+
+  const handleSendRequest = async () => {
+    const sessionStr = localStorage.getItem('customerSession');
+    const session = sessionStr ? JSON.parse(sessionStr) : null;
+    
+    if (!session || !session.sessionId) {
+        toast.error("Session not found. Please scan QR code again.");
+        return;
+    }
+
+    const serviceTitle = services.find(s => s.id === selected)?.title || "Call Waiter";
+
+    try {
+        setIsSubmitting(true);
+        await customerApi.callWaiter(session.sessionId, serviceTitle, note);
+        setShowSuccess(true);
+        setTimeout(() => {
+            setShowSuccess(false);
+            navigate(-1);
+        }, 2500);
+    } catch (err) {
+        console.error(err);
+        toast.error("Failed to send request.");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
 
   return (
     <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col relative">
@@ -97,21 +128,15 @@ export default function CallWaiter() {
       {/* Bottom Button */}
       <div className="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
         <button
-          disabled={!selected}
-          onClick={() => {
-            setShowSuccess(true);
-            setTimeout(() => {
-              setShowSuccess(false);
-              navigate(-1);
-            }, 2500);
-          }}
-          className={`h-14 w-full rounded-2xl font-bold text-white shadow-lg transition active:scale-[0.98] ${
-            selected
+          disabled={!selected || isSubmitting}
+          onClick={handleSendRequest}
+          className={`h-14 w-full rounded-2xl font-bold text-white shadow-lg transition active:scale-[0.98] flex items-center justify-center ${
+            selected && !isSubmitting
               ? "bg-orange-500 shadow-orange-200 hover:bg-orange-600"
               : "bg-orange-300 shadow-none cursor-not-allowed"
           }`}
         >
-          Send Request
+          {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : "Send Request"}
         </button>
       </div>
 

@@ -191,6 +191,27 @@ async def create_customer_order(
     await db.refresh(order)
     
     # Broadcast to operator and waiter channels
+    from app.models.system import Notification
+    from app.models.restaurant import TableAssignment
+    
+    assignments_query = select(TableAssignment).where(
+        TableAssignment.table_id == session.table_id,
+        TableAssignment.is_active == True
+    )
+    assignments_result = await db.execute(assignments_query)
+    assignments = assignments_result.scalars().all()
+    
+    for assign in assignments:
+        notif = Notification(
+            employee_id=assign.employee_id,
+            title="New Order" if is_new_order else "Order Updated",
+            message=f"Table {session.table.table_number} placed a new order." if is_new_order else f"Table {session.table.table_number} updated their order.",
+            notification_type="NEW_ORDER",
+            is_read=False
+        )
+        db.add(notif)
+    await db.commit()
+
     if is_new_order:
         await manager.broadcast("order.created", {
             "order_id": order.id,
@@ -203,6 +224,8 @@ async def create_customer_order(
             "table_id": session.table.table_number,
             "status": order.status
         }, ["operator", "waiter", "kitchen"])
+        
+    await manager.broadcast("NEW_NOTIFICATION", {}, ["waiter"])
     
     return {"message": "Order placed successfully", "order_id": order.id}
 
@@ -289,18 +312,52 @@ async def request_customer_bill(
         raise HTTPException(status_code=404, detail="Session not found")
         
     session.bill_requested = True
+    
+    from app.models.ordering import AssistanceRequest
+    bill_req = AssistanceRequest(
+        session_id=session.id,
+        request_type="Bill Request",
+        message=None,
+        status="Active"
+    )
+    db.add(bill_req)
     await db.commit()
+    await db.refresh(bill_req)
         
     # Broadcast to operator and waiter channels
+    from app.models.system import Notification
+    from app.models.restaurant import TableAssignment
+    
+    assignments_query = select(TableAssignment).where(
+        TableAssignment.table_id == session.table_id,
+        TableAssignment.is_active == True
+    )
+    assignments_result = await db.execute(assignments_query)
+    assignments = assignments_result.scalars().all()
+    
+    for assign in assignments:
+        notif = Notification(
+            employee_id=assign.employee_id,
+            title="Bill Request",
+            message=f"Table {session.table.table_number} requested their bill.",
+            notification_type="BILL_REQUEST",
+            is_read=False
+        )
+        db.add(notif)
+    await db.commit()
+
     await manager.broadcast("CUSTOMER_REQUESTED_BILL", {
         "session_id": session.id,
         "table_id": session.table.table_number
     }, ["operator", "waiter"])
     
+    await manager.broadcast("NEW_NOTIFICATION", {}, ["waiter"])
+    
     return {"message": "Bill requested"}
 
 class CallWaiterRequest(BaseModel):
-    request_type: str # 'water', 'tissue', 'waiter'
+    request_type: str # 'water', 'tissue', 'waiter', etc.
+    message: Optional[str] = None
 
 @router.post("/sessions/{session_id}/call-waiter")
 async def call_waiter(
@@ -321,10 +378,46 @@ async def call_waiter(
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
         
+    from app.models.ordering import AssistanceRequest
+    assistance_request = AssistanceRequest(
+        session_id=session.id,
+        request_type=req.request_type,
+        message=req.message,
+        status="Active"
+    )
+    db.add(assistance_request)
+    await db.commit()
+    await db.refresh(assistance_request)
+        
+    from app.models.system import Notification
+    from app.models.restaurant import TableAssignment
+    
+    assignments_query = select(TableAssignment).where(
+        TableAssignment.table_id == session.table_id,
+        TableAssignment.is_active == True
+    )
+    assignments_result = await db.execute(assignments_query)
+    assignments = assignments_result.scalars().all()
+    
+    for assign in assignments:
+        notif = Notification(
+            employee_id=assign.employee_id,
+            title=f"Request: {req.request_type}",
+            message=f"Table {session.table.table_number} requested {req.request_type}. {req.message if req.message else ''}",
+            notification_type="CUSTOMER_ASSISTANCE",
+            is_read=False
+        )
+        db.add(notif)
+    await db.commit()
+    
     await manager.broadcast("CUSTOMER_NEEDS_ASSISTANCE", {
         "session_id": session.id,
         "table_id": session.table.table_number,
-        "request_type": req.request_type
+        "request_id": assistance_request.id,
+        "request_type": req.request_type,
+        "message": req.message
     }, ["waiter"])
     
-    return {"message": f"Requested {req.request_type}"}
+    await manager.broadcast("NEW_NOTIFICATION", {}, ["waiter"])
+    
+    return {"message": f"Requested {req.request_type}", "request_id": assistance_request.id}

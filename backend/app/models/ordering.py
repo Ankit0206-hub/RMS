@@ -63,3 +63,16 @@ class OrderStatusHistory(TimestampMixin, Base):
     changed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
     order: Mapped["Order"] = relationship(back_populates="status_history")
+
+class AssistanceRequest(TimestampMixin, Base):
+    __tablename__ = "assistance_requests"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    session_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("customer_sessions.id", ondelete="CASCADE"), index=True)
+    request_type: Mapped[str] = mapped_column(String(50), index=True) # Water Refill, Call Waiter, Cutlery, Bill Request, etc.
+    message: Mapped[Optional[str]] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="Active", index=True) # Active, Resolved
+    resolved_by_employee_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="SET NULL"), index=True)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+
+    session: Mapped["CustomerSession"] = relationship("CustomerSession")

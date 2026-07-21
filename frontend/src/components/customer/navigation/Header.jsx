@@ -1,4 +1,4 @@
-import { ChefHat, User } from "lucide-react";
+import { ChefHat, User, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
 
@@ -32,8 +32,15 @@ export default function Header() {
         </div>
 
         <button
+          onClick={() => navigate("/customer/call-waiter")}
+          className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-rose-50 text-rose-500 shadow-sm overflow-hidden shrink-0 transition active:scale-95"
+        >
+          <Bell size={18} className="md:w-5 md:h-5" />
+        </button>
+
+        <button
           onClick={() => navigate("/customer/profile")}
-          className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-orange-50 text-orange-500 shadow-sm overflow-hidden shrink-0"
+          className="flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full bg-orange-50 text-orange-500 shadow-sm overflow-hidden shrink-0 transition active:scale-95"
         >
           <User size={18} className="md:w-5 md:h-5" />
         </button>

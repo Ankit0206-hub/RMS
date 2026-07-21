@@ -159,12 +159,7 @@ export default function MyTables() {
 
  return (
  <div className="flex flex-col h-full bg-slate-50 font-inter relative">
- {/* Decorative Glassmorphism Blobs Container */}
- <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
- <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- </div>
+
 
  <div className="relative z-10 flex flex-col h-full w-full max-w-7xl mx-auto">
  {/* Fixed Search & Filters Area */}

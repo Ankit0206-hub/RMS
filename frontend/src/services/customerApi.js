@@ -72,8 +72,8 @@ export const customerApi = {
     },
 
     // Assistance
-    callWaiter: async (sessionId, requestType) => {
-        const response = await api.post(`/sessions/${sessionId}/call-waiter`, { request_type: requestType });
+    callWaiter: async (sessionId, requestType, message) => {
+        const response = await api.post(`/sessions/${sessionId}/call-waiter`, { request_type: requestType, message });
         return response.data;
     }
 };

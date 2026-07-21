@@ -55,6 +55,7 @@ export default function WaiterMenu() {
         fetchMenu();
     }, [location.state]);
     
+    const [searchQuery, setSearchQuery] = useState('');
     const [customizingItem, setCustomizingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
     const [spiceLevel, setSpiceLevel] = useState('Medium');
@@ -93,38 +94,45 @@ export default function WaiterMenu() {
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
-            {/* Decorative Glassmorphism Blobs Container */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-                <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
-            </div>
+
 
             <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
-                    <div className="flex items-center w-full max-w-7xl mx-auto justify-between">
-                        <div className="flex items-center">
-                            <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
-                                <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
-                            </button>
-                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Menu <span className="text-gray-500 font-bold">(Table {tableId})</span></h1>
-                        </div>
-                        <button onClick={() => toast('Search clicked!')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm">
-                            <Search className="h-5 w-5" strokeWidth={2.5} />
+                    <div className="flex items-center w-full max-w-7xl mx-auto justify-between relative">
+                        <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm z-10">
+                            <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                         </button>
+                        <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight absolute left-1/2 -translate-x-1/2">
+                            Menu <span className="text-gray-500 font-bold">(Table {tableId})</span>
+                        </h1>
+                        <div className="w-9 h-9"></div> {/* Spacer for flex balance */}
                     </div>
                 </div>
 
                 <div className="px-4 md:px-8 mt-4 max-w-7xl mx-auto w-full">
-                    <div className="flex flex-wrap gap-2 py-1 justify-center md:justify-start">
+                    {/* Search Bar */}
+                    <div className="relative mb-4">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <Search size={20} className="text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by food name..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-white/30 backdrop-blur-md border border-white/40 text-gray-800 text-sm md:text-base font-bold rounded-2xl pl-12 pr-4 py-3 md:py-4 shadow-sm focus:outline-none focus:ring-4 focus:ring-rose-300/20 focus:border-rose-300 transition-all placeholder:text-gray-400"
+                        />
+                    </div>
+
+                    <div className="flex overflow-x-auto gap-2 py-2 px-1 snap-x scrollbar-hide">
                         {categories.map(cat => (
                             <button 
                                 key={cat} 
                                 onClick={() => setActiveCat(cat)} 
-                                className={`px-4 py-2.5 rounded-2xl text-sm font-bold transition-colors border flex-auto whitespace-nowrap text-center ${
+                                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border shrink-0 snap-start ${
                                     activeCat === cat 
-                                    ? 'bg-rose-400/90 backdrop-blur-md text-white border-rose-400 shadow-md' 
-                                    : 'bg-white/20 backdrop-blur-md text-gray-600 border-white/40'
+                                    ? 'bg-rose-500 text-white border-rose-500 shadow-md' 
+                                    : 'bg-white/50 text-gray-600 border-white/60 hover:bg-white/80'
                                 }`}
                             >
                                 {cat}
@@ -140,7 +148,11 @@ export default function WaiterMenu() {
                         </div>
                     ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {items.filter(item => activeCat === 'All' || item.category === activeCat).map(item => (
+                        {items.filter(item => {
+                            const matchesCat = activeCat === 'All' || item.category === activeCat;
+                            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+                            return matchesCat && matchesSearch;
+                        }).map(item => (
                             <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
                                 <div className="flex items-center space-x-4">
                                     <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />

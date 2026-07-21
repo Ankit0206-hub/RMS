@@ -10,11 +10,7 @@ export default function WaiterReadyToServe() {
  return (
  <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
  {/* Decorative Glassmorphism Blobs */}
- <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
- <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50"></div>
- </div>
+
 
  <div className="relative z-10 flex flex-col min-h-screen">
  <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
