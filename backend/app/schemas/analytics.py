@@ -61,6 +61,17 @@ class SalesSummary(BaseModel):
     growth: float
     trend: str
 
+class RecentOrder(BaseModel):
+    order_id: str
+    amount: float
+    status: str
+    time: str
+
+class RecentReview(BaseModel):
+    customer_name: str
+    rating: float
+    comment: str
+
 class AnalyticsDashboardResponse(BaseModel):
     kpis: KPIData
     revenue_chart: List[RevenueByDate]
@@ -72,6 +83,8 @@ class AnalyticsDashboardResponse(BaseModel):
     sales_by_payment_method: List[PaymentMethodSales]
     hourly_sales: List[HourlySales]
     sales_summary: SalesSummary
+    recent_orders: List[RecentOrder] = []
+    recent_reviews: List[RecentReview] = []
 
 class SalesTabKPIs(BaseModel):
     total_revenue_mtd: float
