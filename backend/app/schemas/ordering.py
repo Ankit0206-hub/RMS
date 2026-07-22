@@ -55,6 +55,7 @@ class CustomerSessionCreate(CustomerSessionBase):
 class CustomerSessionResponse(CustomerSessionBase):
     id: int
     status: str
+    bill_requested: bool = False
     table_name: Optional[str] = None
     orders: List[OrderResponse] = []
     created_at: datetime
