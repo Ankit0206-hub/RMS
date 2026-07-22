@@ -67,6 +67,7 @@ import Payments from './pages/admin/Payments';
 import Refunds from './pages/admin/Refunds';
 import PaymentMethods from './pages/admin/PaymentMethods';
 import Customers from './pages/admin/Customers';
+import Ratings from './pages/admin/Ratings';
 import AnalyticsOverview from './pages/admin/AnalyticsOverview';
 import OperatorReservations from './pages/operator/OperatorReservations';
 import Notifications from './pages/admin/Notifications';
@@ -143,6 +144,7 @@ const App = () => {
                             <Route path="billing/refunds" element={<Refunds />} />
                             <Route path="billing/methods" element={<PaymentMethods />} />
                             <Route path="customers" element={<Customers />} />
+                            <Route path="ratings" element={<Ratings />} />
                             <Route path="analytics" element={<AnalyticsOverview />} />
                             <Route path="notifications" element={<Notifications />} />
                             <Route path="kitchen" element={<KitchenOverview />} />

@@ -75,6 +75,12 @@ export const customerApi = {
     callWaiter: async (sessionId, requestType, message) => {
         const response = await api.post(`/sessions/${sessionId}/call-waiter`, { request_type: requestType, message });
         return response.data;
+    },
+
+    // Reviews
+    submitReview: async (data) => {
+        const response = await api.post(`/reviews`, data);
+        return response.data;
     }
 };
 

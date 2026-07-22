@@ -665,10 +665,14 @@ class AnalyticsRepository:
         return data
 
     async def get_recent_reviews(self, db: AsyncSession, limit: int = 5) -> List[Dict[str, Any]]:
-        # Mocking recent reviews since we don't have a review table yet
-        return [
-            { "customer_name": "Ravi Kumar", "rating": 5.0, "comment": "Excellent food and service!" },
-            { "customer_name": "Ananya Sharma", "rating": 4.5, "comment": "Great ambiance, loved the starters." },
-            { "customer_name": "Vikram Singh", "rating": 4.0, "comment": "Good experience overall." },
-            { "customer_name": "Priya Gupta", "rating": 5.0, "comment": "Will definitely visit again!" }
-        ][:limit]
+        from app.models.reviews import Review
+        stmt = select(Review).order_by(Review.created_at.desc()).limit(limit)
+        result = await db.execute(stmt)
+        data = []
+        for row in result.scalars().all():
+            data.append({
+                "customer_name": row.customer_name or "Anonymous",
+                "rating": float(row.rating),
+                "comment": row.comment or ""
+            })
+        return data

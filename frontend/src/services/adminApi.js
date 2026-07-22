@@ -35,5 +35,13 @@ export const adminApi = {
     unmergeTable: async (tableId) => {
         const response = await api.delete(`/admin/tables/${tableId}/merge`);
         return response.data;
+    },
+
+    // Reviews
+    getReviews: async (page = 1, pageSize = 100) => {
+        const response = await api.get('/admin/reviews', {
+            params: { page, page_size: pageSize }
+        });
+        return response.data;
     }
 };
