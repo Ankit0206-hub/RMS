@@ -39,7 +39,9 @@ const Customers = () => {
             peoples: session.number_of_people || 1,
             initials: getInitials(session.customer_name),
             status: session.status,
-            orders: session.orders || []
+            orders: session.orders || [],
+            date: session.created_at ? new Date(session.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-',
+            totalSpent: (session.orders || []).reduce((acc, order) => acc + (parseFloat(order.total_amount) || 0), 0)
         }));
 
         if (searchTerm) {
@@ -70,19 +72,27 @@ const Customers = () => {
     const columns = [
         { 
             header: "#", 
-            cell: (row) => <span className="text-gray-900 font-semibold text-xs">{row.id}</span> 
+            cell: (row) => <span className="text-gray-900 dark:text-white font-semibold text-xs">{row.id}</span> 
         },
         { 
             header: "Customer Name", 
-            cell: (row) => <span className="text-gray-900 font-bold text-[11px]">{row.name}</span> 
+            cell: (row) => <span className="text-gray-900 dark:text-white font-bold text-[11px]">{row.name}</span> 
         },
         { 
             header: "Contact Number", 
-            cell: (row) => <span className="text-gray-600 font-semibold text-[11px]">{row.phone}</span> 
+            cell: (row) => <span className="text-gray-600 dark:text-slate-400 font-semibold text-[11px]">{row.phone}</span> 
         },
         { 
             header: "No. of Peoples", 
-            cell: (row) => <span className="text-gray-600 font-semibold text-[11px] ml-4">{row.peoples}</span> 
+            cell: (row) => <span className="text-gray-600 dark:text-slate-400 font-semibold text-[11px] ml-4">{row.peoples}</span> 
+        },
+        { 
+            header: "Date", 
+            cell: (row) => <span className="text-gray-600 dark:text-slate-400 font-semibold text-[11px]">{row.date}</span> 
+        },
+        { 
+            header: "Total Spent", 
+            cell: (row) => <span className="text-gray-900 dark:text-white font-bold text-[11px]">₹{row.totalSpent.toFixed(2)}</span> 
         },
         { 
             header: "Actions", 
@@ -92,11 +102,11 @@ const Customers = () => {
                 <div className="flex items-center justify-end space-x-2">
                     <button 
                         onClick={() => setSelectedCustomer(row)}
-                        className={`p-1.5 rounded-lg transition-colors ${selectedCustomer?.id === row.id ? 'bg-indigo-600 text-white' : 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'}`}
+                        className={`p-1.5 rounded-lg transition-colors ${selectedCustomer?.id === row.id ? 'bg-indigo-600 text-white' : 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20'}`}
                     >
                         <Eye className="h-4 w-4" />
                     </button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+                    <button className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
                         <MoreVertical className="h-4 w-4" />
                     </button>
                 </div>
@@ -108,36 +118,36 @@ const Customers = () => {
         <div className="space-y-2 pb-6 font-inter">
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-indigo-50 rounded-xl text-indigo-600 flex items-center justify-center shrink-0">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center space-x-4 transition-colors">
+                    <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <Users className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-[11px] font-bold text-gray-500 mb-0.5">Total Customers</p>
-                        <p className="text-2xl font-black text-gray-900 leading-tight">{totalCustomers}</p>
-                        <p className="text-[10px] text-gray-400 font-semibold mt-1">All registered customers</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-0.5">Total Customers</p>
+                        <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{totalCustomers}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold mt-1">All registered customers</p>
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-green-50 rounded-xl text-green-600 flex items-center justify-center shrink-0">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center space-x-4 transition-colors">
+                    <div className="w-14 h-14 bg-green-50 dark:bg-green-500/10 rounded-xl text-green-600 dark:text-green-400 flex items-center justify-center shrink-0">
                         <UserCheck className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-[11px] font-bold text-gray-500 mb-0.5">Active Customers</p>
-                        <p className="text-2xl font-black text-gray-900 leading-tight">{activeCustomers}</p>
-                        <p className="text-[10px] text-gray-400 font-semibold mt-1">Currently active customers</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-0.5">Active Customers</p>
+                        <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{activeCustomers}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold mt-1">Currently active customers</p>
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-orange-50 rounded-xl text-orange-500 flex items-center justify-center shrink-0">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center space-x-4 transition-colors">
+                    <div className="w-14 h-14 bg-orange-50 dark:bg-orange-500/10 rounded-xl text-orange-500 dark:text-orange-400 flex items-center justify-center shrink-0">
                         <UserPlus className="w-6 h-6" />
                     </div>
                     <div>
-                        <p className="text-[11px] font-bold text-gray-500 mb-0.5">New Customers <span className="text-gray-400 font-medium">(This Month)</span></p>
-                        <p className="text-2xl font-black text-gray-900 leading-tight">{newCustomersThisMonth}</p>
-                        <p className="text-[10px] text-gray-400 font-semibold mt-1">Joined this month</p>
+                        <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400 mb-0.5">New Customers <span className="text-gray-400 dark:text-slate-500 font-medium">(This Month)</span></p>
+                        <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{newCustomersThisMonth}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold mt-1">Joined this month</p>
                     </div>
                 </div>
             </div>
@@ -146,35 +156,35 @@ const Customers = () => {
             <div className={`flex flex-col xl:flex-row gap-6 items-start ${selectedCustomer ? '' : 'w-full'}`}>
                 
                 {/* Data Table */}
-                <div className={`bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden flex flex-col w-full ${selectedCustomer ? 'xl:w-1/2 2xl:w-3/5' : ''}`}>
+                <div className={`bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden flex flex-col w-full transition-colors ${selectedCustomer ? 'xl:w-1/2 2xl:w-3/5' : ''}`}>
                     
                     {/* Toolbar */}
-                    <div className="p-5 border-b border-gray-100 flex flex-wrap gap-4 justify-between items-center bg-white">
+                    <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex flex-wrap gap-4 justify-between items-center bg-white dark:bg-slate-900">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
                             <input 
                                 type="text" 
                                 placeholder="Search by name or contact number..." 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-80 transition-all font-medium"
+                                className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-80 transition-all font-medium placeholder-gray-400 dark:placeholder-slate-500"
                             />
                         </div>
                         
                         <div className="flex items-center space-x-3">
-                            <button className="flex items-center bg-white border border-gray-200 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors">
-                                <Filter className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                            <button className="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                                <Filter className="w-3.5 h-3.5 mr-2 text-gray-500 dark:text-slate-400" />
                                 Filters
                             </button>
                             
-                            <button className="flex items-center bg-white border border-gray-200 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors">
-                                <Download className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                            <button className="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                                <Download className="w-3.5 h-3.5 mr-2 text-gray-500 dark:text-slate-400" />
                                 Export
                             </button>
                         </div>
                     </div>
                     
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-x-auto">
                         <DataTable 
                             columns={columns} 
                             data={customersData} 
@@ -203,38 +213,38 @@ const Customers = () => {
                             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 xl:hidden transition-opacity" 
                             onClick={() => setSelectedCustomer(null)}
                         />
-                        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[600px] bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0 xl:static xl:w-1/2 2xl:w-2/5 xl:max-w-none xl:rounded-xl xl:shadow-sm xl:border xl:border-gray-100 xl:transform-none xl:z-0 xl:h-auto">
+                        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-[600px] bg-white dark:bg-slate-900 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0 xl:static xl:w-1/2 2xl:w-2/5 xl:max-w-none xl:rounded-xl xl:shadow-sm xl:border xl:border-gray-100 xl:dark:border-slate-800 xl:transform-none xl:z-0 xl:h-auto">
                             
                             {/* Header Profile */}
-                            <div className="p-6 border-b border-gray-100 bg-white rounded-t-xl">
+                            <div className="p-6 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-t-xl transition-colors">
                                 <div className="flex justify-between items-center mb-4 xl:justify-end">
-                                    <h2 className="text-sm font-bold text-gray-900 xl:hidden">Customer Details</h2>
+                                    <h2 className="text-sm font-bold text-gray-900 dark:text-white xl:hidden">Customer Details</h2>
                                     <button 
                                         onClick={() => setSelectedCustomer(null)}
-                                        className="rounded-lg p-2 bg-gray-50 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                                        className="rounded-lg p-2 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                     </button>
                                 </div>
     
                                 <div className="flex items-start">
-                                    <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-lg font-black shrink-0 mr-4">
+                                    <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-lg font-black shrink-0 mr-4">
                                         {selectedCustomer.initials}
                                     </div>
                                 <div>
                                     <div className="flex items-center space-x-3 mb-2">
-                                        <h2 className="text-lg font-black text-gray-900 leading-none">{selectedCustomer.name}</h2>
-                                        <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100">
+                                        <h2 className="text-lg font-black text-gray-900 dark:text-white leading-none">{selectedCustomer.name}</h2>
+                                        <span className="bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] font-bold px-2 py-0.5 rounded border border-green-100 dark:border-green-500/20">
                                             {selectedCustomer.status}
                                         </span>
                                     </div>
-                                    <div className="flex items-center text-xs font-semibold text-gray-600 space-x-4">
+                                    <div className="flex items-center text-xs font-semibold text-gray-600 dark:text-slate-400 space-x-4">
                                         <span className="flex items-center">
-                                            <Phone className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                                            <Phone className="w-3.5 h-3.5 mr-1.5 text-indigo-500 dark:text-indigo-400" />
                                             {selectedCustomer.phone}
                                         </span>
                                         <span className="flex items-center">
-                                            <Users2 className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                                            <Users2 className="w-3.5 h-3.5 mr-1.5 text-indigo-500 dark:text-indigo-400" />
                                             {selectedCustomer.peoples} Peoples
                                         </span>
                                     </div>
@@ -243,12 +253,12 @@ const Customers = () => {
                         </div>
 
                         {/* Customer Activity Timeline */}
-                        <div className="flex-1 overflow-auto bg-white p-6 rounded-b-xl">
-                            <h3 className="text-sm font-bold text-gray-900 mb-6">Customer Activity <span className="text-gray-500 font-medium">(Order History)</span></h3>
+                        <div className="flex-1 overflow-auto bg-white dark:bg-slate-900 p-6 rounded-b-xl transition-colors">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-6">Customer Activity <span className="text-gray-500 dark:text-slate-400 font-medium">(Order History)</span></h3>
 
                             <div className="min-w-[500px]">
                                 {/* Timeline Table Header */}
-                                <div className="flex items-center text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-4 px-2">
+                                <div className="flex items-center text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-4 px-2">
                                 <div className="w-[90px] pl-8">Order ID</div>
                                 <div className="flex-1 pl-2">Date & Time</div>
                                 <div className="w-14 text-center">Items</div>
@@ -259,7 +269,7 @@ const Customers = () => {
 
                             <div className="relative pl-3 space-y-7 mt-2 pb-4">
                                 {/* The vertical connecting line */}
-                                <div className="absolute left-[23px] top-4 bottom-4 w-px bg-green-200 border-l border-dashed border-green-300"></div>
+                                <div className="absolute left-[23px] top-4 bottom-4 w-px bg-green-200 dark:bg-green-500/30 border-l border-dashed border-green-300 dark:border-green-500/50"></div>
                                 
                                 {selectedCustomer.orders.map((order, idx) => {
                                     const dateObj = new Date(order.created_at);
@@ -269,36 +279,36 @@ const Customers = () => {
                                     <div key={idx} className="relative flex items-center justify-between">
                                         {/* Icon & Order ID */}
                                         <div className="w-[90px] flex items-center">
-                                            <div className="w-6 h-6 rounded bg-green-50 text-green-500 flex items-center justify-center shrink-0 z-10 border border-white shadow-sm absolute -left-[5px]">
+                                            <div className="w-6 h-6 rounded bg-green-50 dark:bg-green-500/10 text-green-500 dark:text-green-400 flex items-center justify-center shrink-0 z-10 border border-white dark:border-slate-900 shadow-sm absolute -left-[5px]">
                                                 <Receipt className="w-3 h-3" />
                                             </div>
-                                            <span className="font-bold text-gray-900 text-[11px] pl-8">{order.id}</span>
+                                            <span className="font-bold text-gray-900 dark:text-white text-[11px] pl-8">{order.id}</span>
                                         </div>
                                         
                                         {/* Date & Time */}
                                         <div className="flex-1 min-w-0 pl-2 pr-2">
-                                            <div className="font-semibold text-gray-700 text-[11px] leading-tight truncate">{formattedDate}</div>
-                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5 truncate">{formattedTime}</div>
+                                            <div className="font-semibold text-gray-700 dark:text-slate-300 text-[11px] leading-tight truncate">{formattedDate}</div>
+                                            <div className="text-[10px] text-gray-400 dark:text-slate-500 font-medium mt-0.5 truncate">{formattedTime}</div>
                                         </div>
 
                                         {/* Items */}
-                                        <div className="w-14 text-center text-[11px] font-semibold text-gray-600">
+                                        <div className="w-14 text-center text-[11px] font-semibold text-gray-600 dark:text-slate-400">
                                             {order.items.length} Items
                                         </div>
 
                                         {/* Amount */}
-                                        <div className="w-20 text-right text-[11px] font-bold text-gray-900">
+                                        <div className="w-20 text-right text-[11px] font-bold text-gray-900 dark:text-white">
                                             ₹{parseFloat(order.total_amount).toFixed(2)}
                                         </div>
 
                                         {/* Payment */}
-                                        <div className="w-20 text-right text-[11px] font-semibold text-gray-600">
+                                        <div className="w-20 text-right text-[11px] font-semibold text-gray-600 dark:text-slate-400">
                                             -
                                         </div>
 
                                         {/* Status */}
                                         <div className="w-20 flex justify-end">
-                                            <span className="bg-gray-50 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200">
+                                            <span className="bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded border border-gray-200 dark:border-slate-700">
                                                 {order.status}
                                             </span>
                                         </div>
@@ -309,7 +319,7 @@ const Customers = () => {
                         </div>
 
                         {/* View All Button */}
-                        <div className="p-5 border-t border-gray-100 bg-white flex justify-center">
+                        <div className="p-5 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-center transition-colors">
                             <button className="w-full bg-[#3b82f6] text-white font-bold text-xs px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors shadow-sm">
                                 View Full Order History
                             </button>

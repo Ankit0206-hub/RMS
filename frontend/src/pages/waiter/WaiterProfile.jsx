@@ -27,12 +27,12 @@ export default function WaiterProfile() {
 
  <div className="relative z-10 flex flex-col min-h-screen">
  <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
- <div className="flex items-center w-full max-w-4xl mx-auto justify-between">
+ <div className="flex items-center w-full mx-auto justify-between">
  <h1 className="text-2xl font-black text-gray-800 tracking-tight">Profile</h1>
  </div>
  </div>
 
- <div className="px-4 md:px-8 mt-6 flex-1 space-y-6 w-full pb-24 max-w-4xl mx-auto">
+ <div className="px-4 md:px-8 mt-6 flex-1 space-y-6 w-full pb-24 mx-auto">
  <div className="bg-white/20 backdrop-blur-xl rounded-[32px] p-8 shadow-sm border border-white/40 flex flex-col items-center">
  <div className="relative">
  <div className="h-28 w-28 rounded-full bg-rose-100/50 flex items-center justify-center text-4xl font-black text-rose-500 border-4 border-white/60 shadow-lg backdrop-blur-md">
