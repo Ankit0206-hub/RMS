@@ -67,10 +67,10 @@ export default function WaiterRequests() {
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
             <div className="relative z-10 flex flex-col min-h-screen">
-                <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 w-full shrink-0">
-                    <div className="flex items-center w-full max-w-7xl mx-auto justify-between">
+                <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-center shadow-sm sticky top-0 z-20 border-b border-white/20 w-full shrink-0">
+                    <div className="flex items-center w-full mx-auto relative justify-center">
                         <h1 className="text-2xl font-black text-gray-800 tracking-tight">Requests</h1>
-                        <button onClick={() => navigate('/waiter/notifications')} className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center relative transition-colors border border-white/40 shadow-sm">
+                        <button onClick={() => navigate('/waiter/notifications')} className="absolute right-0 h-10 w-10 bg-white/20 rounded-full flex items-center justify-center transition-colors border border-white/40 shadow-sm">
                             <Bell className="h-5 w-5 text-gray-700"/>
                             <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white/50"></span>
                         </button>

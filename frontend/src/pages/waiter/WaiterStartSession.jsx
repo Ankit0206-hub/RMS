@@ -77,7 +77,7 @@ export default function WaiterStartSession() {
 
  {/* Scrollable Content */}
  <div className="w-full pb-8 md:pb-12">
- <div className="max-w-4xl mx-auto w-full px-4 md:px-6 mb-16">
+ <div className=" mx-auto w-full px-4 md:px-6 mb-16">
  
  {/* Selected Table Card */}
  <div className="bg-white/20 backdrop-blur-xl border border-white/40 shadow-sm rounded-3xl p-4 md:p-6 flex items-center justify-between mt-5 md:mt-8">

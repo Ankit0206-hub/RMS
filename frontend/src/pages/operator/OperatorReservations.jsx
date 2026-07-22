@@ -404,7 +404,7 @@ const OperatorReservations = () => {
             </div>
 
             {/* ---------------- MAIN AREA (Floor Plan) ---------------- */}
-            <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
+            <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-[#0B1120] transition-colors">
                 
                 {/* Top Toolbar */}
                 <div className="h-16 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between px-6 shrink-0 shadow-sm z-10">
@@ -427,15 +427,15 @@ const OperatorReservations = () => {
                     <div className="hidden md:flex items-center space-x-6 text-xs font-bold text-gray-600 dark:text-slate-400">
                         <div className="flex items-center space-x-2 text-gray-900 dark:text-white border-b-2 border-indigo-600 pb-1 cursor-pointer">
                             <span>Main Room</span>
-                            <span className="bg-green-100 text-green-700 px-1.5 rounded text-[10px]">8/12</span>
+                            <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 px-1.5 rounded text-[10px]">8/12</span>
                         </div>
                         <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
                             <span>Patio</span>
-                            <span className="bg-green-100 text-green-700 px-1.5 rounded text-[10px]">2/8</span>
+                            <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 px-1.5 rounded text-[10px]">2/8</span>
                         </div>
                         <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
                             <span>Terrace</span>
-                            <span className="bg-red-100 text-red-600 px-1.5 rounded text-[10px]">6/6</span>
+                            <span className="bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-1.5 rounded text-[10px]">6/6</span>
                         </div>
                     </div>
 
@@ -458,7 +458,7 @@ const OperatorReservations = () => {
                             </div>
                         </div>
                         
-                        <div className="h-6 w-px bg-gray-200"></div>
+                        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700"></div>
 
                         <div className="flex space-x-3">
                             <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
@@ -470,7 +470,7 @@ const OperatorReservations = () => {
                                     setIsMergeMode(!isMergeMode);
                                     setSelectedTablesForMerge([]);
                                 }}
-                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-white border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                className={`hidden sm:flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-colors shadow-sm ${isMergeMode ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-500/20' : 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'}`}
                             >
                                 {isMergeMode ? 'Cancel Merge' : 'Merge Tables'}
                             </button>
