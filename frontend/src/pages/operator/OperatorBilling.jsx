@@ -73,22 +73,30 @@ const OperatorBilling = () => {
     return (sessionsResponse || [])
       .filter((s) => s.status !== "Completed")
       .map((session) => {
-        const startedAtDate = new Date(session.created_at);
+        const startedAtDate = new Date(session.created_at.replace('Z', ''));
         const startedAt = startedAtDate.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
         });
         const diffMs = new Date() - startedAtDate;
-        const diffMins = Math.floor(diffMs / 60000);
+        let diffMins = Math.floor(diffMs / 60000);
+        // Fallback in case of timezone issues where DB stores UTC but we parse as local
+        if (diffMins < 0 && diffMins < -300) {
+            // It might be stored as UTC but parsed as local without 'Z', meaning diffMs is large negative
+            diffMins = diffMins + 330; 
+        }
+        diffMins = Math.max(0, diffMins);
 
         const matchingBill = (pendingBillsResponse || []).find(
           (b) => b.session_id === session.id,
         );
         const status = matchingBill
           ? "Pending Billing"
-          : session.status === "Active"
-            ? "Active"
-            : "Preparing";
+          : session.bill_requested
+            ? "Bill Requested"
+            : session.status === "Active"
+              ? "Active"
+              : "Preparing";
 
         let total = 0;
         if (matchingBill) {
@@ -168,6 +176,33 @@ const OperatorBilling = () => {
       )
       .sort((a, b) => b.completedTimestamp - a.completedTimestamp);
   }, [paidBillsResponse, searchQuery]);
+
+  // WebSocket Listener
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/operator?token=${token}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (
+          data.event === "CUSTOMER_REQUESTED_BILL" ||
+          data.event === "WAITER_REQUESTED_BILL" ||
+          data.event === "NEW_ORDER"
+        ) {
+          queryClient.invalidateQueries({ queryKey: ["operator-sessions"] });
+          queryClient.invalidateQueries({ queryKey: ["operator-pending-bills"] });
+        }
+      } catch (err) {
+        console.error("WS Parse error", err);
+      }
+    };
+
+    return () => {
+      if (ws.readyState === 1) ws.close();
+    };
+  }, [queryClient]);
 
   const displayedList = mainTab === "Active" ? activeItems : recentItems;
 
@@ -318,6 +353,8 @@ const OperatorBilling = () => {
         return "bg-amber-500/10 text-amber-600 border-amber-200/50 dark:border-amber-500/20";
       case "Pending Billing":
         return "bg-orange-500/10 text-orange-600 border-orange-200/50 dark:border-orange-500/20";
+      case "Bill Requested":
+        return "bg-purple-500/10 text-purple-600 border-purple-200/50 dark:border-purple-500/20 font-black animate-pulse";
       case "Billed":
         return "bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20";
       default:

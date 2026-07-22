@@ -43,7 +43,7 @@ export default function OrderTracking() {
   }, [customerSession]);
 
   // Determine overall status based on latest order
-  let currentStatus = "Verification Pending";
+  let currentStatus = "Pending";
   if (sessionData?.orders?.length > 0) {
       const latestOrder = sessionData.orders[sessionData.orders.length - 1];
       currentStatus = latestOrder.status;
@@ -51,16 +51,16 @@ export default function OrderTracking() {
 
   const getStepStatus = (stepName) => {
       const statusMap = {
-          "Order Placed": ["Verification Pending", "Preparing", "Cooked", "Served", "Completed"],
+          "Order Placed": ["Confirmed", "Preparing", "Cooked", "Served", "Completed"],
           "Confirmed": ["Preparing", "Cooked", "Served", "Completed"],
-          "Preparing": ["Preparing", "Cooked", "Served", "Completed"],
-          "Ready to Serve": ["Cooked", "Served", "Completed"],
-          "Served": ["Served", "Completed"]
+          "Preparing": ["Cooked", "Served", "Completed"],
+          "Ready to Serve": ["Served", "Completed"],
+          "Served": ["Completed"]
       };
 
       const activeMap = {
-          "Order Placed": "Verification Pending",
-          "Confirmed": "",
+          "Order Placed": "Pending",
+          "Confirmed": "Confirmed",
           "Preparing": "Preparing",
           "Ready to Serve": "Cooked",
           "Served": "Served"
