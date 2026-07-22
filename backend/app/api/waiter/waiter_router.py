@@ -52,7 +52,7 @@ async def get_tables(
             display_status = "Occupied"
             guests = active_session.number_of_people or 0
             
-            delta = datetime.utcnow() - active_session.created_at
+            delta = datetime.now() - active_session.created_at
             minutes = int(delta.total_seconds() / 60)
             if minutes > 60:
                 hours = minutes // 60
@@ -571,7 +571,7 @@ async def get_requests(
     formatted = []
     for r in requests:
         table_num = r.session.table.table_number if r.session and r.session.table else "Unknown"
-        delta = datetime.utcnow() - r.created_at
+        delta = datetime.now() - r.created_at
         minutes = int(delta.total_seconds() / 60)
         time_str = "Just Now" if minutes == 0 else f"{minutes} mins ago" if minutes < 60 else f"{minutes // 60}h ago"
         
@@ -600,7 +600,7 @@ async def resolve_request(
         
     req.status = "Resolved"
     req.resolved_by_employee_id = current_user.id
-    req.resolved_at = datetime.utcnow()
+    req.resolved_at = datetime.now()
     await db.commit()
     return {"message": "Request resolved"}
 

@@ -65,6 +65,14 @@ async def get_current_operator(current_user: dict = Depends(get_current_user)) -
         )
     return current_user["user"]
 
+async def get_strict_operator(current_user: dict = Depends(get_current_user)) -> Employee:
+    if current_user["role"] != "employee" or not current_user["user"].role or current_user["user"].role.name.lower() != "operator":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requires strict Operator privileges"
+        )
+    return current_user["user"]
+
 async def get_current_admin_or_operator(current_user: dict = Depends(get_current_user)):
     if current_user["role"] == "admin":
         return current_user["user"]

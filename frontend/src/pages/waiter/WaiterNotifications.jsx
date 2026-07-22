@@ -25,7 +25,8 @@ export default function WaiterNotifications() {
     useEffect(() => {
         fetchNotifications();
 
-        const wsUrl = `ws://localhost:8000/api/v1/ws/waiter`;
+        const token = localStorage.getItem('token');
+        const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/waiter?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {
@@ -74,14 +75,12 @@ export default function WaiterNotifications() {
     return (
         <div className="flex flex-col min-h-screen bg-slate-50 font-inter relative">
             <div className="relative z-10 flex flex-col min-h-screen">
-                <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
-                    <div className="flex items-center w-full max-w-4xl mx-auto justify-between">
-                        <div className="flex items-center">
-                            <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
-                                <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
-                            </button>
-                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Notifications</h1>
-                        </div>
+                <div className="bg-white/10 backdrop-blur-xl px-4  py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
+                    <div className="relative flex items-center w-full  mx-auto justify-center">
+                        <button onClick={() => navigate(-1)} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm">
+                            <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
+                        </button>
+                        <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Notifications</h1>
                     </div>
                 </div>
 

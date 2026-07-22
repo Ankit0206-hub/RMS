@@ -29,13 +29,10 @@ const Bills = () => {
         refundedAmount: 0
     });
 
-    const [requests, setRequests] = useState([]);
-    
     const tabs = ['All Invoices', 'Paid', 'Pending', 'Partially Paid', 'Overdue', 'Cancelled'];
 
     useEffect(() => {
         fetchBills();
-        fetchRequests();
     }, [currentPage, itemsPerPage, activeTab]);
 
     useEffect(() => {
@@ -46,8 +43,7 @@ const Bills = () => {
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.event === "CUSTOMER_REQUESTED_BILL" || data.event === "WAITER_REQUESTED_BILL" || data.event === "BILL_GENERATED" || data.event === "BILL_PAID") {
-                    fetchRequests();
+                if (data.event === "BILL_GENERATED" || data.event === "BILL_PAID") {
                     fetchBills();
                 }
             } catch (err) {
@@ -59,17 +55,6 @@ const Bills = () => {
             if (ws.readyState === 1) ws.close();
         };
     }, []);
-
-    const fetchRequests = async () => {
-        try {
-            const response = await api.get('/admin/billing/requests');
-            if (response.data.success) {
-                setRequests(response.data.data);
-            }
-        } catch (error) {
-            console.error("Error fetching bill requests:", error);
-        }
-    };
 
     const fetchBills = async () => {
         setIsLoading(true);
@@ -278,47 +263,6 @@ const Bills = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Active Bill Requests */}
-            {requests.length > 0 && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 shadow-sm rounded-xl overflow-hidden flex flex-col p-5">
-                    <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
-                        <AlertCircle className="w-5 h-5 mr-2 text-purple-600" />
-                        Active Bill Requests
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {requests.map(req => (
-                            <div key={req.session_id} className="bg-white rounded-lg p-4 border border-purple-100 shadow-sm flex flex-col justify-between">
-                                <div>
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="font-bold text-purple-700">Table {req.table_number}</span>
-                                        <span className="text-xs font-medium text-gray-500">{new Date(req.requested_at).toLocaleTimeString()}</span>
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-800 mb-1">{req.customer_name || 'Walk-in Customer'}</p>
-                                    <p className="text-xs text-gray-500 mb-4">Session #{req.session_id}</p>
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            const response = await api.post('/admin/billing/bills', { session_id: req.session_id });
-                                            if(response.data.success) {
-                                                fetchRequests();
-                                                fetchBills();
-                                            }
-                                        } catch(e) {
-                                            console.error(e);
-                                        }
-                                    }}
-                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded-lg text-sm transition-colors flex items-center justify-center"
-                                >
-                                    <Receipt className="w-4 h-4 mr-2" />
-                                    Generate Bill
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             {/* Main Content */}
             <div className="grid grid-cols-1 gap-6">

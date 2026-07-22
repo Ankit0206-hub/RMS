@@ -26,7 +26,8 @@ export default function WaiterRequests() {
     useEffect(() => {
         fetchRequests();
 
-        const wsUrl = `ws://localhost:8000/api/v1/ws/waiter`;
+        const token = localStorage.getItem('token');
+        const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/waiter?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {
@@ -57,10 +58,9 @@ export default function WaiterRequests() {
         }
     };
 
-    const handleGenerateBill = (id, tableId) => {
-        // Find session ID from table if needed or just navigate
+    const handleViewTable = (id, tableId) => {
         navigate(`/waiter/tables/${tableId}`);
-        toast.success('Navigated to table to generate bill!');
+        toast.success('Navigated to table!');
         handleResolve(id);
     };
 
@@ -112,7 +112,7 @@ export default function WaiterRequests() {
                                         {request.status === 'Active' && (
                                             <div className="border-t border-white/30 pt-4 mt-2">
                                                 {request.type === 'Bill Request' ? (
-                                                    <button onClick={() => handleGenerateBill(request.id, request.table)} className="w-full bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-xl py-3 font-bold text-sm shadow-sm active:scale-95 transition-all border border-rose-300/50">Generate Bill</button>
+                                                    <button onClick={() => handleViewTable(request.id, request.table)} className="w-full bg-gradient-to-br from-rose-400 to-rose-500 text-white rounded-xl py-3 font-bold text-sm shadow-sm active:scale-95 transition-all border border-rose-300/50">View Table</button>
                                                 ) : (
                                                     <button onClick={() => handleResolve(request.id)} className="w-full bg-white/30 backdrop-blur-md text-rose-500 border border-white/40 rounded-xl py-3 font-bold text-sm shadow-sm transition-colors">Mark Resolved</button>
                                                 )}
