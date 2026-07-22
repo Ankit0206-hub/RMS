@@ -106,6 +106,23 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
     result = await db.execute(query)
     categories = result.scalars().all()
     
+    from app.models.reviews import ItemReview
+    from sqlalchemy import func
+    
+    rating_stmt = select(
+        ItemReview.menu_item_id, 
+        func.avg(ItemReview.rating).label("avg_rating"), 
+        func.count(ItemReview.id).label("rating_count")
+    ).group_by(ItemReview.menu_item_id)
+    rating_res = await db.execute(rating_stmt)
+    
+    ratings_dict = {}
+    for row in rating_res.all():
+        ratings_dict[row.menu_item_id] = {
+            "avg_rating": round(float(row.avg_rating), 1) if row.avg_rating else 0,
+            "rating_count": row.rating_count
+        }
+    
     res = []
     for cat in categories:
         active_items = [i for i in cat.items if i.is_active]
@@ -121,7 +138,9 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
                         "price": float(item.price),
                         "image_url": item.images[0].image_url if getattr(item, 'images', None) and len(item.images) > 0 else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
                         "is_veg": item.is_veg,
-                        "half_price": float(item.half_price) if item.half_price is not None else None
+                        "half_price": float(item.half_price) if item.half_price is not None else None,
+                        "avg_rating": ratings_dict.get(item.id, {}).get("avg_rating", 0),
+                        "rating_count": ratings_dict.get(item.id, {}).get("rating_count", 0)
                     }
                     for item in active_items
                 ]
@@ -255,6 +274,7 @@ async def get_customer_session_details(
         for i in order.items:
             items.append({
                 "id": i.id,
+                "menu_item_id": i.menu_item_id,
                 "name": i.menu_item.name if i.menu_item else "Unknown",
                 "image": i.menu_item.images[0].image_url if getattr(i.menu_item, 'images', None) and len(i.menu_item.images) > 0 else getattr(i.menu_item, 'image_url', "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop") if i.menu_item else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
                 "quantity": i.quantity,

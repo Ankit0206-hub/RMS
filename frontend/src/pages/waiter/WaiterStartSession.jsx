@@ -60,19 +60,19 @@ export default function WaiterStartSession() {
 
  <div className="relative z-10 flex flex-col h-full w-full">
  {/* Header */}
- <div className="bg-white/10 backdrop-blur-xl px-4 md:px-6 py-4 flex items-center shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
- <div className="max-w-4xl mx-auto w-full flex items-center">
- <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
- <ArrowLeft className="h-5 w-5"strokeWidth={2.5} />
- </button>
- <div className="flex-1">
- <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight leading-tight">Create Session</h1>
- <p className="text-xs md:text-sm text-gray-500 font-medium">Add details to start ordering</p>
- </div>
- <button className="p-2 text-rose-500 rounded-xl bg-rose-100/30 transition-colors hidden sm:block border border-rose-200/50">
- <HelpCircle className="h-5 w-5"strokeWidth={2} />
- </button>
- </div>
+ <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-center shadow-sm sticky top-0 z-20 border-b border-white/20 w-full shrink-0">
+     <div className="flex items-center w-full mx-auto relative justify-center">
+         <button onClick={() => navigate(-1)} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm z-10">
+             <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
+         </button>
+         <div className="text-center flex-1">
+             <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight leading-tight">Create Session</h1>
+             <p className="text-xs md:text-sm text-gray-500 font-medium">Add details to start ordering</p>
+         </div>
+         <button className="absolute right-0 p-2 text-rose-500 rounded-xl bg-rose-100/30 transition-colors hidden sm:block border border-rose-200/50 z-10">
+             <HelpCircle className="h-5 w-5" strokeWidth={2} />
+         </button>
+     </div>
  </div>
 
  {/* Scrollable Content */}

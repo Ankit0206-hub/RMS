@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
     LayoutDashboard, Users, Settings, LogOut, 
     UtensilsCrossed, ClipboardList, Receipt,
-    Activity, PieChart, Bell, Menu, ChevronRight, Store, FileText, BellRing, User, Mail, Maximize, Calendar, Plus, MoreVertical, Search, ChevronDown, ChefHat
+    Activity, PieChart, Bell, Menu, ChevronRight, Store, FileText, BellRing, User, Mail, Maximize, Calendar, Plus, MoreVertical, Search, ChevronDown, ChefHat, Star
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -126,6 +126,12 @@ const AdminLayout = () => {
             name: 'Customers', 
             path: '/admin/customers', 
             icon: Users,
+            hasDropdown: false
+        },
+        { 
+            name: 'Ratings & Reviews', 
+            path: '/admin/ratings', 
+            icon: Star,
             hasDropdown: false
         },
         { 

@@ -23,6 +23,7 @@ export default function RequestFinalBill() {
       await customerApi.requestBill(customerSession.sessionId);
       setRequested(true);
       toast.success("Bill requested successfully.");
+      navigate("/customer/review");
     } catch (error) {
       console.error(error);
       toast.error("Failed to request bill.");
