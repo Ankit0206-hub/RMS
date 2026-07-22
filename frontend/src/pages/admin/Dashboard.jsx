@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
-import { IndianRupee, ClipboardList, Users, LayoutDashboard, Receipt, TrendingUp, TrendingDown, Eye, UserPlus, PlusSquare, Utensils, FileText, LayoutGrid } from 'lucide-react';
+import { IndianRupee, ClipboardList, Users, LayoutDashboard, Receipt, TrendingUp, TrendingDown, Eye, UserPlus, PlusSquare, Utensils, FileText, LayoutGrid, Star, Clock } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
@@ -35,117 +35,126 @@ const Dashboard = () => {
             today_bills: 0,
             today_discounts: 0,
             today_payments: 0
-        }
+        },
+        recent_reviews = [],
+        recent_orders = []
     } = dashboardData || {};
 
     if (isLoading) {
         return <div className="text-gray-900 text-center py-20 font-bold">Loading ERP Dashboard...</div>;
     }
 
-    const SectionHeader = ({ title, action }) => (
-        <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-gray-900 text-[15px]">{title}</h3>
-            {action && <a href="#" className="text-xs font-bold text-blue-600 hover:underline">{action}</a>}
+    const SectionHeader = ({ title, action, linkTo }) => (
+        <div className="flex justify-between items-center mb-4 space-x-2">
+            <h3 className="font-bold text-gray-900 text-[13px] xl:text-[14px] truncate">{title}</h3>
+            {action && (
+                <button 
+                    onClick={(e) => { e.preventDefault(); if (linkTo) navigate(linkTo); }} 
+                    className="text-[10px] xl:text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-full transition-all duration-300 whitespace-nowrap flex-shrink-0 cursor-pointer shadow-sm border border-indigo-100 hover:border-indigo-600"
+                >
+                    {action}
+                </button>
+            )}
         </div>
     );
 
     return (
         <div className="space-y-4 pb-12 font-inter">
             {/* ROW 1: TOP 6 KPIs */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 xl:gap-4">
                 {/* 1. Total Revenue */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#f3e8ff] rounded-lg">
-                            <IndianRupee className="w-5 h-5 text-[#9333ea]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#f3e8ff] rounded-xl text-[#9333ea]">
+                            <IndianRupee className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Total Revenue</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">₹ {kpis.total_revenue.toLocaleString()}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-bold text-green-600 mt-2">
-                        <TrendingUp className="w-3 h-3 mr-1" /> All Time
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Total Revenue</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">₹ {kpis.total_revenue.toLocaleString()}</p>
                     </div>
                 </div>
 
                 {/* 2. Total Orders */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#e0f2fe] rounded-lg">
-                            <ClipboardList className="w-5 h-5 text-[#0ea5e9]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#e0f2fe] rounded-xl text-[#0ea5e9]">
+                            <ClipboardList className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Total Orders</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">{kpis.total_orders}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-bold text-green-600 mt-2">
-                        <TrendingUp className="w-3 h-3 mr-1" /> All Time
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Total Orders</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">{kpis.total_orders}</p>
                     </div>
                 </div>
 
                 {/* 3. Active Sessions */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#dcfce7] rounded-lg">
-                            <Users className="w-5 h-5 text-[#16a34a]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#dcfce7] rounded-xl text-[#16a34a]">
+                            <Users className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Active Sessions</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">{kpis.active_sessions}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> Live Now
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-bold text-green-600 mt-2">
-                        Live Now
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Active Sessions</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">{kpis.active_sessions}</p>
                     </div>
                 </div>
 
                 {/* 4. Available Tables */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#ffedd5] rounded-lg">
-                            <LayoutDashboard className="w-5 h-5 text-[#ea580c]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#ffedd5] rounded-xl text-[#ea580c]">
+                            <LayoutDashboard className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Available Tables</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">{kpis.available_tables} / {kpis.total_tables}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-1 rounded-md">
+                            {kpis.total_tables ? Math.round((kpis.available_tables / kpis.total_tables) * 100) : 0}% Avail
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-medium text-gray-500 mt-2">
-                        {kpis.total_tables ? Math.round((kpis.available_tables / kpis.total_tables) * 100) : 0}% Available
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Available Tables</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">{kpis.available_tables} <span className="text-sm text-gray-500 font-medium">/ {kpis.total_tables}</span></p>
                     </div>
                 </div>
 
                 {/* 5. Average Bill Value */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#fee2e2] rounded-lg">
-                            <Receipt className="w-5 h-5 text-[#dc2626]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#fee2e2] rounded-xl text-[#dc2626]">
+                            <Receipt className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Average Bill Value</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">₹ {kpis.average_bill_value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-bold text-green-600 mt-2">
-                        <TrendingUp className="w-3 h-3 mr-1" /> All Time
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Avg Bill Value</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">₹ {kpis.average_bill_value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</p>
                     </div>
                 </div>
 
                 {/* 6. Total Customers */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between h-[110px]">
-                    <div className="flex items-center justify-between">
-                        <div className="p-2 bg-[#ccfbf1] rounded-lg">
-                            <Users className="w-5 h-5 text-[#0d9488]" />
+                <div className="bg-white p-3 xl:p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="p-2 xl:p-2.5 bg-[#ccfbf1] rounded-xl text-[#0d9488]">
+                            <Users className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
-                        <div className="text-right">
-                            <p className="text-[11px] font-semibold text-gray-500 uppercase">Total Customers</p>
-                            <p className="text-xl font-bold text-gray-900 mt-0.5">{kpis.total_customers}</p>
+                        <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time
                         </div>
                     </div>
-                    <div className="flex items-center text-[10px] font-bold text-green-600 mt-2">
-                        <TrendingUp className="w-3 h-3 mr-1" /> All Time
+                    <div>
+                        <p className="text-[9px] xl:text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">Total Customers</p>
+                        <p className="text-lg xl:text-xl font-extrabold text-gray-900 truncate">{kpis.total_customers}</p>
                     </div>
                 </div>
             </div>
@@ -172,7 +181,7 @@ const Dashboard = () => {
 
                 {/* Top Selling Items */}
                 <div className="lg:col-span-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[320px]">
-                    <SectionHeader title="Top Selling Items" action="View All" />
+                    <SectionHeader title="Top Selling Items" action="View All" linkTo="/admin/menu" />
                     <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                         {top_selling_items && top_selling_items.length > 0 ? top_selling_items.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between group">
@@ -190,11 +199,11 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* ROW 3: CATEGORIES, WAITERS */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* ROW 3: CATEGORIES, WAITERS, REVIEWS, ORDERS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 {/* Top Categories */}
-                <div className="lg:col-span-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
-                    <SectionHeader title="Top Categories (By Revenue)" action="View All" />
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
+                    <SectionHeader title="Top Categories (By Revenue)" action="View All" linkTo="/admin/menu" />
                     <div className="flex-1 flex flex-col justify-center">
                         <div className="h-40 relative mb-4">
                             <ResponsiveContainer width="100%" height="100%">
@@ -205,21 +214,24 @@ const Dashboard = () => {
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="grid grid-cols-2 gap-y-2 px-2">
+                        <div className="flex flex-col space-y-2 px-2 overflow-y-auto custom-scrollbar" style={{ maxHeight: '100px' }}>
                             {top_categories && top_categories.length > 0 ? top_categories.map((cat, idx) => (
-                                <div key={idx} className="flex items-center justify-between text-[11px] font-semibold text-gray-600 pr-4">
-                                    <div className="flex items-center"><div className="w-2 h-2 rounded-sm mr-2 flex-shrink-0" style={{backgroundColor: cat.color}}></div><span className="truncate">{cat.name}</span></div>
-                                    <span className="flex-shrink-0 ml-2">₹ {cat.value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+                                <div key={idx} className="flex items-center justify-between text-[11px] font-semibold text-gray-600">
+                                    <div className="flex items-center overflow-hidden mr-2">
+                                        <div className="w-2 h-2 rounded-sm mr-2 flex-shrink-0" style={{backgroundColor: cat.color}}></div>
+                                        <span className="truncate" title={cat.name}>{cat.name}</span>
+                                    </div>
+                                    <span className="flex-shrink-0 font-bold text-gray-800">₹ {cat.value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
                                 </div>
-                            )) : <div className="col-span-2 text-xs text-gray-500 text-center">No categories data.</div>}
+                            )) : <div className="text-xs text-gray-500 text-center">No categories data.</div>}
                         </div>
                     </div>
                 </div>
 
                 {/* Top Waiters */}
-                <div className="lg:col-span-6 bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
-                    <SectionHeader title="Top Waiters (By Sales)" action="View All" />
-                    <div className="space-y-4 mt-2">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
+                    <SectionHeader title="Top Waiters (By Sales)" action="View All" linkTo="/admin/employees" />
+                    <div className="space-y-4 mt-2 overflow-y-auto custom-scrollbar">
                         {top_waiters && top_waiters.length > 0 ? top_waiters.map((waiter, idx) => (
                             <div key={waiter.id} className="flex items-center justify-between">
                                 <div className="flex items-center">
@@ -230,6 +242,49 @@ const Dashboard = () => {
                                 <span className="text-[11px] font-bold text-gray-900">₹ {waiter.sales.toLocaleString()}</span>
                             </div>
                         )) : <div className="text-xs text-gray-500 py-4 text-center">No waiters data yet.</div>}
+                    </div>
+                </div>
+
+                {/* Rating & Review */}
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
+                    <SectionHeader title="Rating & Review" action="View All" linkTo="/admin/customers" />
+                    <div className="space-y-4 mt-2 overflow-y-auto custom-scrollbar">
+                        {recent_reviews && recent_reviews.length > 0 ? recent_reviews.map((review, idx) => (
+                            <div key={idx} className="flex flex-col border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[11px] font-bold text-gray-800">{review.customer_name || 'Customer'}</span>
+                                    <div className="flex items-center">
+                                        <Star className="w-3 h-3 text-orange-400 fill-current mr-1" />
+                                        <span className="text-[10px] font-bold text-gray-600">{review.rating}</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-gray-500 line-clamp-2">{review.comment}</p>
+                            </div>
+                        )) : <div className="text-xs text-gray-500 py-4 text-center">No reviews yet.</div>}
+                    </div>
+                </div>
+
+                {/* Order History */}
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 h-[340px] flex flex-col">
+                    <SectionHeader title="Order History" action="View All" linkTo="/admin/orders" />
+                    <div className="space-y-3 mt-2 overflow-y-auto custom-scrollbar">
+                        {recent_orders && recent_orders.length > 0 ? recent_orders.map((order, idx) => (
+                            <div key={idx} className="flex items-center justify-between border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                                <div>
+                                    <div className="text-[11px] font-bold text-gray-800 mb-0.5">{order.order_id || `#ORD-${1000 + idx}`}</div>
+                                    <div className="flex items-center text-[9px] text-gray-500">
+                                        <Clock className="w-3 h-3 mr-1" />
+                                        {order.time || 'Recent'}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[11px] font-bold text-gray-900">₹ {(order.amount || 0).toLocaleString()}</div>
+                                    <div className={`text-[9px] font-bold mt-0.5 ${order.status === 'Completed' ? 'text-green-600' : 'text-orange-500'}`}>
+                                        {order.status || 'Completed'}
+                                    </div>
+                                </div>
+                            </div>
+                        )) : <div className="text-xs text-gray-500 py-4 text-center">No recent orders.</div>}
                     </div>
                 </div>
             </div>
@@ -296,10 +351,8 @@ const Dashboard = () => {
             </div>
             
             <style>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+                .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
+                .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
         </div>
     );

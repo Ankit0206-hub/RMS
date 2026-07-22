@@ -634,3 +634,41 @@ class AnalyticsRepository:
             "operators_active": operators_active,
             "operators_pct": operators_pct
         }
+
+    async def get_recent_orders(self, db: AsyncSession, limit: int = 5) -> List[Dict[str, Any]]:
+        stmt = (
+            select(
+                Order.id,
+                Order.created_at,
+                Order.status,
+                func.sum(OrderItem.quantity * OrderItem.price_at_order).label('amount')
+            )
+            .outerjoin(OrderItem, OrderItem.order_id == Order.id)
+            .group_by(Order.id, Order.created_at, Order.status)
+            .order_by(Order.created_at.desc())
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        data = []
+        for row in result.all():
+            time_str = "Recent"
+            if row.created_at:
+                local_time = row.created_at + timedelta(hours=5, minutes=30)
+                time_str = local_time.strftime("%I:%M %p")
+            
+            data.append({
+                "order_id": f"#ORD-{1000 + row.id}",
+                "amount": float(row.amount or 0),
+                "status": row.status,
+                "time": time_str
+            })
+        return data
+
+    async def get_recent_reviews(self, db: AsyncSession, limit: int = 5) -> List[Dict[str, Any]]:
+        # Mocking recent reviews since we don't have a review table yet
+        return [
+            { "customer_name": "Ravi Kumar", "rating": 5.0, "comment": "Excellent food and service!" },
+            { "customer_name": "Ananya Sharma", "rating": 4.5, "comment": "Great ambiance, loved the starters." },
+            { "customer_name": "Vikram Singh", "rating": 4.0, "comment": "Good experience overall." },
+            { "customer_name": "Priya Gupta", "rating": 5.0, "comment": "Will definitely visit again!" }
+        ][:limit]

@@ -296,8 +296,8 @@ const AdminLayout = () => {
                     )}
                 </div>
                 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-                    <nav className="space-y-0.5 px-4">
+                <div className={`flex-1 scrollbar-hide ${isSidebarOpen ? 'overflow-y-auto overflow-x-hidden' : 'overflow-visible'}`}>
+                    <nav className="space-y-1 px-3 md:px-4">
                         {navItems.map((item, index) => {
                             const Icon = item.icon;
                             // isActive logic
@@ -328,8 +328,7 @@ const AdminLayout = () => {
                                                 e.preventDefault();
                                             }
                                         }}
-                                        title={!isSidebarOpen ? item.name : undefined}
-                                        className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-all ${
+                                        className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-all relative group ${
                                             isActive 
                                             ? 'bg-[#5e5ce6] text-white shadow-md' 
                                             : 'text-[#a5a9d6] hover:bg-white/10 hover:text-white'
@@ -350,6 +349,13 @@ const AdminLayout = () => {
                                                 {item.hasDropdown && (
                                                     isExpanded ? <ChevronDown className="w-4 h-4 text-white" /> : <ChevronRight className="w-4 h-4 text-[#a5a9d6]" />
                                                 )}
+                                            </div>
+                                        )}
+
+                                        {!isSidebarOpen && (
+                                            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#1e293b] text-white text-xs font-semibold rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl whitespace-nowrap z-[100] transform translate-x-[-10px] group-hover:translate-x-0">
+                                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1e293b] rotate-45"></div>
+                                                {item.name}
                                             </div>
                                         )}
                                     </Link>
@@ -407,7 +413,7 @@ const AdminLayout = () => {
                             {location.pathname === '/admin/dashboard' || location.pathname === '/admin' ? (
                                 <>
                                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center">
-                                        Welcome back, Admin! <span className="ml-2 text-xl md:text-2xl">👋</span>
+                                        Welcome, Admin! <span className="ml-2 text-xl md:text-2xl">👋</span>
                                     </h1>
                                     <p className="text-xs md:text-sm text-gray-500 mt-1">Here's what's happening in your restaurant today.</p>
                                 </>
@@ -431,7 +437,7 @@ const AdminLayout = () => {
                         <button className="hidden lg:flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                           
                         </button>
 
                         <div className="flex items-center space-x-4">

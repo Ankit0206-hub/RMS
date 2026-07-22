@@ -90,7 +90,7 @@ const AnalyticsOverview = () => {
                             { label: 'Completed Bills', value: kpis.completed_bills, trend: 'Active', icon: <Utensils className="w-5 h-5"/>, color: 'text-orange-400', bg: 'bg-orange-50' },
                             { label: 'Available Tables', value: `${kpis.available_tables} / ${kpis.total_tables}`, trend: 'Active', icon: <TrendingUp className="w-5 h-5"/>, color: 'text-indigo-600', bg: 'bg-indigo-50' }
                         ].map((kpi, idx) => (
-                            <div key={idx} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                            <div key={idx} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-start space-x-3">
                                     <div className={`p-2.5 rounded-xl ${kpi.bg} ${kpi.color} shrink-0`}>
                                         {kpi.icon}
@@ -100,8 +100,8 @@ const AnalyticsOverview = () => {
                                         <p className="text-lg font-black text-gray-900 leading-none">{kpi.value}</p>
                                     </div>
                                 </div>
-                                <div className="text-[9px] font-bold text-green-500 mt-4 tracking-tight">
-                                    {kpi.trend} <span className="text-gray-400 font-medium ml-1">vs May 07 - May 13</span>
+                                <div className="text-[9px] font-bold text-green-500 mt-1 pl-1 tracking-tight">
+                                    {kpi.trend} 
                                 </div>
                             </div>
                         ))}

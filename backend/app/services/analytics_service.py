@@ -25,6 +25,8 @@ class AnalyticsService:
         sales_by_payment_method = await self.repository.get_sales_by_payment_method(db, start_date)
         hourly_sales = await self.repository.get_hourly_sales(db, start_date)
         sales_summary = await self.repository.get_sales_summary(db)
+        recent_orders = await self.repository.get_recent_orders(db, limit=5)
+        recent_reviews = await self.repository.get_recent_reviews(db, limit=5)
 
         return {
             "kpis": kpis,
@@ -36,7 +38,9 @@ class AnalyticsService:
             "sales_by_order_type": sales_by_order_type,
             "sales_by_payment_method": sales_by_payment_method,
             "hourly_sales": hourly_sales,
-            "sales_summary": sales_summary
+            "sales_summary": sales_summary,
+            "recent_orders": recent_orders,
+            "recent_reviews": recent_reviews
         }
 
     async def get_sales_analytics(self, db: AsyncSession):
