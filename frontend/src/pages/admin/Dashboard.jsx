@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
@@ -7,10 +7,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const [timeframe, setTimeframe] = useState('weekly');
+
     const { data: dashboardData, isLoading } = useQuery({
-        queryKey: ['dashboardData'],
+        queryKey: ['dashboardData', timeframe],
         queryFn: async () => {
-            const res = await api.get('/admin/analytics/dashboard?timeframe=all');
+            const res = await api.get(`/admin/analytics/dashboard?timeframe=${timeframe}`);
             return res.data.data;
         }
     });
@@ -162,29 +164,81 @@ const Dashboard = () => {
             {/* ROW 2: CHARTS */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Revenue Overview Chart */}
-                <div className="lg:col-span-8 bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col h-[320px]">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-900 text-[15px]">Revenue Overview (Last 7 Days)</h3>
+                <div className="lg:col-span-8 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[320px] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3 z-0 pointer-events-none transition-all duration-700 group-hover:bg-indigo-100 group-hover:scale-110"></div>
+                    <div className="flex justify-between items-start mb-6 z-10">
+                        <div>
+                            <h3 className="font-extrabold text-gray-900 text-[16px] tracking-tight">Revenue Overview</h3>
+                            <p className="text-[12px] text-gray-500 font-medium mt-0.5 flex items-center">
+                                <TrendingUp className="w-3 h-3 mr-1 text-green-500" />
+                                {timeframe === 'monthly' ? 'Last 30 Days Performance' : 'Last 7 Days Performance'}
+                            </p>
+                        </div>
+                        <div className="flex items-center p-1 bg-gray-50 rounded-lg border border-gray-100 shadow-inner">
+                            <button 
+                                onClick={() => setTimeframe('weekly')}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all duration-300 ${timeframe === 'weekly' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+                            >Weekly</button>
+                            <button 
+                                onClick={() => setTimeframe('monthly')}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-all duration-300 ${timeframe === 'monthly' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-900'}`}
+                            >Monthly</button>
+                        </div>
                     </div>
-                    <div className="flex-1 -ml-4">
+                    <div className="flex-1 -ml-4 z-10">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenue_chart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <AreaChart data={revenue_chart} margin={{ top: 10, right: 40, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.5}/>
+                                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0.0}/>
                                     </linearGradient>
+                                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                        <feGaussianBlur stdDeviation="4" result="blur" />
+                                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                    </filter>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} tickFormatter={(val) => `₹${val/1000}K`} dx={-10} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.8} />
+                                <XAxis 
+                                    dataKey="date" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} 
+                                    dy={12} 
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} 
+                                    tickFormatter={(val) => `₹${val/1000}K`} 
+                                    dx={-12} 
+                                />
                                 <Tooltip 
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
-                                    labelStyle={{ fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}
-                                    itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
+                                    cursor={{ stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 4' }}
+                                    contentStyle={{ 
+                                        borderRadius: '16px', 
+                                        border: '1px solid rgba(226, 232, 240, 0.8)',
+                                        boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(8px)',
+                                        padding: '12px 16px'
+                                    }}
+                                    labelStyle={{ fontWeight: '800', color: '#334155', marginBottom: '8px', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                                    itemStyle={{ color: '#4f46e5', fontWeight: '800', fontSize: '15px' }}
                                     formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
                                 />
-                                <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{r: 6, strokeWidth: 0, fill: '#8b5cf6'}} />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="revenue" 
+                                    stroke="#4f46e5" 
+                                    strokeWidth={4} 
+                                    fillOpacity={1} 
+                                    fill="url(#colorRevenue)" 
+                                    activeDot={{ r: 7, strokeWidth: 3, fill: '#ffffff', stroke: '#4f46e5', style: { filter: 'url(#glow)' } }} 
+                                    dot={{ r: 4, strokeWidth: 2, fill: '#ffffff', stroke: '#4f46e5', strokeOpacity: 0.5 }}
+                                    animationDuration={1500}
+                                    animationEasing="ease-in-out"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>

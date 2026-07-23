@@ -129,7 +129,7 @@ const KitchenOverview = () => {
                         <span className="text-xs font-semibold text-gray-500">Auto-updating every 10s</span>
                     </div>
                     
-                    <div className="p-6 overflow-y-auto flex-1">
+                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                         {ordersLoading && !activeOrdersResponse ? (
                             <div className="flex justify-center py-10">
                                 <div className="animate-pulse flex gap-2">
@@ -206,7 +206,7 @@ const KitchenOverview = () => {
                         </select>
                     </div>
 
-                    <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+                    <div className="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-6">
                         {performanceLoading && !performanceData ? (
                             <div className="flex items-center justify-center h-full">
                                 <div className="animate-pulse flex gap-2">
@@ -218,44 +218,53 @@ const KitchenOverview = () => {
                         ) : (
                             <>
                                 {/* Average Prep Time Trend */}
-                                <div className="flex-1 min-h-[220px]">
+                                <div className="h-[250px] shrink-0 flex flex-col">
                                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Average Prep Time (Mins)</h3>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={trend} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="date" tickFormatter={formatXAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} dy={10} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} />
-                                            <Tooltip 
-                                                contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px'}}
-                                                labelFormatter={formatTooltip}
-                                            />
-                                            <Line type="monotone" name="Avg Prep Time" dataKey="averagePrepTime" stroke="#6366f1" strokeWidth={3} dot={{r: 3, strokeWidth: 2}} activeDot={{r: 5}} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
+                                    <div className="flex-1">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={trend} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                                <XAxis dataKey="date" tickFormatter={formatXAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} dy={10} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} />
+                                                <Tooltip 
+                                                    contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px'}}
+                                                    labelFormatter={formatTooltip}
+                                                />
+                                                <Line type="monotone" name="Avg Prep Time" dataKey="averagePrepTime" stroke="#6366f1" strokeWidth={3} dot={{r: 3, strokeWidth: 2}} activeDot={{r: 5}} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
 
                                 {/* Order Volume Trend */}
-                                <div className="flex-1 min-h-[220px]">
+                                <div className="h-[250px] shrink-0 flex flex-col">
                                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Completed Orders Volume</h3>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={trend} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="date" tickFormatter={formatXAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} dy={10} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} />
-                                            <Tooltip 
-                                                contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px'}}
-                                                labelFormatter={formatTooltip}
-                                                cursor={{fill: '#f3f4f6'}}
-                                            />
-                                            <Bar name="Completed Orders" dataKey="completedOrders" fill="#10b981" radius={[4, 4, 0, 0]} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                    <div className="flex-1">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={trend} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                                <XAxis dataKey="date" tickFormatter={formatXAxis} axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} dy={10} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 11}} />
+                                                <Tooltip 
+                                                    contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px'}}
+                                                    labelFormatter={formatTooltip}
+                                                    cursor={{fill: '#f3f4f6'}}
+                                                />
+                                                <Bar name="Completed Orders" dataKey="completedOrders" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
                             </>
                         )}
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 0px; background: transparent; display: none; }
+                .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
         </div>
     );
 };

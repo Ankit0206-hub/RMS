@@ -14,8 +14,10 @@ class AnalyticsService:
         if timeframe == "today":
             start_date = today_start
             
+        chart_days = 30 if timeframe == "monthly" else 7
+            
         kpis = await self.repository.get_kpis(db, start_date)
-        revenue_chart = await self.repository.get_revenue_by_date(db, days=7)
+        revenue_chart = await self.repository.get_revenue_by_date(db, days=chart_days)
         top_selling_items = await self.repository.get_top_selling_items(db, limit=5)
         top_categories = await self.repository.get_top_categories(db, limit=5)
         top_waiters = await self.repository.get_top_waiters(db, limit=5)
