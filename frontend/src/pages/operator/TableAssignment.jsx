@@ -257,10 +257,12 @@ const TableAssignment = () => {
                             {[...filteredTablesByFloor].sort((a, b) => a.capacity - b.capacity).map(table => {
                                 const renderChairs = (seats, status) => {
                                     const chairs = [];
-                                    const topSeats = Math.ceil(seats / 2);
-                                    const bottomSeats = Math.floor(seats / 2);
+                                    // Clamp max visual chairs to 24 to prevent browser memory leaks/crashes from huge capacity values
+                                    const visualSeats = Math.min(parseInt(seats) || 0, 24);
+                                    const topSeats = Math.ceil(visualSeats / 2);
+                                    const bottomSeats = Math.floor(visualSeats / 2);
                                     
-                                    const occupiedSeatsCount = status === 'Occupied' ? Math.max(1, seats - 1) : status === 'Reserved' ? seats : 0;
+                                    const occupiedSeatsCount = status === 'Occupied' ? Math.max(1, visualSeats - 1) : status === 'Reserved' ? visualSeats : 0;
                                     let highlightedCount = 0;
 
                                     for (let i = 0; i < topSeats; i++) {
