@@ -38,9 +38,11 @@ async def get_kitchen_orders(
             joinedload(OrderItem.menu_item)
         )
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
+        .join(Order, OrderItem.order_id == Order.id)
         .filter(
             MenuItem.kitchen_id == kitchen_id,
-            OrderItem.status.in_(["received", "preparing"])
+            OrderItem.status.in_(["received", "preparing"]),
+            Order.status.notin_(["Completed", "Cancelled", "Served"])
         )
         .order_by(OrderItem.created_at.asc())
     )
@@ -94,9 +96,11 @@ async def get_kitchen_prepared_items(
             joinedload(OrderItem.menu_item)
         )
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
+        .join(Order, OrderItem.order_id == Order.id)
         .filter(
             MenuItem.kitchen_id == kitchen_id,
-            OrderItem.status == "prepared"
+            OrderItem.status == "prepared",
+            Order.status.notin_(["Completed", "Cancelled", "Served"])
         )
         .order_by(OrderItem.updated_at.desc())
     )
@@ -151,16 +155,69 @@ async def update_item_status(
 
     # Emit websocket notification for the waiter
     from app.websocket.connection_manager import manager
-    await manager.broadcast_to_role(
-        "waiter",
-        {
-            "type": "ORDER_ITEM_UPDATED",
-            "data": {
-                "item_id": item.id,
-                "order_id": item.order_id,
-                "status": item.status
-            }
-        }
+    await manager.broadcast(
+        event="ORDER_ITEM_UPDATED",
+        payload={
+            "item_id": item.id,
+            "order_id": item.order_id,
+            "status": item.status
+        },
+        target_roles=["waiter"]
     )
 
     return {"message": "Status updated successfully", "status": item.status}
+
+@router.patch("/orders/{order_id}/status", response_model=Dict[str, Any])
+async def update_order_items_status(
+    order_id: int,
+    status_update: OrderItemStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_kitchen)
+):
+    valid_statuses = ["received", "preparing", "prepared", "served"]
+    if status_update.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail="Invalid status")
+        
+    kitchen_id = current_user.kitchen_id
+    if not kitchen_id:
+        raise HTTPException(status_code=400, detail="No kitchen assigned")
+
+    query = (
+        select(OrderItem)
+        .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
+        .filter(
+            OrderItem.order_id == order_id,
+            MenuItem.kitchen_id == kitchen_id
+        )
+    )
+    result = await db.execute(query)
+    items = result.scalars().all()
+
+    if not items:
+        raise HTTPException(status_code=404, detail="No items found for this order in your kitchen")
+
+    updated_ids = []
+    for item in items:
+        # Only update if the status is not already served
+        if item.status != 'served':
+            item.status = status_update.status
+            item.updated_at = datetime.utcnow()
+            updated_ids.append(item.id)
+    
+    await db.commit()
+
+    # Emit websocket notification for each updated item
+    from app.websocket.connection_manager import manager
+    for i_id in updated_ids:
+        await manager.broadcast(
+            event="ORDER_ITEM_UPDATED",
+            payload={
+                "item_id": i_id,
+                "order_id": order_id,
+                "status": status_update.status
+            },
+            target_roles=["waiter"]
+        )
+
+    return {"message": "Order items updated successfully", "updated_count": len(updated_ids), "status": status_update.status}
+

@@ -12,6 +12,10 @@ export const kitchenApi = {
     updateItemStatus: async (itemId, status) => {
         const response = await api.patch(`/kitchen/items/${itemId}/status`, { status });
         return response.data;
+    },
+    updateOrderItemsStatus: async (orderId, status) => {
+        const response = await api.patch(`/kitchen/orders/${orderId}/status`, { status });
+        return response.data;
     }
 };
 
