@@ -119,6 +119,17 @@ export default function WaiterOrders() {
                                         </div>
                                         
                                         <div className="flex items-center gap-2">
+                                            {(order.status === 'Pending' || order.status === 'Verification Pending') && (
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        waiterApi.updateOrderStatus(order.id, "Preparing").then(() => fetchOrders());
+                                                    }} 
+                                                    className="bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-indigo-600 transition-colors mr-2"
+                                                >
+                                                    Accept
+                                                </button>
+                                            )}
                                             {order.status === 'Cooked' && (
                                                 <button 
                                                     onClick={(e) => {

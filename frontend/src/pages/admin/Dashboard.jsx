@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 import { IndianRupee, ClipboardList, Users, LayoutDashboard, Receipt, TrendingUp, TrendingDown, Eye, UserPlus, PlusSquare, Utensils, FileText, LayoutGrid, Star, Clock } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -168,13 +168,24 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 -ml-4">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={revenue_chart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <AreaChart data={revenue_chart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} tickFormatter={(val) => `₹${val/1000}K`} />
-                                <Tooltip />
-                                <Line type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} dot={{r: 4, fill: '#8b5cf6', strokeWidth: 2, stroke: 'white'}} activeDot={{r: 6}} />
-                            </LineChart>
+                                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} tickFormatter={(val) => `₹${val/1000}K`} dx={-10} />
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                                    labelStyle={{ fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}
+                                    itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
+                                    formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                                />
+                                <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{r: 6, strokeWidth: 0, fill: '#8b5cf6'}} />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
