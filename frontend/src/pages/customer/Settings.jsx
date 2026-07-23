@@ -11,6 +11,7 @@ import {
   Info,
   LogOut,
   ChevronRight,
+  Star,
 } from "lucide-react";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
@@ -28,6 +29,11 @@ export default function Settings() {
       title: "Language",
       icon: Globe,
       action: () => navigate("/customer/language"),
+    },
+    {
+      title: "Rate Experience",
+      icon: Star,
+      action: () => navigate("/customer/review"),
     },
     {
       title: "Privacy Policy",

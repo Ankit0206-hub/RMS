@@ -56,6 +56,17 @@ export default function WaiterOrderDetails() {
         }
     };
 
+    const handleAcceptOrder = async () => {
+        try {
+            await waiterApi.updateOrderStatus(orderId, "Preparing");
+            toast.success("Order accepted and sent to kitchen");
+            fetchOrderDetails();
+        } catch (error) {
+            console.error("Failed to accept order", error);
+            toast.error("Failed to accept order");
+        }
+    };
+
     if (loading || !order) {
         return <div className="p-6 flex justify-center items-center min-h-screen bg-slate-50"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div></div>;
     }
@@ -165,6 +176,16 @@ export default function WaiterOrderDetails() {
                     </div>
                 </div>
             </div>
+
+            {order.status === "Pending" && (
+                <div className="fixed bottom-16 md:bottom-20 left-0 right-0 p-4 md:p-6 bg-white/10 backdrop-blur-xl z-40 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.02)] flex justify-center">
+                    <div className="w-full max-w-4xl space-y-3">
+                        <button onClick={handleAcceptOrder} className="w-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-[18px] py-4 font-bold text-[15px] md:text-lg shadow-sm active:scale-95 transition-all flex items-center justify-center border border-indigo-400/50">
+                            Accept Order
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {order.status === "Cooked" && (
                 <div className="fixed bottom-16 md:bottom-20 left-0 right-0 p-4 md:p-6 bg-white/10 backdrop-blur-xl z-40 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.02)] flex justify-center">

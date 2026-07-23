@@ -78,7 +78,7 @@ export default function Cart() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-32 sm:pb-40 space-y-6 max-w-4xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-8 space-y-6 mx-auto w-full">
 
         {cartItems.length === 0 ? (
           <div className="h-[50vh] flex flex-col items-center justify-center">
@@ -223,73 +223,57 @@ export default function Cart() {
                 <div className="my-3 border-t border-gray-100 dark:border-slate-800 border-dashed" />
                 <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white">
                   <span>Grand Total</span>
-                  <span className="text-orange-500">₹{total}</span>
+                  <span className="text-orange-500 text-xl font-black">₹{total}</span>
                 </div>
               </div>
+
+              {/* Order Button */}
+              <button
+                onClick={async () => {
+                  if (!customerSession) {
+                    toast.error("No active session found. Please start a session first.");
+                    return;
+                  }
+                  
+                  setIsPlacingOrder(true);
+                  try {
+                    const itemsForApi = cartItems.map(item => ({
+                      menu_item_id: item.originalId || item.id,
+                      quantity: item.quantity,
+                      notes: [item.portion ? `Portion: ${item.portion}` : "", item.spiceLevel ? `Spice: ${item.spiceLevel}` : "", item.instructions || ""].filter(Boolean).join(" | ")
+                    }));
+                    
+                    const res = await customerApi.createOrder(customerSession.sessionId, {
+                      items: itemsForApi,
+                      special_instructions: ""
+                    });
+                    
+                    setCartItems([]);
+                    toast.success("Order placed successfully!");
+                    navigate("/customer/order-success", { 
+                      state: { 
+                        orderId: res.order_id,
+                        itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0)
+                      } 
+                    });
+                  } catch (err) {
+                    toast.error(err.response?.data?.detail || "Failed to place order");
+                  } finally {
+                    setIsPlacingOrder(false);
+                  }
+                }}
+                disabled={isPlacingOrder}
+                className="mt-6 w-full flex items-center justify-center gap-2 h-14 sm:h-16 rounded-2xl bg-orange-500 text-white font-bold text-lg shadow-[0_8px_25px_rgba(249,115,22,0.3)] active:scale-[0.98] transition-transform disabled:opacity-70"
+              >
+                {isPlacingOrder ? "Placing..." : "Place Order"}
+                {!isPlacingOrder && <ArrowRight size={20} strokeWidth={2.5} />}
+              </button>
             </div>
           </>
         )}
       </div>
 
-      {/* Bottom Fixed Checkout Bar */}
-      {cartItems.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-slate-900/85 backdrop-blur-xl border-t border-gray-100 dark:border-slate-800 shadow-[0_-8px_30px_rgba(0,0,0,0.05)]">
-          <div className="max-w-4xl mx-auto w-full px-5 sm:px-8 py-5 pb-8 sm:pb-10 flex items-center justify-between gap-6">
-            
-            {/* Price Info */}
-            <div className="flex flex-col">
-              <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Total Pay</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">₹{total}</span>
-              </div>
-            </div>
 
-            {/* Order Button */}
-            <button
-              onClick={async () => {
-                if (!customerSession) {
-                  toast.error("No active session found. Please start a session first.");
-                  return;
-                }
-                
-                setIsPlacingOrder(true);
-                try {
-                  const itemsForApi = cartItems.map(item => ({
-                    menu_item_id: item.originalId || item.id, // Ensure we send the backend ID
-                    quantity: item.quantity,
-                    notes: [item.portion ? `Portion: ${item.portion}` : "", item.spiceLevel ? `Spice: ${item.spiceLevel}` : "", item.instructions || ""].filter(Boolean).join(" | ")
-                  }));
-                  
-                  const res = await customerApi.createOrder(customerSession.sessionId, {
-                    items: itemsForApi,
-                    special_instructions: "" // Or add a field for it
-                  });
-                  
-                  // Handle success
-                  setCartItems([]);
-                  toast.success("Order placed successfully!");
-                  navigate("/customer/order-success", { 
-                    state: { 
-                      orderId: res.order_id,
-                      itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0)
-                    } 
-                  });
-                } catch (err) {
-                  toast.error(err.response?.data?.detail || "Failed to place order");
-                } finally {
-                  setIsPlacingOrder(false);
-                }
-              }}
-              disabled={isPlacingOrder}
-              className="flex-1 max-w-[220px] sm:max-w-[300px] flex items-center justify-center gap-2 h-14 sm:h-16 rounded-2xl bg-orange-500 text-white font-bold text-lg shadow-[0_8px_25px_rgba(249,115,22,0.3)] active:scale-[0.97] transition-transform disabled:opacity-70"
-            >
-              {isPlacingOrder ? "Placing..." : "Place Order"}
-              {!isPlacingOrder && <ArrowRight size={20} strokeWidth={2.5} />}
-            </button>
-            
-          </div>
-        </div>
-      )}
 
       <CustomizationModal 
         isOpen={!!editingItem} 

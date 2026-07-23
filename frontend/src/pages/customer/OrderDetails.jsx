@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, CheckCircle2, ChefHat, FileText, Download } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, ChefHat, FileText, Download, Star } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
@@ -168,14 +168,25 @@ export default function OrderDetails() {
       </div>
 
       {/* Floating Action Button */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 dark:from-slate-950 via-gray-50 dark:via-slate-950 to-transparent">
-        <button
-          onClick={() => navigate("/customer/invoice", { state: { order } })}
-          className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-slate-800 text-white rounded-2xl py-4 font-bold shadow-xl shadow-gray-200 dark:shadow-slate-900/50 active:scale-[0.98] transition-transform"
-        >
-          <Download size={20} />
-          Download Invoice
-        </button>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 dark:from-slate-950 via-gray-50 dark:via-slate-950 to-transparent flex flex-col gap-3 pt-12 pointer-events-none">
+        <div className="pointer-events-auto flex flex-col gap-3">
+          {step >= 3 && (
+            <button
+              onClick={() => navigate("/customer/review")}
+              className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white rounded-2xl py-4 font-bold shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform"
+            >
+              <Star size={20} className="fill-white" />
+              Rate Order
+            </button>
+          )}
+          <button
+            onClick={() => navigate("/customer/invoice", { state: { order } })}
+            className={`w-full flex items-center justify-center gap-2 rounded-2xl py-4 font-bold active:scale-[0.98] transition-transform ${step >= 3 ? "bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 shadow-sm" : "bg-gray-900 dark:bg-slate-800 text-white shadow-xl shadow-gray-200 dark:shadow-slate-900/50"}`}
+          >
+            <Download size={20} />
+            Download Invoice
+          </button>
+        </div>
       </div>
 
     </PageLayout>
