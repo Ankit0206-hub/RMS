@@ -65,6 +65,11 @@ export const customerApi = {
         return response.data;
     },
 
+    getGlobalOrderHistory: async (sessionId) => {
+        const response = await api.get(`/sessions/${sessionId}/orders/history`);
+        return response.data;
+    },
+
     // Billing
     requestBill: async (sessionId) => {
         const response = await api.post(`/sessions/${sessionId}/request-bill`);
