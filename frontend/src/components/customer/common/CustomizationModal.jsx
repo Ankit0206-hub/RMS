@@ -77,7 +77,7 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
         </div>
 
         {/* Scrollable Content */}
-        <div className="max-h-[60vh] overflow-y-auto px-1 -mx-1 space-y-6 pb-6">
+        <div className="max-h-[60vh] overflow-y-auto px-1 -mx-1 space-y-6 pb-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent">
           
           {/* Customization: Portion */}
           {hasPortions && (
@@ -136,12 +136,12 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
         <div className="pt-2 border-t border-gray-100 dark:border-slate-800">
           <button
             onClick={handleAdd}
-            className="flex w-full items-center justify-between rounded-2xl bg-orange-500 px-6 py-4 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-xl md:rounded-2xl bg-orange-500 px-5 py-2.5 md:px-6 md:py-3 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
           >
             <div className="flex flex-col items-start leading-none">
-              <span className="text-lg">₹{currentPrice * (food.quantity || 1)}</span>
+              <span className="text-base md:text-lg">₹{currentPrice * (food.quantity || 1)}</span>
             </div>
-            <span className="text-[16px]">{isEditing ? 'Update Cart' : 'Add Item to cart'}</span>
+            <span className="text-[15px] md:text-[16px]">{isEditing ? 'Update Cart' : 'Add Item to cart'}</span>
           </button>
         </div>
       </div>
