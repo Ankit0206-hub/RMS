@@ -22,7 +22,7 @@ export default function OrderHistory() {
         return;
       }
       try {
-        const res = await customerApi.getSessionDetails(customerSession.sessionId);
+        const res = await customerApi.getGlobalOrderHistory(customerSession.sessionId);
         const mappedOrders = (res.orders || []).map(o => ({
           id: o.id,
           status: o.status === "Verification Pending" || o.status === "Pending" ? "Pending" : o.status === "Cancelled" ? "Cancelled" : "Delivered",
@@ -32,7 +32,7 @@ export default function OrderHistory() {
           }),
           items: o.items.map(i => ({ ...i, price: parseFloat(i.price) })),
           total: o.items.reduce((sum, i) => sum + (parseFloat(i.price) * i.quantity), 0)
-        })).reverse();
+        }));
         setOrders(mappedOrders);
       } catch (err) {
         console.error("Failed to fetch orders:", err);

@@ -312,6 +312,66 @@ async def get_customer_session_details(
         "bill_id": bill_id
     }
 
+@router.get("/sessions/{session_id}/orders/history")
+async def get_customer_global_order_history(
+    session_id: int,
+    db: AsyncSession = Depends(get_db),
+    session_token_data: CustomerSession = Depends(get_current_customer_session)
+):
+    if session_token_data.id != session_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this session")
+        
+    # Get current session to check phone number
+    query = select(CustomerSession).where(CustomerSession.id == session_id)
+    result = await db.execute(query)
+    current_session = result.scalars().first()
+    
+    if not current_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # If the user has a phone number, fetch all sessions with that phone number. 
+    # Otherwise, just fetch the current session.
+    if current_session.customer_phone:
+        sessions_query = select(CustomerSession).where(
+            CustomerSession.customer_phone == current_session.customer_phone
+        ).options(
+            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images)
+        )
+    else:
+        sessions_query = select(CustomerSession).where(CustomerSession.id == session_id).options(
+            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images)
+        )
+        
+    sessions_result = await db.execute(sessions_query)
+    all_sessions = sessions_result.scalars().all()
+    
+    formatted_orders = []
+    for s in all_sessions:
+        for order in s.orders:
+            items = []
+            for i in order.items:
+                items.append({
+                    "id": i.id,
+                    "menu_item_id": i.menu_item_id,
+                    "name": i.menu_item.name if i.menu_item else "Unknown",
+                    "image": i.menu_item.images[0].image_url if getattr(i.menu_item, 'images', None) and len(i.menu_item.images) > 0 else getattr(i.menu_item, 'image_url', "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop") if i.menu_item else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
+                    "quantity": i.quantity,
+                    "price": float(i.price_at_order),
+                    "notes": i.notes
+                })
+                    
+            formatted_orders.append({
+                "id": order.id,
+                "status": order.status,
+                "items": items,
+                "time": order.created_at.isoformat(),
+                "session_id": s.id
+            })
+
+    # Sort by time descending
+    formatted_orders.sort(key=lambda x: x["time"], reverse=True)
+    return {"orders": formatted_orders}
+
 @router.post("/sessions/{session_id}/request-bill")
 async def request_customer_bill(
     session_id: int,
