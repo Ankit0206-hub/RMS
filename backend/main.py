@@ -14,9 +14,12 @@ from app.api.admin import analytics as admin_analytics
 from app.api.admin import reservations as admin_reservations
 from app.api.admin import notifications as admin_notifications
 from app.api.admin import kitchen as admin_kitchen
+from app.api.kitchen import kitchen_router
 from app.api.operator import operator_router
 from app.api.waiter import waiter_router
 from app.api.customer import customer_router
+
+
 from app.api.customer import reviews as customer_reviews
 from app.api.admin import reviews as admin_reviews
 from app.api import websocket_router
@@ -74,6 +77,7 @@ app.include_router(admin_analytics.router, prefix="/api/v1/admin", tags=["Admin 
 app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations", tags=["Admin Reservations"])
 app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(admin_kitchen.router, prefix="/api/v1/admin/kitchen", tags=["Admin Kitchen"])
+app.include_router(kitchen_router.router, prefix="/api/v1/kitchen", tags=["Kitchen"])
 app.include_router(operator_router.router, prefix="/api/v1", tags=["Operator"])
 app.include_router(waiter_router.router, prefix="/api/v1", tags=["Waiter"])
 app.include_router(customer_router.router, prefix="/api/v1/customer", tags=["Customer"])

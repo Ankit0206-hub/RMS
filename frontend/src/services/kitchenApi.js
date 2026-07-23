@@ -1,13 +1,16 @@
 import api from './api';
 
 export const kitchenApi = {
-    getOrders: async (status) => {
-        const url = status ? `/admin/ordering/orders?status=${status}&page_size=50` : '/admin/ordering/orders?page_size=50';
-        const response = await api.get(url);
+    getOrders: async () => {
+        const response = await api.get('/kitchen/orders');
         return response.data;
     },
-    updateOrderStatus: async (orderId, status) => {
-        const response = await api.patch(`/admin/ordering/orders/${orderId}/status`, { status });
+    getPreparedItems: async () => {
+        const response = await api.get('/kitchen/prepared');
+        return response.data;
+    },
+    updateItemStatus: async (itemId, status) => {
+        const response = await api.patch(`/kitchen/items/${itemId}/status`, { status });
         return response.data;
     }
 };

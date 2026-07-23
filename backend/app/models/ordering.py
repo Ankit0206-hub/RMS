@@ -49,6 +49,7 @@ class OrderItem(TimestampMixin, Base):
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     price_at_order: Mapped[float] = mapped_column(Numeric(10, 2))
     notes: Mapped[Optional[str]] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(20), default="received", index=True) # received, preparing, prepared, served
 
     order: Mapped["Order"] = relationship(back_populates="items")
     menu_item: Mapped["MenuItem"] = relationship("MenuItem")

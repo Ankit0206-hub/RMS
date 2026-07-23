@@ -2,14 +2,73 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from datetime import datetime, timedelta, date
 
 from app.db.database import get_db
 from app.models.ordering import Order, OrderStatusHistory
+from app.models.kitchen import Kitchen
 from app.api.deps import get_current_admin
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class KitchenCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    is_active: bool = True
+
+class KitchenUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+@router.get("/list")
+async def get_kitchens(
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Kitchen))
+    kitchens = result.scalars().all()
+    return {"data": [{"id": k.id, "name": k.name, "description": k.description, "is_active": k.is_active} for k in kitchens]}
+
+@router.post("/")
+async def create_kitchen(
+    kitchen_in: KitchenCreate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    kitchen = Kitchen(
+        name=kitchen_in.name,
+        description=kitchen_in.description,
+        is_active=kitchen_in.is_active
+    )
+    db.add(kitchen)
+    await db.commit()
+    await db.refresh(kitchen)
+    return {"message": "Kitchen created", "data": {"id": kitchen.id, "name": kitchen.name}}
+
+@router.patch("/{kitchen_id}")
+async def update_kitchen(
+    kitchen_id: int,
+    kitchen_in: KitchenUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Kitchen).filter(Kitchen.id == kitchen_id))
+    kitchen = result.scalar_one_or_none()
+    if not kitchen:
+        return {"error": "Not found"}
+        
+    if kitchen_in.name is not None:
+        kitchen.name = kitchen_in.name
+    if kitchen_in.description is not None:
+        kitchen.description = kitchen_in.description
+    if kitchen_in.is_active is not None:
+        kitchen.is_active = kitchen_in.is_active
+        
+    await db.commit()
+    return {"message": "Kitchen updated"}
 
 @router.get("/dashboard", response_model=Dict[str, Any])
 async def get_kitchen_dashboard(

@@ -20,6 +20,7 @@ class MenuItem(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("menu_categories.id", ondelete="RESTRICT"), index=True)
+    kitchen_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("kitchens.id", ondelete="SET NULL"), index=True)
     item_code: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(150), index=True)
     description: Mapped[Optional[str]] = mapped_column(Text)

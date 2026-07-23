@@ -8,6 +8,7 @@ frontend/.env
 backend/.env
 backend/venv/
 backend/.venv/
+backend/.venvl/
 backend/__pycache__/
 backend/.pytest_cache/
 backend/restaurant.db
@@ -23,3 +24,4 @@ dummy_data.py
 .DS_Store
 .vscode/
 .idea/
+Makefile
