@@ -35,6 +35,7 @@ class EmployeeRepository:
             employee_code=employee_in.employee_code,
             role_id=employee_in.role_id,
             is_active=employee_in.is_active,
+            kitchen_id=employee_in.kitchen_id,
         )
         db.add(db_obj)
         await db.commit()

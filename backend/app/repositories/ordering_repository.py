@@ -102,3 +102,17 @@ class OrderingRepository:
             await db.commit()
             await db.refresh(order)
         return order
+
+    async def update_order_item_status(self, db: AsyncSession, order_id: int, item_id: int, status: str) -> Optional[OrderItem]:
+        stmt = select(OrderItem).options(
+            selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
+            selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
+            selectinload(OrderItem.menu_item).selectinload(MenuItem.kitchen)
+        ).where(OrderItem.id == item_id, OrderItem.order_id == order_id)
+        result = await db.execute(stmt)
+        item = result.scalars().first()
+        if item:
+            item.status = status
+            await db.commit()
+            await db.refresh(item)
+        return item

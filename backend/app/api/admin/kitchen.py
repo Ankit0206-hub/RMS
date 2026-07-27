@@ -8,8 +8,8 @@ from datetime import datetime, timedelta, date
 from app.db.database import get_db
 from app.models.ordering import Order, OrderStatusHistory
 from app.models.kitchen import Kitchen
-from app.api.deps import get_current_admin
-from pydantic import BaseModel
+from app.api.deps import get_current_admin, get_current_admin_or_operator
+from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
 
@@ -17,6 +17,8 @@ class KitchenCreate(BaseModel):
     name: str
     description: Optional[str] = None
     is_active: bool = True
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
 
 class KitchenUpdate(BaseModel):
     name: Optional[str] = None
@@ -26,7 +28,7 @@ class KitchenUpdate(BaseModel):
 @router.get("/list")
 async def get_kitchens(
     db: AsyncSession = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(get_current_admin_or_operator)
 ):
     result = await db.execute(select(Kitchen))
     kitchens = result.scalars().all()
@@ -36,7 +38,7 @@ async def get_kitchens(
 async def create_kitchen(
     kitchen_in: KitchenCreate,
     db: AsyncSession = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(get_current_admin_or_operator)
 ):
     kitchen = Kitchen(
         name=kitchen_in.name,
@@ -46,6 +48,26 @@ async def create_kitchen(
     db.add(kitchen)
     await db.commit()
     await db.refresh(kitchen)
+    
+    if kitchen_in.email and kitchen_in.password:
+        from app.schemas.admin.employees import EmployeeCreate
+        from app.services.admin.employee_service import employee_service
+        
+        try:
+            emp_create = EmployeeCreate(
+                email=kitchen_in.email,
+                password=kitchen_in.password,
+                first_name=kitchen_in.name,
+                last_name="Staff",
+                phone="0000000000",
+                role_id=3,
+                kitchen_id=kitchen.id,
+                is_active=True
+            )
+            await employee_service.create_employee(db, emp_create)
+        except Exception as e:
+            await db.rollback()
+
     return {"message": "Kitchen created", "data": {"id": kitchen.id, "name": kitchen.name}}
 
 @router.patch("/{kitchen_id}")
@@ -53,7 +75,7 @@ async def update_kitchen(
     kitchen_id: int,
     kitchen_in: KitchenUpdate,
     db: AsyncSession = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(get_current_admin_or_operator)
 ):
     result = await db.execute(select(Kitchen).filter(Kitchen.id == kitchen_id))
     kitchen = result.scalar_one_or_none()
@@ -73,7 +95,7 @@ async def update_kitchen(
 @router.get("/dashboard", response_model=Dict[str, Any])
 async def get_kitchen_dashboard(
     db: AsyncSession = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(get_current_admin_or_operator)
 ):
     """
     Get live kitchen dashboard metrics.
@@ -144,7 +166,7 @@ async def get_kitchen_dashboard(
 async def get_kitchen_performance(
     days: int = Query(7, ge=1, le=30),
     db: AsyncSession = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(get_current_admin_or_operator)
 ):
     """
     Get kitchen performance metrics over the last N days.

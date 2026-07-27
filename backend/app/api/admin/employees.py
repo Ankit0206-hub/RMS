@@ -22,7 +22,7 @@ async def create_employee(
     
 @router.get("/next-code", response_model=StandardResponse[str])
 async def get_next_employee_code(
-    role_id: int = Query(2, ge=1, le=2),
+    role_id: int = Query(2, ge=1, le=3),
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_admin_or_operator)
 ):

@@ -16,9 +16,9 @@ const AddEmployee = () => {
         last_name: '',
         email: '',
         phone: '',
-        employee_code: '',
         password: '',
-        role_id: 1, // 1 for Operator, 2 for Waiter
+        role_id: 1, // 1 for Operator, 2 for Waiter, 3 for Kitchen
+        kitchen_id: '',
         is_active: true
     });
 
@@ -26,6 +26,14 @@ const AddEmployee = () => {
         queryKey: ['adminEmployees'],
         queryFn: async () => {
             const res = await api.get('/admin/employees', { params: { page: 1, page_size: 100 } });
+            return res.data.data || [];
+        }
+    });
+
+    const { data: kitchens } = useQuery({
+        queryKey: ['kitchens'],
+        queryFn: async () => {
+            const res = await api.get('/admin/kitchen/list');
             return res.data.data || [];
         }
     });
@@ -71,7 +79,11 @@ const AddEmployee = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        mutation.mutate(formData);
+        const payload = {
+            ...formData,
+            kitchen_id: formData.role_id === 3 && formData.kitchen_id ? parseInt(formData.kitchen_id) : null
+        };
+        mutation.mutate(payload);
     };
 
     const tabs = ['Basic', 'Role & Settings', 'Documents'];
@@ -216,8 +228,29 @@ const AddEmployee = () => {
                                 >
                                     <option value={1}>Operator</option>
                                     <option value={2}>Waiter</option>
+                                    <option value={3}>Kitchen Staff</option>
                                 </select>
                             </div>
+
+                            {formData.role_id === 3 && (
+                                <div className="w-full">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Assign Kitchen
+                                    </label>
+                                    <select
+                                        name="kitchen_id"
+                                        value={formData.kitchen_id}
+                                        onChange={handleChange}
+                                        className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5 transition-colors"
+                                        required
+                                    >
+                                        <option value="">Select a Kitchen</option>
+                                        {kitchens?.map(k => (
+                                            <option key={k.id} value={k.id}>{k.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="flex items-center mt-6">
                                 <input

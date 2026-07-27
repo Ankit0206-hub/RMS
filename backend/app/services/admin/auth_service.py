@@ -32,6 +32,9 @@ class AuthService:
                 raise HTTPException(status_code=400, detail="Inactive user")
             
             role_name = employee.role.name.lower() if employee.role else "employee"
+            if role_name == "kitchen staff":
+                role_name = "kitchen"
+                
             access_token = create_access_token(subject=employee.id, role="employee") # we keep role as employee in JWT for deps, but we can pass actual role to frontend
             return Token(access_token=access_token, token_type="bearer", role=role_name)
 

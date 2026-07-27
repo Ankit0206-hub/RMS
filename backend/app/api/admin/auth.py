@@ -18,13 +18,17 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     user = current_user["user"]
     role = current_user["role"]
     if role == "employee":
+        role_name = user.role_name.lower() if user.role_name else "employee"
+        if role_name == "kitchen staff":
+            role_name = "kitchen"
+            
         return StandardResponse(data={
             "id": user.id,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
             "phone": user.phone,
-            "role": user.role_name.lower() if user.role_name else "employee"
+            "role": role_name
         })
     elif role == "admin":
         return StandardResponse(data={

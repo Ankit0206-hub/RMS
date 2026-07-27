@@ -17,9 +17,9 @@ const EditEmployee = () => {
         last_name: '',
         email: '',
         phone: '',
-        employee_code: '',
         password: '',
         role_id: 1,
+        kitchen_id: '',
         is_active: true
     });
 
@@ -29,7 +29,14 @@ const EditEmployee = () => {
             const response = await api.get(`/admin/employees/${id}`);
             return response.data.data;
         },
-        enabled: !!id
+    });
+
+    const { data: kitchens } = useQuery({
+        queryKey: ['kitchens'],
+        queryFn: async () => {
+            const response = await api.get('/admin/kitchen/list');
+            return response.data.data || [];
+        }
     });
 
     useEffect(() => {
@@ -42,6 +49,7 @@ const EditEmployee = () => {
                 employee_code: employeeData.employee_code || '',
                 password: '', // Don't populate password
                 role_id: employeeData.role_id || 1,
+                kitchen_id: employeeData.kitchen_id || '',
                 is_active: employeeData.is_active !== undefined ? employeeData.is_active : true
             });
         }
@@ -53,6 +61,11 @@ const EditEmployee = () => {
             const payload = { ...updatedEmployee };
             if (!payload.password) {
                 delete payload.password;
+            }
+            if (payload.role_id === 3 && payload.kitchen_id) {
+                payload.kitchen_id = parseInt(payload.kitchen_id);
+            } else {
+                payload.kitchen_id = null;
             }
             const response = await api.put(`/admin/employees/${id}`, payload);
             return response.data;
@@ -220,8 +233,29 @@ const EditEmployee = () => {
                                 >
                                     <option value={1}>Operator</option>
                                     <option value={2}>Waiter</option>
+                                    <option value={3}>Kitchen Staff</option>
                                 </select>
                             </div>
+
+                            {formData.role_id === 3 && (
+                                <div className="w-full">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                        Assign Kitchen
+                                    </label>
+                                    <select
+                                        name="kitchen_id"
+                                        value={formData.kitchen_id}
+                                        onChange={handleChange}
+                                        className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5 transition-colors"
+                                        required
+                                    >
+                                        <option value="">Select a Kitchen</option>
+                                        {kitchens?.map(k => (
+                                            <option key={k.id} value={k.id}>{k.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="flex items-center mt-6">
                                 <input
