@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
-import { ShoppingCart, Utensils, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Utensils, CheckCircle, Search } from 'lucide-react';
 import { Button, Card, Modal } from '../../components/ui';
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -17,6 +17,7 @@ const CustomerMenu = () => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [orderStatus, setOrderStatus] = useState(null);
     const [ws, setWs] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // 1. Initialize Session
     const startSessionMutation = useMutation({
@@ -127,17 +128,48 @@ const CustomerMenu = () => {
                 </div>
             )}
 
+            <div className="px-4 pt-4">
+                <div className="relative">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <Search size={18} className="text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search for food..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-sm rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
+                    />
+                </div>
+            </div>
+
             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {menuData?.map(item => (
-                    <Card key={item.id} className="p-4 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
-                        <div>
-                            <h3 className="font-bold">{item.name}</h3>
-                            <p className="text-gray-500 dark:text-slate-400 text-sm">{item.description}</p>
-                            <p className="text-cyan-600 font-medium mt-1">₹{parseFloat(item.price).toFixed(2)}</p>
-                        </div>
-                        <Button onClick={() => addToCart(item)} size="sm">Add</Button>
-                    </Card>
-                ))}
+                {(() => {
+                    const filteredItems = (menuData || []).filter(item => 
+                        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+
+                    if (filteredItems.length === 0 && !isLoading) {
+                        return (
+                            <div className="col-span-full flex flex-col items-center justify-center h-48 text-gray-400">
+                                <Utensils size={40} className="mb-3 text-gray-300 dark:text-slate-600" />
+                                <h2 className="text-lg font-bold text-gray-600 dark:text-slate-400">No items found</h2>
+                                <p className="text-sm">Try searching for something else</p>
+                            </div>
+                        );
+                    }
+
+                    return filteredItems.map(item => (
+                        <Card key={item.id} className="p-4 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                            <div>
+                                <h3 className="font-bold">{item.name}</h3>
+                                <p className="text-gray-500 dark:text-slate-400 text-sm">{item.description}</p>
+                                <p className="text-cyan-600 font-medium mt-1">₹{parseFloat(item.price).toFixed(2)}</p>
+                            </div>
+                            <Button onClick={() => addToCart(item)} size="sm">Add</Button>
+                        </Card>
+                    ));
+                })()}
             </div>
 
             {cart.length > 0 && (

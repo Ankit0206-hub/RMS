@@ -40,9 +40,14 @@ import AddAddress from "../pages/customer/AddAddress.jsx";
 import Menu from "../pages/customer/Menu.jsx";
 import Reservation from "../pages/customer/Reservation.jsx";
 import Logout from "../pages/customer/Logout.jsx";
+import { useEffect } from 'react';
+
 export default function AppRoutes() {
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
+
   return (
-    
       <Routes>
         <Route path="" element={<Splash />} />
         <Route path="landing" element={<Landing />} />

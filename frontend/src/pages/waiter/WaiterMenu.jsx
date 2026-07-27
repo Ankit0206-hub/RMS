@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Search, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Search, ShoppingCart, Plus, Minus, Utensils } from 'lucide-react';
 import toast from 'react-hot-toast';
 import waiterApi from '../../services/waiterApi';
 
@@ -147,40 +147,56 @@ export default function WaiterMenu() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
                         </div>
                     ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {items.filter(item => {
-                            const matchesCat = activeCat === 'All' || item.category === activeCat;
-                            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-                            return matchesCat && matchesSearch;
-                        }).map(item => (
-                            <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
-                                <div className="flex items-center space-x-4">
-                                    <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 md:text-lg leading-tight">{item.name}</h3>
-                                        {(item.prepType || item.spiceLevel) && (
-                                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                                                {item.prepType && <span className="text-[10px] font-bold text-gray-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50 shadow-sm">{item.prepType}</span>}
-                                                {item.spiceLevel && <span className="text-[10px] font-bold text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-200/50 shadow-sm">{item.spiceLevel}</span>}
+                        (() => {
+                            const filteredItems = items.filter(item => {
+                                const matchesCat = activeCat === 'All' || item.category === activeCat;
+                                const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+                                return matchesCat && matchesSearch;
+                            });
+
+                            if (filteredItems.length === 0) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                                        <Utensils size={48} className="mb-4 text-gray-300 drop-shadow-sm" />
+                                        <h2 className="text-xl font-bold text-gray-600">No items found</h2>
+                                        <p className="text-sm mt-1">Try searching for something else</p>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {filteredItems.map(item => (
+                                        <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
+                                            <div className="flex items-center space-x-4">
+                                                <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800 md:text-lg leading-tight">{item.name}</h3>
+                                                    {(item.prepType || item.spiceLevel) && (
+                                                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                                            {item.prepType && <span className="text-[10px] font-bold text-gray-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50 shadow-sm">{item.prepType}</span>}
+                                                            {item.spiceLevel && <span className="text-[10px] font-bold text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-200/50 shadow-sm">{item.spiceLevel}</span>}
+                                                        </div>
+                                                    )}
+                                                    <p className="text-sm text-gray-600 font-bold mt-1">₹ {item.price}</p>
+                                                </div>
                                             </div>
-                                        )}
-                                        <p className="text-sm text-gray-600 font-bold mt-1">₹ {item.price}</p>
-                                    </div>
+                                            {item.qty > 0 ? (
+                                                <div className="flex items-center bg-white/30 backdrop-blur-md rounded-xl p-1 shadow-inner border border-white/40">
+                                                    <button onClick={() => updateQty(item.id, -1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Minus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
+                                                    <span className="w-8 md:w-10 text-center font-black text-sm md:text-base text-gray-800">{item.qty}</span>
+                                                    <button onClick={() => updateQty(item.id, 1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => handleFirstAdd(item)} className="bg-rose-100/50 text-rose-500 p-2.5 rounded-xl font-bold border border-rose-200/50 active:scale-95 transition-all">
+                                                    <Plus className="h-5 w-5 md:h-6 md:w-6" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
-                                {item.qty > 0 ? (
-                                    <div className="flex items-center bg-white/30 backdrop-blur-md rounded-xl p-1 shadow-inner border border-white/40">
-                                        <button onClick={() => updateQty(item.id, -1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Minus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
-                                        <span className="w-8 md:w-10 text-center font-black text-sm md:text-base text-gray-800">{item.qty}</span>
-                                        <button onClick={() => updateQty(item.id, 1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
-                                    </div>
-                                ) : (
-                                    <button onClick={() => handleFirstAdd(item)} className="bg-rose-100/50 text-rose-500 p-2.5 rounded-xl font-bold border border-rose-200/50 active:scale-95 transition-all">
-                                        <Plus className="h-5 w-5 md:h-6 md:w-6" />
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            );
+                        })()
                     )}
                 </div>
 
