@@ -9,6 +9,7 @@ class EmployeeBase(BaseModel):
     phone: str
     is_active: Optional[bool] = True
     role_id: int
+    kitchen_id: Optional[int] = None
 
 class EmployeeCreate(EmployeeBase):
     password: str
@@ -22,6 +23,7 @@ class EmployeeUpdate(BaseModel):
     employee_code: Optional[str] = None
     is_active: Optional[bool] = None
     role_id: Optional[int] = None
+    kitchen_id: Optional[int] = None
     password: Optional[str] = None
 
 class EmployeeResponse(EmployeeBase):
@@ -30,6 +32,7 @@ class EmployeeResponse(EmployeeBase):
     created_at: datetime
     updated_at: datetime
     role_name: Optional[str] = None
+    kitchen_id: Optional[int] = None
 
     class Config:
         from_attributes = True

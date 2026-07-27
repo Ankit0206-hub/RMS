@@ -91,6 +91,7 @@ const OperatorLayout = () => {
             label: 'Restaurant', icon: Utensils,
             children: [
                 { path: '/operator/tables', label: 'Tables' },
+                { path: '/operator/kitchens', label: 'Kitchens' },
                 { path: '/operator/floor-plan', label: 'Floor Plan' }
             ]
         },

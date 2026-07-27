@@ -1,18 +1,21 @@
-import { ArrowLeft, Heart, Plus, Search, Star } from "lucide-react";
+import { ArrowLeft, Heart, Plus, Minus, Search, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import MobileContainer from "../../components/customer/layout/MobileContainer";
-import { useEffect } from "react";
+import CustomizationModal from "../../components/customer/common/CustomizationModal";
 import customerApi from "../../services/customerApi";
+import { useApp } from "../../context/AppContext";
 
 
 
 export default function PopularFoods() {
     const navigate = useNavigate();
+    const { cartItems, addToCart, increaseQuantity, decreaseQuantity } = useApp();
     const [favorites, setFavorites] = useState([]);
     const [foods, setFoods] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [customizationFood, setCustomizationFood] = useState(null);
 
     useEffect(() => {
         customerApi.getMenu().then(data => {
@@ -24,7 +27,8 @@ export default function PopularFoods() {
                             id: dish.id,
                             name: dish.name,
                             price: dish.price,
-                            rating: 4.8,
+                            rating: dish.avg_rating || 4.8, // Fallback to 4.8 if 0
+                            rating_count: dish.rating_count || 0,
                             desc: dish.description,
                             isVeg: dish.is_veg,
                             isSpicy: dish.customizable_spice,
@@ -34,6 +38,11 @@ export default function PopularFoods() {
                         });
                     });
                 }
+            });
+            // Sort by rating and count to show the most popular foods first
+            allItems.sort((a, b) => {
+                if (b.rating !== a.rating) return b.rating - a.rating;
+                return b.rating_count - a.rating_count;
             });
             setFoods(allItems);
         }).catch(console.error);
@@ -49,7 +58,7 @@ export default function PopularFoods() {
 
     return (
         <MobileContainer>
-            <div className="min-h-screen bg-gray-50 dark:bg-slate-800/50">
+            <div className="h-full overflow-y-auto bg-gray-50 dark:bg-slate-800/50">
                 {/* Header */}
                 <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex items-center gap-4 p-5">
@@ -79,7 +88,7 @@ export default function PopularFoods() {
                 </div>
 
                 {/* Food Grid */}
-                <div className="grid grid-cols-2 gap-4 p-5">
+                <div className="grid grid-cols-4 gap-4 p-5">
                     {foods.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).map((food) => (
                         <div
                             key={food.id}
@@ -131,23 +140,61 @@ export default function PopularFoods() {
                                         ₹{food.price}
                                     </span>
 
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            navigate("/customer/food-details", {
-                                                state: { food },
-                                            });
-                                        }}
-                                        className="rounded-full bg-orange-500 p-2 text-white transition hover:bg-orange-600"
-                                    >
-                                        <Plus size={16} />
-                                    </button>
+                                    {(() => {
+                                        const cartItem = cartItems.find((item) => (item.originalId || item.id) === food.id);
+                                        if (cartItem) {
+                                            return (
+                                                <div className="flex items-center gap-2 sm:gap-3 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-1 text-orange-600 dark:text-orange-500 font-bold border border-orange-200 dark:border-orange-800">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            decreaseQuantity(cartItem.id || food.id);
+                                                        }}
+                                                        className="p-1"
+                                                    >
+                                                        <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
+                                                    </button>
+                                                    <span className="text-xs sm:text-sm font-semibold">{cartItem.quantity}</span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            increaseQuantity(cartItem.id || food.id);
+                                                        }}
+                                                        className="p-1"
+                                                    >
+                                                        <Plus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
+                                                    </button>
+                                                </div>
+                                            );
+                                        }
+                                        return (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (food.hasPortions !== false || food.customizableSpice !== false) {
+                                                        setCustomizationFood(food);
+                                                    } else {
+                                                        addToCart(food);
+                                                    }
+                                                }}
+                                                className="rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600"
+                                            >
+                                                <Plus size={16} />
+                                            </button>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            <CustomizationModal 
+                isOpen={!!customizationFood} 
+                onClose={() => setCustomizationFood(null)} 
+                food={customizationFood} 
+            />
         </MobileContainer>
     );
 }

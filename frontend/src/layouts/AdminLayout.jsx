@@ -3,8 +3,8 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-    LayoutDashboard, Users, Settings, LogOut, 
+import {
+    LayoutDashboard, Users, Settings, LogOut,
     UtensilsCrossed, ClipboardList, Receipt,
     Activity, PieChart, Bell, Menu, ChevronRight, Store, FileText, BellRing, User, Mail, Maximize, Calendar, Plus, MoreVertical, Search, ChevronDown, ChefHat, Star
 } from 'lucide-react';
@@ -15,11 +15,11 @@ const AdminLayout = () => {
     const location = useLocation();
     const queryClient = useQueryClient();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
-    const [expandedMenus, setExpandedMenus] = useState({'Menu Management': false});
+    const [expandedMenus, setExpandedMenus] = useState({ 'Menu Management': false, 'Kitchen Management': false });
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-    
+
     // Auto-close sidebar on mobile when navigating
     useEffect(() => {
         if (window.innerWidth < 768) {
@@ -39,7 +39,7 @@ const AdminLayout = () => {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
+
     const { data: notificationsData } = useQuery({
         queryKey: ['notifications'],
         queryFn: async () => {
@@ -78,25 +78,25 @@ const AdminLayout = () => {
     };
 
     const toggleMenu = (name) => {
-        setExpandedMenus(prev => ({...prev, [name]: !prev[name]}));
+        setExpandedMenus(prev => ({ ...prev, [name]: !prev[name] }));
     };
 
     const navItems = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Employees', path: '/admin/employees', icon: Users },
-        { 
-            name: 'Menu Management', 
-            path: '/admin/menu', 
-            icon: UtensilsCrossed, 
+        {
+            name: 'Menu Management',
+            path: '/admin/menu',
+            icon: UtensilsCrossed,
             hasDropdown: true,
             children: [
                 { name: 'Menu Items', path: '/admin/menu' },
                 { name: 'Add Category & Items', path: '/admin/menu/add' }
             ]
         },
-        { 
-            name: 'Tables', 
-            path: '/admin/tables', 
+        {
+            name: 'Tables',
+            path: '/admin/tables',
             icon: LayoutDashboard,
             hasDropdown: true,
             children: [
@@ -104,40 +104,44 @@ const AdminLayout = () => {
                 { name: 'Table Reservations', path: '/admin/tables/reservations' },
             ]
         },
-        { 
-            name: 'Orders', 
-            path: '/admin/orders', 
-            icon: ClipboardList, 
+        {
+            name: 'Orders',
+            path: '/admin/orders',
+            icon: ClipboardList,
             hasDropdown: false
         },
-        { 
-            name: 'Billing & Payments', 
-            path: '/admin/billing', 
-            icon: Receipt, 
+        {
+            name: 'Billing & Payments',
+            path: '/admin/billing',
+            icon: Receipt,
             hasDropdown: false
         },
         {
             name: 'Kitchen Management',
-            path: '/admin/kitchen',
+            path: '/admin/kitchens',
             icon: ChefHat,
-            hasDropdown: false
+            hasDropdown: true,
+            children: [
+                { name: 'Kitchens List', path: '/admin/kitchens' },
+                { name: 'Kitchen KDS Overview', path: '/admin/kitchen' }
+            ]
         },
-        { 
-            name: 'Customers', 
-            path: '/admin/customers', 
+        {
+            name: 'Customers',
+            path: '/admin/customers',
             icon: Users,
             hasDropdown: false
         },
-        { 
-            name: 'Ratings & Reviews', 
-            path: '/admin/ratings', 
+        {
+            name: 'Ratings & Reviews',
+            path: '/admin/ratings',
             icon: Star,
             hasDropdown: false
         },
-        { 
-            name: 'Reports & Analytics', 
-            path: '/admin/analytics', 
-            icon: PieChart, 
+        {
+            name: 'Reports & Analytics',
+            path: '/admin/analytics',
+            icon: PieChart,
             hasDropdown: false
         },
         { name: 'Notifications', path: '/admin/notifications', icon: BellRing, badge: unreadCount > 0 ? unreadCount : null },
@@ -149,9 +153,12 @@ const AdminLayout = () => {
         if (location.pathname === '/admin/dashboard' || location.pathname === '/admin') return 'Overview';
         // Flatten children to find the exact sub-page title
         let currentItem = navItems.find(item => location.pathname === item.path || (location.pathname.startsWith(item.path) && item.path !== '#' && item.path !== '/admin/dashboard' && item.path !== '/admin/menu'));
-        
+
         if (!currentItem && location.pathname.startsWith('/admin/menu')) {
             currentItem = navItems.find(i => i.name === 'Menu Management');
+        }
+        if (!currentItem && location.pathname.startsWith('/admin/kitchen')) {
+            currentItem = navItems.find(i => i.name === 'Kitchen Management');
         }
 
         if (currentItem?.children) {
@@ -247,7 +254,23 @@ const AdminLayout = () => {
             );
         }
         if (location.pathname.startsWith('/admin/kitchen')) {
-            return <span className="text-gray-900">Kitchen Management</span>;
+            const childItem = navItems.find(i => i.name === 'Kitchen Management')?.children?.find(c => c.path === location.pathname);
+            if (childItem && childItem.name !== 'Kitchens List') {
+                return (
+                    <>
+                        <span className="hover:text-blue-600 cursor-pointer">Kitchen Management</span>
+                        <ChevronRight className="w-3 h-3 mx-1" />
+                        <span className="text-gray-900">{childItem.name}</span>
+                    </>
+                );
+            }
+            return (
+                <>
+                    <span className="hover:text-blue-600 cursor-pointer">Kitchen Management</span>
+                    <ChevronRight className="w-3 h-3 mx-1" />
+                    <span className="text-gray-900">Kitchens List</span>
+                </>
+            );
         }
         if (location.pathname.startsWith('/admin/analytics')) {
             return <span className="text-gray-900">Reports & Analytics</span>;
@@ -269,7 +292,7 @@ const AdminLayout = () => {
         <div className="flex h-screen bg-[#f3f4f9] text-gray-900 font-inter overflow-hidden">
             {/* Mobile Overlay */}
             {isSidebarOpen && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
@@ -278,7 +301,7 @@ const AdminLayout = () => {
             {/* Sidebar */}
             <div className={`fixed inset-y-0 left-0 z-50 transform md:relative md:translate-x-0 shrink-0 bg-[#293275] text-white flex flex-col transition-all duration-300 ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full w-[260px] md:w-20'}`}>
                 <div className={`h-24 flex items-center ${isSidebarOpen ? 'justify-between px-6' : 'justify-center px-0'}`}>
-                    <div 
+                    <div
                         className={`flex items-center space-x-3 ${!isSidebarOpen ? 'cursor-pointer' : ''}`}
                         onClick={() => !isSidebarOpen && setIsSidebarOpen(true)}
                     >
@@ -293,7 +316,7 @@ const AdminLayout = () => {
                         )}
                     </div>
                     {isSidebarOpen && (
-                        <button 
+                        <button
                             onClick={() => setIsSidebarOpen(false)}
                             className="text-indigo-200 hover:text-white transition-colors focus:outline-none"
                         >
@@ -301,7 +324,7 @@ const AdminLayout = () => {
                         </button>
                     )}
                 </div>
-                
+
                 <div className={`flex-1 scrollbar-hide ${isSidebarOpen ? 'overflow-y-auto overflow-x-hidden' : 'overflow-visible'}`}>
                     <nav className="space-y-1 px-3 md:px-4">
                         {navItems.map((item, index) => {
@@ -315,7 +338,7 @@ const AdminLayout = () => {
                                     isActive = location.pathname === item.path || (location.pathname.startsWith(item.path) && item.path !== '/admin/dashboard' && item.path !== '/admin');
                                 }
                             }
-                            
+
                             const isExpanded = expandedMenus[item.name];
 
                             return (
@@ -334,17 +357,16 @@ const AdminLayout = () => {
                                                 e.preventDefault();
                                             }
                                         }}
-                                        className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-all relative group ${
-                                            isActive 
-                                            ? 'bg-[#5e5ce6] text-white shadow-md' 
-                                            : 'text-[#a5a9d6] hover:bg-white/10 hover:text-white'
-                                        } ${!isSidebarOpen && 'justify-center'}`}
+                                        className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-all relative group ${isActive
+                                                ? 'bg-[#5e5ce6] text-white shadow-md'
+                                                : 'text-[#a5a9d6] hover:bg-white/10 hover:text-white'
+                                            } ${!isSidebarOpen && 'justify-center'}`}
                                     >
                                         <div className="flex items-center">
                                             <Icon className={`h-5 w-5 shrink-0 ${isSidebarOpen ? 'mr-4' : ''}`} />
                                             {isSidebarOpen && <span>{item.name}</span>}
                                         </div>
-                                        
+
                                         {isSidebarOpen && (
                                             <div className="flex items-center">
                                                 {item.badge && (
@@ -365,7 +387,7 @@ const AdminLayout = () => {
                                             </div>
                                         )}
                                     </Link>
-                                    
+
                                     {/* Children Dropdown */}
                                     {isSidebarOpen && item.children && isExpanded && (
                                         <div className="mt-1 space-y-1 ml-[22px] border-l-2 border-[#3d4585] pl-4">
@@ -375,9 +397,8 @@ const AdminLayout = () => {
                                                     <Link
                                                         key={cIdx}
                                                         to={child.path}
-                                                        className={`flex items-center py-2 px-3 text-xs font-medium rounded-lg transition-colors ${
-                                                            isChildActive ? 'bg-white/10 text-white relative' : 'text-[#a5a9d6] hover:text-white hover:bg-white/5'
-                                                        }`}
+                                                        className={`flex items-center py-2 px-3 text-xs font-medium rounded-lg transition-colors ${isChildActive ? 'bg-white/10 text-white relative' : 'text-[#a5a9d6] hover:text-white hover:bg-white/5'
+                                                            }`}
                                                     >
                                                         {isChildActive && <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#5e5ce6]"></div>}
                                                         {child.name}
@@ -394,7 +415,7 @@ const AdminLayout = () => {
 
                 {/* Fixed Logout Button at Bottom */}
                 <div className="p-4 mt-auto border-t border-white/10 bg-[#293275]">
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className={`flex items-center text-[#a5a9d6] hover:text-[#ff4b4b] hover:bg-white/5 rounded-xl transition-all w-full ${isSidebarOpen ? 'px-4 py-2.5' : 'justify-center py-2.5'}`}
                     >
@@ -409,7 +430,7 @@ const AdminLayout = () => {
                 {/* Top Header matching the mockup */}
                 <header className="h-auto min-h-24 bg-white flex items-center justify-between px-4 md:px-8 py-3 md:py-0 shrink-0 relative z-10 border-b border-gray-100">
                     <div className="flex items-center">
-                        <button 
+                        <button
                             className="md:hidden text-gray-500 hover:text-gray-900 mr-3"
                             onClick={() => setIsSidebarOpen(true)}
                         >
@@ -437,18 +458,18 @@ const AdminLayout = () => {
                             )}
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3 md:space-x-6">
                         {/* Date Picker Button */}
                         <button className="hidden lg:flex items-center space-x-2 bg-white border border-gray-200 px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                           
+
                         </button>
 
                         <div className="flex items-center space-x-4">
                             <div className="relative">
-                                <button 
+                                <button
                                     className="relative text-gray-400 hover:text-gray-600 focus:outline-none"
                                     onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                                 >
@@ -467,7 +488,7 @@ const AdminLayout = () => {
                                             </div>
                                             <div className="max-h-64 overflow-y-auto">
                                                 {notifications.length > 0 ? notifications.slice(0, 5).map(notif => (
-                                                    <div key={notif.id} onClick={() => { if(!notif.is_read) api.post(`/admin/notifications/${notif.id}/read`).then(() => queryClient.invalidateQueries(['notifications'])) }} className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer ${notif.is_read ? 'opacity-60' : ''}`}>
+                                                    <div key={notif.id} onClick={() => { if (!notif.is_read) api.post(`/admin/notifications/${notif.id}/read`).then(() => queryClient.invalidateQueries(['notifications'])) }} className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer ${notif.is_read ? 'opacity-60' : ''}`}>
                                                         <p className="text-sm text-gray-800 font-medium">{notif.title}</p>
                                                         <p className="text-xs text-gray-500 mt-0.5">{notif.message}</p>
                                                     </div>
@@ -486,15 +507,15 @@ const AdminLayout = () => {
                                 <Maximize className="w-5 h-5" />
                             </button>
                         </div>
-                        
+
                         <div className="relative pl-2 border-l border-gray-200 ml-2 h-10 flex items-center">
-                            <button 
+                            <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className="flex items-center focus:outline-none"
                             >
                                 <img src="https://i.pravatar.cc/150?img=11" alt="Profile" className="w-9 h-9 rounded-full border-2 border-[#5e5ce6] hover:border-indigo-400 transition-colors" />
                             </button>
-                            
+
                             {isProfileOpen && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)}></div>
@@ -509,7 +530,7 @@ const AdminLayout = () => {
                                             </div>
                                             <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={handleLogout}
                                             className="w-full flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
                                         >
@@ -522,13 +543,13 @@ const AdminLayout = () => {
                         </div>
                     </div>
                 </header>
-                
+
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto bg-[#f4f7fb] p-6 scrollbar-hide">
                     <Outlet />
                 </main>
             </div>
-            
+
             {/* Custom CSS to hide scrollbars globally for a cleaner look if desired */}
             <style>{`
                 .scrollbar-hide::-webkit-scrollbar {

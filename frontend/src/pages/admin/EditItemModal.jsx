@@ -12,6 +12,7 @@ const EditItemModal = ({ item, onClose }) => {
         price: '',
         half_price: '',
         category_id: '',
+        kitchen_id: '',
         is_veg: true,
         is_available: true
     });
@@ -24,6 +25,14 @@ const EditItemModal = ({ item, onClose }) => {
         }
     });
 
+    const { data: kitchens } = useQuery({
+        queryKey: ['kitchens'],
+        queryFn: async () => {
+            const response = await api.get('/admin/kitchen/list');
+            return response.data.data;
+        }
+    });
+
     useEffect(() => {
         if (item) {
             setFormData({
@@ -32,6 +41,7 @@ const EditItemModal = ({ item, onClose }) => {
                 price: item.price || '',
                 half_price: item.half_price || '',
                 category_id: item.category_id || '',
+                kitchen_id: item.kitchen_id || '',
                 is_veg: item.is_veg !== undefined ? item.is_veg : true,
                 is_available: item.is_available !== undefined ? item.is_available : true
             });
@@ -60,9 +70,10 @@ const EditItemModal = ({ item, onClose }) => {
                 ...formData,
                 price: parseFloat(formData.price),
                 half_price: formData.half_price ? parseFloat(formData.half_price) : null,
-                category_id: parseInt(formData.category_id)
+                category_id: parseInt(formData.category_id),
+                kitchen_id: formData.kitchen_id ? parseInt(formData.kitchen_id) : null
             };
-            
+
             await updateItemMutation.mutateAsync(payload);
             queryClient.invalidateQueries(['menuItems']);
             toast.success("Item updated successfully");
@@ -82,53 +93,53 @@ const EditItemModal = ({ item, onClose }) => {
                     <h3 className="text-lg font-bold text-gray-900">Edit Menu Item</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 font-bold text-xl leading-none">×</button>
                 </div>
-                
+
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Item Name *</label>
-                            <input 
-                                type="text" 
-                                name="name" 
-                                value={formData.name} 
-                                onChange={handleChange} 
-                                required 
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
-                        
+
                         <div className="col-span-2">
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
-                            <input 
-                                type="text" 
-                                name="description" 
-                                value={formData.description} 
-                                onChange={handleChange} 
+                            <input
+                                type="text"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Full Price (₹) *</label>
-                            <input 
-                                type="number" 
-                                step="0.01" 
-                                name="price" 
-                                value={formData.price} 
-                                onChange={handleChange} 
-                                required 
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="price"
+                                value={formData.price}
+                                onChange={handleChange}
+                                required
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
 
                         <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-1">Half Price (₹)</label>
-                            <input 
-                                type="number" 
-                                step="0.01" 
-                                name="half_price" 
-                                value={formData.half_price} 
-                                onChange={handleChange} 
+                            <input
+                                type="number"
+                                step="0.01"
+                                name="half_price"
+                                value={formData.half_price}
+                                onChange={handleChange}
                                 className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                             />
                         </div>
@@ -148,12 +159,27 @@ const EditItemModal = ({ item, onClose }) => {
                                 ))}
                             </select>
                         </div>
-                        
+
+                        <div className="col-span-2">
+                            <label className="block text-xs font-semibold text-gray-700 mb-1">Assign Kitchen</label>
+                            <select
+                                name="kitchen_id"
+                                value={formData.kitchen_id}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            >
+                                <option value="">No Kitchen Assigned</option>
+                                {kitchens?.map(k => (
+                                    <option key={k.id} value={k.id}>{k.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className="flex items-center space-x-2">
                             <input type="checkbox" name="is_veg" checked={formData.is_veg} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
                             <label className="text-sm font-semibold text-gray-700">Is Veg?</label>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                             <input type="checkbox" name="is_available" checked={formData.is_available} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
                             <label className="text-sm font-semibold text-gray-700">In Stock?</label>

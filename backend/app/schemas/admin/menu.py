@@ -13,6 +13,7 @@ class MenuItemBase(BaseModel):
     is_active: Optional[bool] = True
     is_available: Optional[bool] = True
     is_veg: Optional[bool] = True
+    kitchen_id: Optional[int] = None
 
 class MenuItemCreate(MenuItemBase):
     pass
@@ -27,6 +28,7 @@ class MenuItemUpdate(BaseModel):
     is_active: Optional[bool] = None
     is_available: Optional[bool] = None
     is_veg: Optional[bool] = None
+    kitchen_id: Optional[int] = None
 
 class MenuItemResponse(MenuItemBase):
     id: int

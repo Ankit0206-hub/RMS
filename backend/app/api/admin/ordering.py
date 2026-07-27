@@ -56,3 +56,5 @@ async def get_order(order_id: int, db: AsyncSession = Depends(get_db)):
 async def update_order_status(order_id: int, status_update: OrderStatusUpdate, db: AsyncSession = Depends(get_db)):
     order = await service.update_order_status(db, order_id, status_update)
     return StandardResponse(success=True, message="Order status updated successfully", data=order)
+    item = await service.update_order_item_status(db, order_id, item_id, status_update)
+    return StandardResponse(success=True, message="Order item status updated successfully", data=item)

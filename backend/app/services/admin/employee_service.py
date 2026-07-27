@@ -25,7 +25,13 @@ class EmployeeService:
             elif getattr(e, 'id', None) and e.id > max_id:
                 max_id = e.id
                 
-        role_str = 'waiter' if role_id == 2 else 'operator'
+        if role_id == 2:
+            role_str = 'waiter'
+        elif role_id == 3:
+            role_str = 'kitchen'
+        else:
+            role_str = 'operator'
+            
         return f"{restaurant_name}_{role_str}_{max_id + 1}"
 
     async def create_employee(self, db: AsyncSession, employee_in: EmployeeCreate) -> Employee:

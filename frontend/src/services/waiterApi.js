@@ -6,7 +6,7 @@ export const waiterApi = {
         const response = await api.get('/waiter/tables');
         return response.data;
     },
-    
+
     getActiveSession: async (tableId) => {
         const response = await api.get(`/waiter/tables/${tableId}/active_session`);
         return response.data;
@@ -16,7 +16,7 @@ export const waiterApi = {
         const response = await api.post(`/waiter/tables/${tableId}/sessions`, data);
         return response.data;
     },
-    
+
     requestBill: async (sessionId) => {
         const response = await api.post(`/waiter/sessions/${sessionId}/request-bill`);
         return response.data;
@@ -48,18 +48,18 @@ export const waiterApi = {
         const response = await api.get(`/admin/ordering/orders/${orderId}`);
         return response.data;
     },
-    
+
     updateOrderStatus: async (orderId, status) => {
         const response = await api.patch(`/admin/ordering/orders/${orderId}/status`, { status });
         return response.data;
     },
-    
+
     // Requests
     getRequests: async () => {
         const response = await api.get('/waiter/requests');
         return response.data;
     },
-    
+
     resolveRequest: async (requestId) => {
         const response = await api.put(`/waiter/requests/${requestId}/resolve`);
         return response.data;

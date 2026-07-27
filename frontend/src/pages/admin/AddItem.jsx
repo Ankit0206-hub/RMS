@@ -12,6 +12,7 @@ const generateEmptyItem = () => ({
     name: '',
     price: '',
     description: '',
+    kitchen_id: '',
     is_veg: true,
     is_available: true
 });
@@ -33,7 +34,16 @@ const AddItem = () => {
             return response.data.data;
         }
     });
-    
+
+    // Fetch kitchens
+    const { data: kitchens } = useQuery({
+        queryKey: ['kitchens'],
+        queryFn: async () => {
+            const response = await api.get('/admin/kitchen/list');
+            return response.data.data;
+        }
+    });
+
     const currentCategory = categories?.find(c => c.id === parseInt(categoryId));
 
     const mutation = useMutation({
@@ -77,7 +87,7 @@ const AddItem = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         const payloads = items.map(item => ({
             item_code: item.item_code,
             name: item.name,
@@ -85,6 +95,7 @@ const AddItem = () => {
             description: item.description,
             is_veg: item.is_veg,
             is_available: item.is_available,
+            kitchen_id: item.kitchen_id ? parseInt(item.kitchen_id) : null,
             category_id: parseInt(categoryId)
         }));
 
@@ -96,7 +107,7 @@ const AddItem = () => {
             {/* Top Header */}
             <div className=" px-6 py-4 flex items-center justify-between z-10">
                 <div className="flex items-center space-x-4">
-                    <button 
+                    <button
                         type="button"
                         onClick={() => navigate(`${basePath}/food-items/${categoryId}/menu`)}
                         className="p-1.5 text-gray-500 hover:text-gray-900 border border-gray-200 rounded hover:bg-gray-50 transition-colors"
@@ -124,10 +135,10 @@ const AddItem = () => {
 
             {/* Content Area */}
             <div className="flex-1 p-3 mx-auto w-full space-y-4">
-                
+
                 {items.map((item, index) => (
                     <div key={item.id} className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm space-y-8 relative group">
-                        
+
                         {/* Header & Remove Button */}
                         <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
                             <div className="flex items-center">
@@ -181,7 +192,7 @@ const AddItem = () => {
                                 placeholder="0.00"
                                 required
                             />
-                            
+
                             <div className="flex flex-col space-y-4 justify-center mt-2 md:mt-0">
                                 <div className="flex items-center">
                                     <input
@@ -224,8 +235,22 @@ const AddItem = () => {
                                     value={item.description}
                                     onChange={(e) => handleChange(item.id, e)}
                                     placeholder="Describe the item, ingredients, or allergens..."
-                                    className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-3 transition-colors"
+                                    className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-3 transition-colors mb-4"
                                 />
+                                <label className="block text-sm font-semibold text-gray-700 mb-1 mt-4">
+                                    Assign Kitchen
+                                </label>
+                                <select
+                                    name="kitchen_id"
+                                    value={item.kitchen_id}
+                                    onChange={(e) => handleChange(item.id, e)}
+                                    className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-3 transition-colors"
+                                >
+                                    <option value="">No Kitchen Assigned</option>
+                                    {kitchens?.map(k => (
+                                        <option key={k.id} value={k.id}>{k.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">
