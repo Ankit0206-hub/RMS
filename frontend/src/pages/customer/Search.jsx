@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import BottomNav from "../../components/customer/navigation/BottomNav";
-import { ArrowLeft, Search, Star, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Search, Star, Plus, Minus, Utensils } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 
@@ -151,8 +151,10 @@ export default function SearchPage() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-10 text-center text-gray-500 dark:text-slate-400">
-                  <p>No food found matching "{searchQuery}"</p>
+                <div className="mt-16 flex flex-col items-center justify-center text-gray-400">
+                  <Utensils size={48} className="mb-4 text-gray-300 dark:text-slate-600 drop-shadow-sm" />
+                  <h2 className="text-xl font-bold text-gray-600 dark:text-slate-400">No items found</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-slate-500">No food found matching "{searchQuery}"</p>
                 </div>
               )}
             </div>
