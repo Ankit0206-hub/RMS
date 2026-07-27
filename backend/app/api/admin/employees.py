@@ -56,7 +56,7 @@ async def read_employees(
 async def read_employee(
     employee_id: int,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin = Depends(get_current_admin_or_operator)
 ):
     data = await employee_service.get_employee(db, employee_id)
     return StandardResponse(data=data)
@@ -66,7 +66,7 @@ async def update_employee(
     employee_id: int,
     employee_in: EmployeeUpdate,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin = Depends(get_current_admin_or_operator)
 ):
     data = await employee_service.update_employee(db, employee_id, employee_in)
     return StandardResponse(data=data)
@@ -75,7 +75,7 @@ async def update_employee(
 async def delete_employee(
     employee_id: int,
     db: AsyncSession = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin)
+    current_admin = Depends(get_current_admin_or_operator)
 ):
     success = await employee_service.delete_employee(db, employee_id)
     return StandardResponse(data=success, message="Employee deleted successfully")

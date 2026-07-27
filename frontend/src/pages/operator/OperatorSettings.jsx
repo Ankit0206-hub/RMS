@@ -3,6 +3,87 @@ import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, Che
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
+const CustomTimePicker = ({ label, value, onChange, name }) => {
+    const getParts = (val) => {
+        if (!val) return { hour: '09', minute: '00', period: 'AM' };
+        const [h, m] = val.split(':');
+        let hr = parseInt(h, 10);
+        let period = 'AM';
+        
+        // Handle Edge Cases
+        if (isNaN(hr)) return { hour: '09', minute: '00', period: 'AM' };
+        
+        if (hr >= 12) {
+            period = 'PM';
+            if (hr > 12) hr -= 12;
+        } else if (hr === 0) {
+            hr = 12;
+        }
+        
+        return { 
+            hour: hr.toString().padStart(2, '0'), 
+            minute: m ? m.padStart(2, '0').slice(0, 2) : '00', 
+            period 
+        };
+    };
+
+    const { hour, minute, period } = getParts(value);
+
+    const updateTime = (newH, newM, newP) => {
+        let hr24 = parseInt(newH, 10);
+        if (newP === 'PM' && hr24 !== 12) hr24 += 12;
+        if (newP === 'AM' && hr24 === 12) hr24 = 0;
+        const time24 = `${hr24.toString().padStart(2, '0')}:${newM}`;
+        onChange({ target: { name, value: time24, type: 'time' } });
+    };
+
+    return (
+        <div>
+            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2 flex items-center">
+                {label}
+            </label>
+            <div className="flex items-center bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-1.5 focus-within:ring-2 focus-within:ring-cyan-500/20 focus-within:border-cyan-500 transition-all shadow-sm">
+                <select 
+                    value={hour} 
+                    onChange={(e) => updateTime(e.target.value, minute, period)}
+                    className="flex-1 bg-transparent border-none text-sm font-black text-gray-900 dark:text-white focus:ring-0 cursor-pointer appearance-none text-center outline-none hover:bg-gray-200 dark:hover:bg-slate-700 py-1.5 rounded transition-colors"
+                >
+                    {[...Array(12)].map((_, i) => {
+                        const val = (i + 1).toString().padStart(2, '0');
+                        return <option key={val} value={val} className="text-gray-900 dark:text-white bg-white dark:bg-slate-800">{val}</option>;
+                    })}
+                </select>
+                <span className="flex items-center justify-center font-black text-gray-400 dark:text-slate-500 px-1 text-lg">:</span>
+                <select 
+                    value={minute} 
+                    onChange={(e) => updateTime(hour, e.target.value, period)}
+                    className="flex-1 bg-transparent border-none text-sm font-black text-gray-900 dark:text-white focus:ring-0 cursor-pointer appearance-none text-center outline-none hover:bg-gray-200 dark:hover:bg-slate-700 py-1.5 rounded transition-colors"
+                >
+                    {['00', '15', '30', '45'].map(val => (
+                        <option key={val} value={val} className="text-gray-900 dark:text-white bg-white dark:bg-slate-800">{val}</option>
+                    ))}
+                </select>
+                <div className="flex bg-gray-200/80 dark:bg-slate-900 p-1 rounded-md ml-3 border border-gray-200 dark:border-slate-700 shadow-inner">
+                    <button 
+                        type="button"
+                        onClick={() => updateTime(hour, minute, 'AM')}
+                        className={`px-3 py-1.5 rounded-[4px] text-[11px] font-black transition-all duration-200 ${period === 'AM' ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm scale-105' : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}
+                    >
+                        AM
+                    </button>
+                    <button 
+                        type="button"
+                        onClick={() => updateTime(hour, minute, 'PM')}
+                        className={`px-3 py-1.5 rounded-[4px] text-[11px] font-black transition-all duration-200 ${period === 'PM' ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm scale-105' : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}
+                    >
+                        PM
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const OperatorSettings = () => {
     const { user, updateUser } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
@@ -277,20 +358,18 @@ const OperatorSettings = () => {
                                                 <Clock className="w-4 h-4 mr-2 text-cyan-500" /> Daily Timings
                                             </h4>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div>
-                                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Opening Time</label>
-                                                    <input 
-                                                        type="time" name="opening_time" value={restaurantSettings.opening_time || ''} onChange={handleSettingsChange} 
-                                                        className="block w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Closing Time</label>
-                                                    <input 
-                                                        type="time" name="closing_time" value={restaurantSettings.closing_time || ''} onChange={handleSettingsChange} 
-                                                        className="block w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
-                                                    />
-                                                </div>
+                                                <CustomTimePicker 
+                                                    label="Opening Time" 
+                                                    name="opening_time" 
+                                                    value={restaurantSettings.opening_time || ''} 
+                                                    onChange={handleSettingsChange} 
+                                                />
+                                                <CustomTimePicker 
+                                                    label="Closing Time" 
+                                                    name="closing_time" 
+                                                    value={restaurantSettings.closing_time || ''} 
+                                                    onChange={handleSettingsChange} 
+                                                />
                                             </div>
                                         </div>
 

@@ -28,6 +28,8 @@ import Waiters from './pages/operator/Waiters';
 import OperatorSettings from './pages/operator/OperatorSettings';
 import OperatorTables from './pages/operator/Tables';
 import OperatorFloorPlan from './pages/operator/FloorPlan';
+import OperatorUsers from './pages/operator/OperatorUsers';
+import OperatorTestimonials from './pages/operator/OperatorTestimonials';
 
 // Waiter Imports
 import WaiterMyTables from './pages/waiter/MyTables';
@@ -170,14 +172,14 @@ const App = () => {
                                 <Route path="menu-items" element={<MenuItems />} />
                                 <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
                                 <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
-
+                                
                                 <Route path="waiters" element={<Waiters />} />
                                 <Route path="floor-plan" element={<OperatorFloorPlan />} />
                                 <Route path="orders/:id" element={<OperatorOrderDetails />} />
                                 <Route path="customers" element={<Customers />} />
                                 <Route path="invoices" element={<Invoices />} />
-                                <Route path="testimonials" element={<OperatorPlaceholder title="Customer Testimonials & Feedback" />} />
-                                <Route path="users" element={<OperatorPlaceholder title="User & Staff Directory" />} />
+                                <Route path="testimonials" element={<OperatorTestimonials />} />
+                                <Route path="users" element={<OperatorUsers />} />
                                 <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
                                 <Route path="settings" element={<OperatorSettings />} />
                                 <Route path="notifications" element={<Notifications />} />

@@ -23,6 +23,7 @@ import {
     ChevronDown,
     ChevronUp,
     Moon,
+    Star,
     ChevronLeft,
     ChevronRight,
     X
@@ -106,6 +107,8 @@ const OperatorLayout = () => {
 
         { path: '/operator/billing', label: 'Billing & Payments', icon: CreditCard },
         { path: '/operator/customers', label: 'Customers', icon: User },
+        { path: '/operator/users', label: 'Staff Directory', icon: Users },
+        { path: '/operator/testimonials', label: 'Testimonials', icon: Star },
         { path: '/operator/settings', label: 'Settings', icon: Settings },
     ];
 
