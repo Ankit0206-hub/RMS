@@ -29,8 +29,16 @@ const AddCategoryWithItems = () => {
         }
     });
 
+    const { data: kitchens } = useQuery({
+        queryKey: ['kitchensList'],
+        queryFn: async () => {
+            const response = await api.get('/admin/kitchen/list');
+            return response.data.data || [];
+        }
+    });
+
     const [items, setItems] = useState([
-        { item_code: '', name: '', description: '', price: '', half_price: '', is_veg: true, is_available: true }
+        { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true }
     ]);
 
     const handleCategoryChange = (e) => {
@@ -52,7 +60,7 @@ const AddCategoryWithItems = () => {
     };
 
     const addItemRow = () => {
-        setItems(prev => [...prev, { item_code: '', name: '', description: '', price: '', half_price: '', is_veg: true, is_available: true }]);
+        setItems(prev => [...prev, { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true }]);
     };
 
     const removeItemRow = (index) => {
@@ -107,6 +115,7 @@ const AddCategoryWithItems = () => {
                 ...item,
                 price: parseFloat(item.price),
                 half_price: item.half_price ? parseFloat(item.half_price) : null,
+                kitchen_id: item.kitchen_id ? parseInt(item.kitchen_id) : null,
                 category_id: categoryIdToUse
             }));
 
@@ -230,6 +239,7 @@ const AddCategoryWithItems = () => {
                                     <th className="px-4 py-3 font-bold">Description</th>
                                     <th className="px-4 py-3 font-bold w-28">Full Price (₹) *</th>
                                     <th className="px-4 py-3 font-bold w-28">Half Price (₹)</th>
+                                    <th className="px-4 py-3 font-bold w-36">Kitchen</th>
                                     <th className="px-4 py-3 font-bold w-32">Image</th>
                                     <th className="px-4 py-3 font-bold w-20 text-center">Is Veg?</th>
                                     <th className="px-4 py-3 font-bold w-32 text-center">In Stock?</th>
@@ -293,6 +303,19 @@ const AddCategoryWithItems = () => {
                                                 className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
                                                 placeholder="0.00"
                                             />
+                                        </td>
+                                        <td className="px-2 py-3">
+                                            <select
+                                                name="kitchen_id"
+                                                value={item.kitchen_id}
+                                                onChange={(e) => handleItemChange(index, e)}
+                                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
+                                            >
+                                                <option value="">No Kitchen</option>
+                                                {kitchens?.map(k => (
+                                                    <option key={k.id} value={k.id}>{k.name}</option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="px-2 py-3">
                                             <input 

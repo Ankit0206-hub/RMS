@@ -92,6 +92,21 @@ async def update_kitchen(
     await db.commit()
     return {"message": "Kitchen updated"}
 
+@router.delete("/{kitchen_id}")
+async def delete_kitchen(
+    kitchen_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_admin: dict = Depends(get_current_admin)
+):
+    result = await db.execute(select(Kitchen).filter(Kitchen.id == kitchen_id))
+    kitchen = result.scalar_one_or_none()
+    if not kitchen:
+        return {"error": "Not found"}
+        
+    await db.delete(kitchen)
+    await db.commit()
+    return {"message": "Kitchen deleted successfully"}
+
 @router.get("/dashboard", response_model=Dict[str, Any])
 async def get_kitchen_dashboard(
     db: AsyncSession = Depends(get_db),
