@@ -20,6 +20,11 @@ const AdminLayout = () => {
     const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
+    // Force light mode for Admin layout
+    useEffect(() => {
+        document.documentElement.classList.remove('dark');
+    }, []);
+
     // Auto-close sidebar on mobile when navigating
     useEffect(() => {
         if (window.innerWidth < 768) {

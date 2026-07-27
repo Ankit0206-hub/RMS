@@ -63,7 +63,8 @@ class MenuRepository:
             description=obj_in.description,
             price=obj_in.price,
             is_available=obj_in.is_available,
-            is_veg=obj_in.is_veg
+            is_veg=obj_in.is_veg,
+            kitchen_id=obj_in.kitchen_id
         )
         db.add(db_obj)
         await db.commit()
@@ -79,7 +80,8 @@ class MenuRepository:
                 description=obj.description,
                 price=obj.price,
                 is_available=obj.is_available,
-                is_veg=obj.is_veg
+                is_veg=obj.is_veg,
+                kitchen_id=obj.kitchen_id
             ) for obj in objs_in
         ]
         db.add_all(db_objs)

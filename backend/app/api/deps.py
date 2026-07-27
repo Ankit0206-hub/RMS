@@ -103,7 +103,7 @@ async def get_current_waiter(current_user: dict = Depends(get_current_user)) -> 
     return current_user["user"]
 
 async def get_current_kitchen(current_user: dict = Depends(get_current_user)) -> Employee:
-    if current_user["role"] != "employee" or not current_user["user"].role or current_user["user"].role.name.lower() != "kitchen":
+    if current_user["role"] != "employee" or not current_user["user"].role or current_user["user"].role.name.lower() not in ["kitchen", "kitchen staff"]:
         if current_user["role"] == "admin":
             return current_user["user"]
         raise HTTPException(
