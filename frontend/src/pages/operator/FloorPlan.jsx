@@ -299,7 +299,7 @@ const FloorPlan = () => {
                     <div className="w-full lg:w-[220px] bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm shrink-0 overflow-y-auto">
                         <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="font-bold text-gray-900 dark:text-white text-sm">Sections</h3>
-                            <button className="text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors"><Plus size={16}/></button>
+                            <button onClick={() => setAddModalOpen(true)} className="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 p-1 rounded transition-colors"><Plus size={16}/></button>
                         </div>
                         <div className="p-2 space-y-1">
                             {sections.map(sec => (

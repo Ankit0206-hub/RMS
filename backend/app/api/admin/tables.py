@@ -31,6 +31,35 @@ async def create_table(
     data = await tables_service.create_table(db, obj_in)
     return StandardResponse(data=data)
 
+from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate, TableMergeCreate, TableBatchUpdate
+
+@router.put("/batch", response_model=StandardResponse[dict])
+async def batch_update_tables(
+    obj_in: TableBatchUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    updates = [{"id": item.id, "x_position": item.x_position, "y_position": item.y_position} for item in obj_in.tables]
+    await tables_service.batch_update_tables(db, updates)
+    return StandardResponse(data={"updated": True}, message="Tables updated successfully")
+
+@router.post("/merge", response_model=StandardResponse[TableResponse])
+async def merge_tables(
+    obj_in: TableMergeCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    data = await tables_service.merge_tables(db, obj_in.table_ids)
+    return StandardResponse(data=data, message="Tables merged successfully")
+
+@router.delete("/assignments/clear-all", response_model=StandardResponse[dict])
+async def clear_all_assignments(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    await tables_service.clear_all_assignments(db)
+    return StandardResponse(data={"deleted": True}, message="All table assignments cleared")
+
 @router.get("/{table_id}", response_model=StandardResponse[TableResponse])
 async def get_table(
     table_id: int,
@@ -59,27 +88,6 @@ async def delete_table(
     await tables_service.delete_table(db, table_id)
     return StandardResponse(data={"deleted": True})
 
-from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate, TableMergeCreate, TableBatchUpdate
-
-@router.put("/batch", response_model=StandardResponse[dict])
-async def batch_update_tables(
-    obj_in: TableBatchUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_admin_or_operator)
-):
-    updates = [{"id": item.id, "x_position": item.x_position, "y_position": item.y_position} for item in obj_in.tables]
-    await tables_service.batch_update_tables(db, updates)
-    return StandardResponse(data={"updated": True}, message="Tables updated successfully")
-
-@router.post("/merge", response_model=StandardResponse[TableResponse])
-async def merge_tables(
-    obj_in: TableMergeCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_admin_or_operator)
-):
-    data = await tables_service.merge_tables(db, obj_in.table_ids)
-    return StandardResponse(data=data, message="Tables merged successfully")
-
 @router.delete("/{table_id}/merge", response_model=StandardResponse[dict])
 async def unmerge_table(
     table_id: int,
@@ -98,14 +106,6 @@ async def assign_waiter(
 ):
     data = await tables_service.assign_waiter(db, table_id, obj_in.employee_id)
     return StandardResponse(data=data, message="Waiter assigned to table")
-
-@router.delete("/assignments/clear-all", response_model=StandardResponse[dict])
-async def clear_all_assignments(
-    db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_admin_or_operator)
-):
-    await tables_service.clear_all_assignments(db)
-    return StandardResponse(data={"deleted": True}, message="All table assignments cleared")
 
 @router.delete("/{table_id}/assign", response_model=StandardResponse[dict])
 async def unassign_waiter(
