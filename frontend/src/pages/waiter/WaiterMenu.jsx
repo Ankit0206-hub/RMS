@@ -124,7 +124,7 @@ export default function WaiterMenu() {
                         />
                     </div>
 
-                    <div className="flex overflow-x-auto gap-2 py-2 px-1 snap-x scrollbar-hide">
+                    <div className="flex overflow-x-auto gap-2 py-2 px-1 snap-x">
                         {categories.map(cat => (
                             <button 
                                 key={cat} 

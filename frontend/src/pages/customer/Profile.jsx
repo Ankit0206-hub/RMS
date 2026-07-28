@@ -40,6 +40,7 @@ export default function Profile() {
     const handleCropComplete = (croppedBase64) => {
         setFormData(prev => ({ ...prev, image: croppedBase64 }));
         setCropImageSrc(null);
+        setIsEditing(true);
     };
 
     const handleSave = () => {
@@ -100,17 +101,15 @@ export default function Profile() {
                                 alt="Profile"
                                 className="h-28 w-28 rounded-full object-cover border-4 border-white shadow-sm"
                             />
-                            {isEditing && (
-                                <label className="absolute bottom-0 right-0 p-2.5 bg-orange-500 rounded-full text-white shadow-[0_4px_10px_rgba(249,115,22,0.3)] active:scale-95 transition cursor-pointer">
-                                    <input 
-                                        type="file" 
-                                        accept="image/*" 
-                                        className="hidden" 
-                                        onChange={handleImageChange} 
-                                    />
-                                    <Edit2 size={16} strokeWidth={2.5} />
-                                </label>
-                            )}
+                            <label className="absolute bottom-0 right-0 p-2.5 bg-orange-500 rounded-full text-white shadow-[0_4px_10px_rgba(249,115,22,0.3)] active:scale-95 transition cursor-pointer">
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    onChange={handleImageChange} 
+                                />
+                                <Edit2 size={16} strokeWidth={2.5} />
+                            </label>
                         </div>
                     </div>
 

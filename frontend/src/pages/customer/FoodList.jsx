@@ -91,7 +91,7 @@ export default function FoodList() {
         </div>
 
         {/* Chips */}
-        <div className="flex items-center gap-3 px-4 mt-4 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-3 px-4 mt-4 overflow-x-auto">
           <button
             onClick={() => toggleFilter("veg")}
             className={`flex items-center gap-2 rounded-full border px-4 py-1.5 whitespace-nowrap transition-colors ${
