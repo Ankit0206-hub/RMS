@@ -53,13 +53,19 @@ export const AppProvider = ({ children }) => {
   }, [darkMode]);
 
   const [editingAddress, setEditingAddress] = useState(null);
-  const [user, setUser] = useState({
-    
-    name: "John Doe",
-    email: "",
-    phone: "+91 98765 43210",
-    image: "https://i.pravatar.cc/150?img=12",
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("customerUser");
+    return saved ? JSON.parse(saved) : {
+      name: "John Doe",
+      email: "",
+      phone: "+91 98765 43210",
+      image: "https://i.pravatar.cc/150?img=12",
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem("customerUser", JSON.stringify(user));
+  }, [user]);
   const addToCart = (food, quantityToAdd = 1) => {
     // Generate a unique ID for the cart item based on customizations so they don't merge incorrectly
     const customId = `${food.id || food.name}-${food.portion || 'Full'}-${food.spiceLevel || 'Normal'}`;

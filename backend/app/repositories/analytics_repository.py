@@ -112,10 +112,15 @@ class AnalyticsRepository:
         ]
 
     async def get_top_categories(self, db: AsyncSession, limit: int = 5) -> List[Dict[str, Any]]:
+        total_stmt = select(func.sum(BillItem.total)).join(Bill, Bill.id == BillItem.bill_id).where(Bill.payment_status == 'Paid')
+        total_result = await db.execute(total_stmt)
+        total_revenue = float(total_result.scalar() or 0.0)
+
         stmt = (
             select(
                 MenuCategory.name,
-                func.sum(BillItem.total).label("value")
+                func.sum(BillItem.total).label("value"),
+                func.sum(BillItem.quantity).label("items")
             )
             .join(MenuItem, MenuItem.category_id == MenuCategory.id)
             .join(BillItem, BillItem.menu_item_id == MenuItem.id)
@@ -132,6 +137,8 @@ class AnalyticsRepository:
             {
                 "name": row.name,
                 "value": float(row.value),
+                "items": int(row.items or 0),
+                "percent": f"{round((float(row.value) / total_revenue) * 100)}%" if total_revenue > 0 else "0%",
                 "color": colors[idx % len(colors)]
             }
             for idx, row in enumerate(result.all())
