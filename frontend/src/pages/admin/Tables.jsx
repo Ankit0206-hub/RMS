@@ -8,9 +8,11 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { DataTable, Pagination } from '../../components/ui';
 import EditTableModal from './EditTableModal';
+import AddTableModal from './AddTableModal';
 
 const Tables = () => {
     const navigate = useNavigate();
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [floorFilter, setFloorFilter] = useState('All Floors');
     const [statusFilter, setStatusFilter] = useState('All Status');
@@ -35,6 +37,18 @@ const Tables = () => {
     const occupied = tablesData.filter(t => t.status === 'Occupied').length;
     const reserved = tablesData.filter(t => t.status === 'Reserved').length;
     const outOfOrder = tablesData.filter(t => t.status === 'Out of Order').length;
+
+    const uniqueFloors = ['All Floors', ...new Set(tablesData.map(t => t.floor).filter(Boolean))];
+
+    const filteredTables = tablesData.filter(t => {
+        const matchesSearch = searchTerm ? (
+            (t.table_number && String(t.table_number).toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (t.name && String(t.name).toLowerCase().includes(searchTerm.toLowerCase()))
+        ) : true;
+        const matchesFloor = floorFilter !== 'All Floors' ? t.floor === floorFilter : true;
+        const matchesStatus = statusFilter !== 'All Status' ? t.status === statusFilter : true;
+        return matchesSearch && matchesFloor && matchesStatus;
+    });
 
     const getStatusColor = (status) => {
         switch(status) {
@@ -193,32 +207,46 @@ const Tables = () => {
                                     type="text" 
                                     placeholder="Search table by number or name..." 
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
                                     className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 transition-all"
                                 />
                             </div>
                             
-                            <select className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none">
-                                <option>All Floors</option>
-                                <option>Ground Floor</option>
-                                <option>First Floor</option>
-                                <option>Terrace</option>
+                            <select 
+                                value={floorFilter}
+                                onChange={(e) => {
+                                    setFloorFilter(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                            >
+                                {uniqueFloors.map(floor => (
+                                    <option key={floor} value={floor}>{floor}</option>
+                                ))}
                             </select>
                             
-                            <select className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none">
-                                <option>All Status</option>
-                                <option>Available</option>
-                                <option>Occupied</option>
-                                <option>Reserved</option>
+                            <select 
+                                value={statusFilter}
+                                onChange={(e) => {
+                                    setStatusFilter(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                            >
+                                <option value="All Status">All Status</option>
+                                <option value="Available">Available</option>
+                                <option value="Occupied">Occupied</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Out of Order">Out of Order</option>
                             </select>
 
-                            <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">
-                                <Filter className="w-3.5 h-3.5 mr-1.5" />
-                                Filters
-                            </button>
+                           
                             
                             <button 
-                                onClick={() => navigate('/admin/tables/add')}
+                                onClick={() => setIsAddModalOpen(true)}
                                 className="flex items-center bg-[#6366f1] text-white px-3 py-2 rounded-lg text-xs font-bold shadow hover:bg-indigo-600 transition-colors"
                             >
                                 <Plus className="w-4 h-4 mr-1" />
@@ -230,15 +258,15 @@ const Tables = () => {
                     <div className="flex-1">
                         <DataTable 
                             columns={columns} 
-                            data={tablesData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)} 
+                            data={filteredTables.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)} 
                             isLoading={false} 
-                            emptyMessage="No tables found." 
+                            emptyMessage="No tables found matching your filters." 
                         />
                     </div>
 
                     <Pagination 
                         currentPage={currentPage}
-                        totalItems={tablesData.length}
+                        totalItems={filteredTables.length}
                         itemsPerPage={rowsPerPage}
                         onPageChange={setCurrentPage}
                         onItemsPerPageChange={(val) => {
@@ -277,6 +305,11 @@ font-size: 11px !important;
                 isOpen={!!editingTable} 
                 table={editingTable} 
                 onClose={() => setEditingTable(null)} 
+            />
+
+            <AddTableModal 
+                isOpen={isAddModalOpen} 
+                onClose={() => setIsAddModalOpen(false)} 
             />
         </div>
     );

@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, User, Shield, FileText, Plus } from 'lucide-react';
+import { ArrowLeft, Save, User, Shield, FileText, Plus, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { Input } from '../../components/ui';
 
 const AddEmployee = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const [customFields, setCustomFields] = useState([]);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -72,17 +74,39 @@ const AddEmployee = () => {
   });
 
   const handleChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
+    let { name, value, type, checked, files } = e.target;
+    
+    if (name === 'phone') {
+        value = value.replace(/\D/g, '').slice(0, 10); // only allow up to 10 digits
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : type === 'file' ? files[0] : type === 'number' || name === 'role_id' ? parseInt(value) : value
     }));
   };
 
+  const handleAddCustomField = () => {
+    setCustomFields([...customFields, { name: '', value: '' }]);
+  };
+
+  const handleRemoveCustomField = (index) => {
+    const updated = [...customFields];
+    updated.splice(index, 1);
+    setCustomFields(updated);
+  };
+
+  const handleCustomFieldChange = (index, field, value) => {
+    const updated = [...customFields];
+    updated[index][field] = value;
+    setCustomFields(updated);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
       ...formData,
+      custom_fields: customFields,
       kitchen_id: formData.role_id === 3 && formData.kitchen_id ? parseInt(formData.kitchen_id) : null
     };
     mutation.mutate(payload);
@@ -159,6 +183,7 @@ const AddEmployee = () => {
                 onChange={handleChange}
                 placeholder="admin@example.com"
                 required
+                autoComplete="new-password"
               />
               <Input
                 label="Phone Number"
@@ -166,6 +191,8 @@ const AddEmployee = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit number"
+                pattern="[0-9]*"
+                maxLength="10"
                 required
               />
               <Input
@@ -176,11 +203,40 @@ const AddEmployee = () => {
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
+                autoComplete="new-password"
               />
+              
+              {customFields.map((field, index) => (
+                <div key={index} className="w-full">
+                  <input
+                    type="text"
+                    value={field.name}
+                    onChange={(e) => handleCustomFieldChange(index, 'name', e.target.value)}
+                    placeholder="Custom Field Name"
+                    className="block text-sm font-semibold text-gray-700 mb-1 bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-cyan-500 p-0 focus:ring-0 placeholder:text-gray-400 w-full transition-colors"
+                  />
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={field.value}
+                      onChange={(e) => handleCustomFieldChange(index, 'value', e.target.value)}
+                      placeholder="Enter value"
+                      className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5 flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCustomField(index)}
+                      className="p-2 text-red-500 hover:text-red-700 border border-transparent rounded-lg hover:bg-red-50 shrink-0"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="mt-8 pt-4 border-t border-gray-100 flex justify-center">
-              <button type="button" className="text-cyan-600 hover:text-cyan-700 text-sm font-semibold flex items-center transition-colors">
+              <button type="button" onClick={handleAddCustomField} className="text-cyan-600 hover:text-cyan-700 text-sm font-semibold flex items-center transition-colors">
                 <Plus className="h-4 w-4 mr-1" /> Add Custom Basic Field
               </button>
             </div>
