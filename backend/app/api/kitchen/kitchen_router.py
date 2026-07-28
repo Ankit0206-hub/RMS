@@ -17,6 +17,23 @@ router = APIRouter()
 class OrderItemStatusUpdate(BaseModel):
     status: str
 
+async def check_and_update_order_status(db: AsyncSession, order_id: int):
+    query = select(OrderItem).filter(OrderItem.order_id == order_id)
+    result = await db.execute(query)
+    all_items = result.scalars().all()
+    
+    if not all_items:
+        return
+        
+    if all(item.status in ["prepared", "served"] for item in all_items):
+        from app.services.ordering_service import OrderingService
+        from app.schemas.ordering import OrderStatusUpdate
+        service = OrderingService()
+        try:
+            await service.update_order_status(db, order_id, OrderStatusUpdate(status="Cooked"))
+        except Exception as e:
+            print(f"Failed to automatically update order status to Cooked: {e}")
+
 @router.get("/orders", response_model=Dict[str, Any])
 async def get_kitchen_orders(
     db: AsyncSession = Depends(get_db),
@@ -165,6 +182,8 @@ async def update_item_status(
         target_roles=["waiter"]
     )
 
+    await check_and_update_order_status(db, item.order_id)
+
     return {"message": "Status updated successfully", "status": item.status}
 
 @router.patch("/orders/{order_id}/status", response_model=Dict[str, Any])
@@ -218,6 +237,8 @@ async def update_order_items_status(
             },
             target_roles=["waiter"]
         )
+
+    await check_and_update_order_status(db, order_id)
 
     return {"message": "Order items updated successfully", "updated_count": len(updated_ids), "status": status_update.status}
 

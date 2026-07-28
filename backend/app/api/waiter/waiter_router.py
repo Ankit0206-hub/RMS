@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+import os
+import shutil
+import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -21,7 +24,66 @@ router = APIRouter(prefix="/waiter", tags=["Waiter Portal"])
 
 @router.get("/me")
 async def get_me(current_user: Employee = Depends(get_current_waiter)):
-    return {"message": "Welcome Waiter", "employee_code": current_user.employee_code, "name": current_user.full_name}
+    return {
+        "id": current_user.id,
+        "employee_code": current_user.employee_code,
+        "name": current_user.full_name,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "phone": current_user.phone,
+        "email": current_user.email,
+        "image_url": current_user.image_url
+    }
+
+class WaiterUpdateProfileRequest(BaseModel):
+    first_name: str
+    last_name: str
+    phone: str
+    email: str
+
+@router.put("/me")
+async def update_me(
+    req: WaiterUpdateProfileRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_waiter)
+):
+    current_user.first_name = req.first_name
+    current_user.last_name = req.last_name
+    current_user.phone = req.phone
+    current_user.email = req.email
+    await db.commit()
+    await db.refresh(current_user)
+    return {"message": "Profile updated successfully"}
+
+@router.post("/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_waiter)
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File provided is not an image")
+        
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    upload_dir = os.path.join("static", "uploads", "profiles")
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # Delete old image if it exists
+    if current_user.image_url:
+        old_file = os.path.join(".", current_user.image_url.lstrip("/"))
+        if os.path.exists(old_file) and not old_file.endswith("profiles"): # simple safeguard
+            os.remove(old_file)
+            
+    # Save relative URL (which main.py mounts as /static)
+    current_user.image_url = f"/static/uploads/profiles/{filename}"
+    await db.commit()
+    await db.refresh(current_user)
+    return {"message": "Avatar uploaded successfully", "image_url": current_user.image_url}
 
 @router.get("/tables", response_model=List[WaiterTableResponse])
 async def get_tables(
@@ -52,9 +114,17 @@ async def get_tables(
             display_status = "Occupied"
             guests = active_session.number_of_people or 0
             
-            delta = datetime.now() - active_session.created_at
+            delta = datetime.utcnow() - active_session.created_at
             minutes = int(delta.total_seconds() / 60)
-            if minutes > 60:
+            
+            if minutes < 0:
+                minutes = 0
+                
+            if minutes >= 1440:
+                days = minutes // 1440
+                hours = (minutes % 1440) // 60
+                time_str = f"{days}d {hours}h"
+            elif minutes >= 60:
                 hours = minutes // 60
                 mins = minutes % 60
                 time_str = f"{hours}h {mins}m"
@@ -185,7 +255,7 @@ async def create_order(
         session_id=session.id,
         waiter_id=current_user.id,
         order_type="Dine-in",
-        status="Pending",
+        status="Preparing",
         special_instructions=req.special_instructions
     )
     db.add(order)
@@ -385,7 +455,7 @@ async def create_order(
         session_id=session.id,
         waiter_id=current_user.id,
         order_type="Dine-in",
-        status="Pending",
+        status="Preparing",
         special_instructions=req.special_instructions
     )
     db.add(order)

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Clock } from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
+import OrderTimeline from '../../components/waiter/OrderTimeline';
 
 export default function WaiterOrders() {
     const navigate = useNavigate();
@@ -156,6 +157,9 @@ export default function WaiterOrders() {
                                                         <span className="font-black text-gray-800">x{item.quantity}</span>
                                                     </div>
                                                 ))}
+                                            </div>
+                                            <div className="mb-5 pb-2">
+                                                <OrderTimeline status={order.status} />
                                             </div>
                                             <div className="flex justify-end">
                                                 <button onClick={() => navigate(`/waiter/orders/${order.id}`)} className="text-rose-500 text-sm font-bold flex items-center hover:text-rose-600 transition-colors">

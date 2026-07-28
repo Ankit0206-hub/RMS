@@ -44,6 +44,7 @@ import WaiterReadyToServe from './pages/waiter/WaiterReadyToServe';
 import WaiterRequests from './pages/waiter/WaiterRequests';
 import WaiterNotifications from './pages/waiter/WaiterNotifications';
 import WaiterProfile from './pages/waiter/WaiterProfile';
+import WaiterEditProfile from './pages/waiter/WaiterEditProfile';
 
 // Kitchen Imports
 import KitchenLayout from './layouts/KitchenLayout';
@@ -204,6 +205,7 @@ const App = () => {
                                 <Route path="requests" element={<WaiterRequests />} />
                                 <Route path="notifications" element={<WaiterNotifications />} />
                                 <Route path="profile" element={<WaiterProfile />} />
+                                <Route path="profile/edit" element={<WaiterEditProfile />} />
                             </Route>
 
                             <Route path="/kitchen" element={<ProtectedRoute allowedRoles={['kitchen', 'admin']}><KitchenLayout /></ProtectedRoute>}>

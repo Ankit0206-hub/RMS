@@ -28,7 +28,8 @@ async def get_me(current_user: dict = Depends(get_current_user)):
             "last_name": user.last_name,
             "email": user.email,
             "phone": user.phone,
-            "role": role_name
+            "role": role_name,
+            "image_url": getattr(user, "image_url", None)
         })
     elif role == "admin":
         return StandardResponse(data={

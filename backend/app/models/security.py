@@ -50,6 +50,7 @@ class Employee(TimestampMixin, Base):
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    image_url: Mapped[Optional[str]] = mapped_column(String(500))
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"))
     kitchen_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("kitchens.id", ondelete="SET NULL"), index=True)
     
