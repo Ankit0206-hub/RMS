@@ -84,7 +84,7 @@ export default function WaiterNotifications() {
                     </div>
                 </div>
 
-                <div className="px-4 md:px-8 mt-4 md:mt-8 flex-1 space-y-4 w-full pb-24 max-w-4xl mx-auto">
+                <div className="px-4 md:px-8 mt-4 md:mt-8 flex-1 space-y-4 w-full pb-24 mx-auto">
                     {loading ? (
                         <div className="flex justify-center py-10">
                             <Loader2 className="h-8 w-8 animate-spin text-rose-500" />

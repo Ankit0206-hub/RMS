@@ -74,6 +74,19 @@ export const waiterApi = {
     markNotificationRead: async (notificationId) => {
         const response = await api.put(`/waiter/notifications/${notificationId}/read`);
         return response.data;
+    },
+
+    // Profile
+    updateProfile: async (data) => {
+        const response = await api.put('/waiter/me', data);
+        return response.data;
+    },
+
+    uploadAvatar: async (formData) => {
+        const response = await api.post('/waiter/me/avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
     }
 };
 

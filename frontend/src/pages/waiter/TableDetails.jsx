@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Clock, Users, Plus, Utensils, Receipt } from 'lucide-react';
 import toast from 'react-hot-toast';
 import waiterApi from '../../services/waiterApi';
+import OrderTimeline from '../../components/waiter/OrderTimeline';
 
 export default function TableDetails() {
     const navigate = useNavigate();
@@ -131,9 +132,10 @@ export default function TableDetails() {
  <span className="font-bold text-gray-800 text-sm">Order #{order.id}</span>
  <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-rose-500/10 text-rose-600 border border-rose-200/50">{order.status}</span>
  </div>
- <div className="text-xs text-gray-600 font-medium">
+ <div className="text-xs text-gray-600 font-medium mb-3">
  {order.items.map(i => `${i.quantity}x ${i.name}`).join(', ')}
  </div>
+ <OrderTimeline status={order.status} />
  </div>
  ))}
  </div>

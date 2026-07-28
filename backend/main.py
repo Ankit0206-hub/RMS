@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
@@ -84,6 +85,8 @@ app.include_router(customer_router.router, prefix="/api/v1/customer", tags=["Cus
 app.include_router(customer_reviews.router, prefix="/api/v1/customer", tags=["Customer"])
 app.include_router(admin_reviews.router, prefix="/api/v1/admin", tags=["Admin Reviews"])
 app.include_router(websocket_router.router, prefix="/api/v1", tags=["WebSockets"])
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():

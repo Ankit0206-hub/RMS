@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle } from 'lucide-react';
+import { Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle, Bell } from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
 import toast from 'react-hot-toast';
 const TableGraphic = ({status, capacity = 4, guests = 0}) => {
@@ -164,16 +164,21 @@ export default function MyTables() {
  <div className="relative z-10 flex flex-col h-full w-full max-w-7xl mx-auto">
  {/* Fixed Search & Filters Area */}
  <div className="px-4 pt-4 pb-2 space-y-4 border-b border-white/20 bg-white/10 backdrop-blur-xl shadow-sm shrink-0">
- <div className="relative">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 -focus-within:text-rose-400 transition-colors"/>
- <input 
- type="text"
- placeholder="Search by table or order..."
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- className="w-full bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl py-3.5 pl-12 pr-4 font-bold text-[15px] focus:outline-none focus:ring-4 focus:ring-rose-300/20 focus:border-rose-300 shadow-sm transition-all placeholder:text-gray-400 text-gray-800"
- />
- </div>
+ <div className="flex items-center space-x-3">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 transition-colors"/>
+                                <input 
+                                    type="text"
+                                    placeholder="Search by table or order..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl py-3.5 pl-12 pr-4 font-bold text-[15px] focus:outline-none focus:ring-4 focus:ring-rose-300/20 focus:border-rose-300 shadow-sm transition-all placeholder:text-gray-400 text-gray-800"
+                                />
+                            </div>
+                            <button onClick={() => navigate('/waiter/notifications')} className="relative shrink-0 h-[52px] w-[52px] flex items-center justify-center bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm text-gray-700 hover:text-rose-500 hover:bg-white/40 transition-all active:scale-95">
+                                <Bell className="h-6 w-6" />
+                            </button>
+                        </div>
  
                     <div className="flex flex-wrap justify-center sm:justify-start w-full gap-2 pb-2">
                         {['All', 'Occupied', 'Ready', 'Empty'].map(tab => (
