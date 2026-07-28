@@ -7,6 +7,8 @@ class TableBase(BaseModel):
     name: Optional[str] = None
     floor: Optional[str] = None
     capacity: int
+    x_position: Optional[float] = None
+    y_position: Optional[float] = None
     status: Optional[str] = "Available"
     is_virtual: bool = False
     parent_table_id: Optional[int] = None
@@ -19,6 +21,8 @@ class TableUpdate(BaseModel):
     name: Optional[str] = None
     floor: Optional[str] = None
     capacity: Optional[int] = None
+    x_position: Optional[float] = None
+    y_position: Optional[float] = None
     status: Optional[str] = None
 
 class TableResponse(TableBase):
@@ -51,3 +55,11 @@ class TableTransferCreate(BaseModel):
 
 class TableMergeCreate(BaseModel):
     table_ids: List[int]
+
+class TableBatchUpdateItem(BaseModel):
+    id: int
+    x_position: Optional[float] = None
+    y_position: Optional[float] = None
+
+class TableBatchUpdate(BaseModel):
+    tables: List[TableBatchUpdateItem]

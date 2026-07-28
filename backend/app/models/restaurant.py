@@ -20,6 +20,8 @@ class RestaurantTable(TimestampMixin, Base):
     name: Mapped[Optional[str]] = mapped_column(String(50))
     floor: Mapped[Optional[str]] = mapped_column(String(50))
     capacity: Mapped[int] = mapped_column(Integer)
+    x_position: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), default=0)
+    y_position: Mapped[Optional[float]] = mapped_column(Numeric(10, 2), default=0)
     # Status: Available, Occupied, Reserved, Cleaning, Merged
     status: Mapped[str] = mapped_column(String(20), default="Available", index=True)
     is_virtual: Mapped[bool] = mapped_column(Boolean, default=False)

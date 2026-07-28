@@ -59,7 +59,17 @@ async def delete_table(
     await tables_service.delete_table(db, table_id)
     return StandardResponse(data={"deleted": True})
 
-from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate, TableMergeCreate
+from app.schemas.admin.tables import TableAssignmentCreate, TableAssignmentResponse, TableTransferCreate, TableMergeCreate, TableBatchUpdate
+
+@router.put("/batch", response_model=StandardResponse[dict])
+async def batch_update_tables(
+    obj_in: TableBatchUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    updates = [{"id": item.id, "x_position": item.x_position, "y_position": item.y_position} for item in obj_in.tables]
+    await tables_service.batch_update_tables(db, updates)
+    return StandardResponse(data={"updated": True}, message="Tables updated successfully")
 
 @router.post("/merge", response_model=StandardResponse[TableResponse])
 async def merge_tables(

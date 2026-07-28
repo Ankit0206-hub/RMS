@@ -239,4 +239,22 @@ class TablesService:
         await db.delete(virtual_table)
         await db.commit()
 
+    async def batch_update_tables(self, db: AsyncSession, updates: List[dict]):
+        from sqlalchemy.future import select
+        
+        table_ids = [u["id"] for u in updates]
+        result = await db.execute(select(RestaurantTable).where(RestaurantTable.id.in_(table_ids)))
+        tables = {t.id: t for t in result.scalars().all()}
+        
+        for update_data in updates:
+            table = tables.get(update_data["id"])
+            if table:
+                if "x_position" in update_data and update_data["x_position"] is not None:
+                    table.x_position = update_data["x_position"]
+                if "y_position" in update_data and update_data["y_position"] is not None:
+                    table.y_position = update_data["y_position"]
+                    
+        await db.commit()
+        return True
+
 tables_service = TablesService()
