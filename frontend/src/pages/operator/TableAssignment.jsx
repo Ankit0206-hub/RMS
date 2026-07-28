@@ -83,7 +83,7 @@ const TableAssignment = () => {
     const filteredTablesByFloor = tables.filter(t => !t.parent_table_id && (selectedFloor === 'All' || (t.floor || 'Main Hall') === selectedFloor));
 
     const waiters = (employeesData || [])
-        .filter(e => e.role_name?.toLowerCase() === 'waiter' || e.role_id === 2 || e.role_id === 3)
+        .filter(e => e.role_name?.toLowerCase() === 'waiter')
         .map(w => ({ ...w, full_name: `${w.first_name} ${w.last_name}`.trim() }));
     
     // Calculate workload per waiter and sort by ascending assigned tables
