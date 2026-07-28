@@ -119,7 +119,9 @@ const TableAssignment = () => {
 
         setIsAssigning(true);
         try {
-            await Promise.all(tablesToAssign.map(t => assignMutation.mutateAsync({ tableId: t.id, employeeId: waiterId })));
+            for (const t of tablesToAssign) {
+                await assignMutation.mutateAsync({ tableId: t.id, employeeId: waiterId });
+            }
             queryClient.invalidateQueries({ queryKey: ['adminTables'] });
             setSelectedTables([]);
             setSelectedWaiter('');
@@ -136,7 +138,9 @@ const TableAssignment = () => {
 
         setIsAssigning(true);
         try {
-            await Promise.all(tablesToUnassign.map(t => unassignMutation.mutateAsync(t.id)));
+            for (const t of tablesToUnassign) {
+                await unassignMutation.mutateAsync(t.id);
+            }
             queryClient.invalidateQueries({ queryKey: ['adminTables'] });
             setSelectedTables([]);
         } catch (error) {

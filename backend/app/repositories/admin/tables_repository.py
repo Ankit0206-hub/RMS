@@ -48,6 +48,9 @@ class TablesRepository:
         await db.commit()
 
     async def assign_waiter(self, db: AsyncSession, table_id: int, employee_id: int) -> TableAssignment:
+        # Acquire a row lock on the parent table to prevent deadlocks from concurrent updates
+        await db.execute(select(RestaurantTable.id).where(RestaurantTable.id == table_id).with_for_update())
+        
         await db.execute(update(TableAssignment).where(TableAssignment.table_id == table_id).values(is_active=False))
         db_obj = TableAssignment(table_id=table_id, employee_id=employee_id, is_active=True)
         db.add(db_obj)
@@ -56,6 +59,7 @@ class TablesRepository:
         return db_obj
 
     async def unassign_waiter(self, db: AsyncSession, table_id: int) -> None:
+        await db.execute(select(RestaurantTable.id).where(RestaurantTable.id == table_id).with_for_update())
         await db.execute(update(TableAssignment).where(TableAssignment.table_id == table_id).values(is_active=False))
         await db.commit()
 
