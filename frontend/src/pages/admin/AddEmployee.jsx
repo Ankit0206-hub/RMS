@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, User, Shield, Key, Plus } from 'lucide-react';
+import { ArrowLeft, Save, User, Shield, FileText, Plus } from 'lucide-react';
 import api from '../../services/api';
 import { Input } from '../../components/ui';
 
 const AddEmployee = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('Basic');
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -19,7 +18,10 @@ const AddEmployee = () => {
     password: '',
     role_id: 1, // 1 for Operator, 2 for Waiter, 3 for Kitchen
     kitchen_id: '',
-    is_active: true
+    is_active: true,
+    aadhar_card: null,
+    pan_card: null,
+    bank_passbook: null
   });
 
   const { data: employeesData } = useQuery({
@@ -70,10 +72,10 @@ const AddEmployee = () => {
   });
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' || name === 'role_id' ? parseInt(value) : value
+      [name]: type === 'checkbox' ? checked : type === 'file' ? files[0] : type === 'number' || name === 'role_id' ? parseInt(value) : value
     }));
   };
 
@@ -85,8 +87,6 @@ const AddEmployee = () => {
     };
     mutation.mutate(payload);
   };
-
-  const tabs = ['Basic', 'Role & Settings', 'Documents'];
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-full bg-gray-50">
@@ -116,28 +116,9 @@ const AddEmployee = () => {
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 px-6 flex gap-8 shrink-0">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`py-4 px-2 text-sm font-semibold border-b-2 transition-colors ${
-              activeTab === tab 
-                ? 'border-blue-600 text-blue-600' 
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === 'Basic' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
             <div className="flex items-center mb-6">
               <div className="p-2 bg-cyan-50 rounded-lg mr-3">
                 <User className="h-5 w-5 text-cyan-500" />
@@ -203,11 +184,9 @@ const AddEmployee = () => {
                 <Plus className="h-4 w-4 mr-1" /> Add Custom Basic Field
               </button>
             </div>
-          </div>
-        )}
+        </div>
 
-        {activeTab === 'Role & Settings' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
             <div className="flex items-center mb-6">
               <div className="p-2 bg-cyan-50 rounded-lg mr-3">
                 <Shield className="h-5 w-5 text-cyan-500" />
@@ -266,14 +245,31 @@ const AddEmployee = () => {
                 </label>
               </div>
             </div>
-          </div>
-        )}
+        </div>
 
-        {activeTab === 'Documents' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm flex items-center justify-center min-h-[300px]">
-            <p className="text-gray-500 font-medium">Document upload functionality coming soon.</p>
+        <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
+          <div className="flex items-center mb-6">
+            <div className="p-2 bg-cyan-50 rounded-lg mr-3">
+              <FileText className="h-5 w-5 text-cyan-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900">Documents</h3>
           </div>
-        )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="w-full">
+               <label className="block text-sm font-semibold text-gray-700 mb-1">Aadhar Card</label>
+               <input type="file" name="aadhar_card" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+            </div>
+            <div className="w-full">
+               <label className="block text-sm font-semibold text-gray-700 mb-1">PAN Card</label>
+               <input type="file" name="pan_card" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+            </div>
+            <div className="w-full">
+               <label className="block text-sm font-semibold text-gray-700 mb-1">Bank Passbook</label>
+               <input type="file" name="bank_passbook" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+            </div>
+          </div>
+        </div>
       </div>
     </form>
   );
