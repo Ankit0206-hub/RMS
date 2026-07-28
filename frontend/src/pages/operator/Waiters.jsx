@@ -99,7 +99,14 @@ const Waiters = () => {
     });
 
     const handleAddWaiterChange = (e) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target;
+        
+        if (name === 'phone') {
+            value = value.replace(/\D/g, '').slice(0, 10);
+        } else if (name === 'first_name' || name === 'last_name') {
+            value = value.replace(/[^A-Za-z\s]/g, '');
+        }
+
         setNewWaiterData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -613,6 +620,8 @@ const Waiters = () => {
                             value={newWaiterData.phone}
                             onChange={handleAddWaiterChange}
                             placeholder="10-digit number"
+                            pattern="[0-9]*"
+                            maxLength="10"
                             required
                         />
                         <Input
@@ -623,6 +632,7 @@ const Waiters = () => {
                             onChange={handleAddWaiterChange}
                             placeholder="email@example.com"
                             required
+                            autoComplete="new-password"
                         />
                         <Input
                             label="Password"
@@ -632,6 +642,7 @@ const Waiters = () => {
                             onChange={handleAddWaiterChange}
                             placeholder="••••••••"
                             required
+                            autoComplete="new-password"
                         />
                     </div>
                     <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-800">
