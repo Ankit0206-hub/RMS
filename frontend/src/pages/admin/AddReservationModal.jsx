@@ -136,8 +136,13 @@ const AddReservationModal = ({ isOpen, onClose }) => {
                                         type="text"
                                         className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                         value={formData.contact_number}
-                                        onChange={(e) => setFormData({...formData, contact_number: e.target.value})}
-                                        placeholder="+1 234 567 890"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setFormData({...formData, contact_number: val});
+                                        }}
+                                        maxLength="10"
+                                        pattern="[0-9]*"
+                                        placeholder="e.g. 9876543210"
                                     />
                                 </div>
                             </div>

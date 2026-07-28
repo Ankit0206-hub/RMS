@@ -135,24 +135,24 @@ const Settings = () => {
                 <p className="text-[11px] font-medium text-gray-500 mt-1">Manage your global restaurant configuration and preferences.</p>
             </div>
 
-            {/* Main Layout Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Main Layout */}
+            <div className="space-y-6">
                 
-                {/* Left Sidebar Navigation */}
-                <div className="md:col-span-3 bg-white border border-gray-100 shadow-sm rounded-xl p-3">
-                    <nav className="space-y-1">
+                {/* Top Header Navigation */}
+                <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-2 overflow-x-auto">
+                    <nav className="flex space-x-2 min-w-max">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`w-full flex items-center px-4 py-3 text-xs font-bold rounded-lg transition-colors ${
+                                className={`flex items-center px-5 py-2.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap ${
                                     activeTab === tab.id 
                                         ? 'bg-indigo-50 text-indigo-700' 
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span className={`mr-3 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'}`}>
+                                <span className={`mr-2 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'}`}>
                                     {tab.icon}
                                 </span>
                                 {tab.label}
@@ -161,8 +161,8 @@ const Settings = () => {
                     </nav>
                 </div>
 
-                {/* Right Content Area */}
-                <div className="md:col-span-9 space-y-6">
+                {/* Content Area */}
+                <div className="space-y-6">
                     
                     {/* Success/Error Message */}
                     {message && (

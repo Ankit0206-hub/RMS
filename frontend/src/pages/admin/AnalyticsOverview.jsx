@@ -100,9 +100,7 @@ const AnalyticsOverview = () => {
                                         <p className="text-lg font-black text-gray-900 leading-none">{kpi.value}</p>
                                     </div>
                                 </div>
-                                <div className="text-[9px] font-bold text-green-500 mt-1 pl-1 tracking-tight">
-                                    {kpi.trend} 
-                                </div>
+                          
                             </div>
                         ))}
                     </div>
