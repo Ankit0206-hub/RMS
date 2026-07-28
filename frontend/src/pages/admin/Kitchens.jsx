@@ -244,6 +244,7 @@ const Kitchens = () => {
                         required={isAddModalOpen}
                         className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         placeholder="e.g. veg@kitchen.com"
+                        autoComplete="new-password"
                       />
                     </div>
                     <div>
@@ -256,6 +257,7 @@ const Kitchens = () => {
                         required={isAddModalOpen}
                         className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                         placeholder="Enter password"
+                        autoComplete="new-password"
                       />
                     </div>
                   </div>
