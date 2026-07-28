@@ -13,9 +13,11 @@ const FloorPlan = () => {
     const [draggingTable, setDraggingTable] = useState(null);
     const [addModalOpen, setAddModalOpen] = useState(false);
     const [newSectionName, setNewSectionName] = useState('');
+    const [newSectionPrefix, setNewSectionPrefix] = useState('');
     const [deleteModalSection, setDeleteModalSection] = useState(null);
     const [tableModalOpen, setTableModalOpen] = useState(false);
     const [editingTable, setEditingTable] = useState(null);
+    const [deleteTableId, setDeleteTableId] = useState(null);
     const [tableForm, setTableForm] = useState({ table_number: '', capacity: 4, floor: 'Main Hall' });
     const queryClient = useQueryClient();
 
@@ -198,13 +200,19 @@ const FloorPlan = () => {
             }
             const currentFloors = settings?.floors_or_areas || [];
             if (!currentFloors.includes(newName)) {
+                const currentPrefixes = settings?.floor_prefixes || {};
                 const updatedSettings = {
                     ...settings,
-                    floors_or_areas: [...currentFloors, newName]
+                    floors_or_areas: [...currentFloors, newName],
+                    floor_prefixes: {
+                        ...currentPrefixes,
+                        [newName]: newSectionPrefix.trim() || ''
+                    }
                 };
                 settingsMutation.mutate(updatedSettings);
                 setAddModalOpen(false);
                 setNewSectionName('');
+                setNewSectionPrefix('');
             } else {
                 toast.error("Section already exists!");
             }
@@ -226,13 +234,41 @@ const FloorPlan = () => {
         }
     };
 
+    const generateNextTableName = (tablesList, settingsData, selectedFloor) => {
+        const convention = settingsData.table_naming_convention || 'Numeric';
+        const globalPrefix = settingsData.normal_table_prefix || 'T-';
+        const floorPrefixes = settingsData.floor_prefixes || {};
+        
+        let prefix = globalPrefix;
+        if (selectedFloor && floorPrefixes[selectedFloor]) {
+            prefix = floorPrefixes[selectedFloor];
+        }
+
+        const floorTables = tablesList.filter(t => (t.floor || 'Main Hall') === (selectedFloor || 'Main Hall'));
+        const count = floorTables.length + 1;
+        
+        if (convention === 'Numeric') {
+            return `${prefix}${count}`;
+        } else if (convention === 'Alphabetic') {
+            let num = count;
+            let str = '';
+            while (num > 0) {
+                const rem = (num - 1) % 26;
+                str = String.fromCharCode(65 + rem) + str;
+                num = Math.floor((num - 1) / 26);
+            }
+            return `${prefix}${str}`;
+        }
+        return `${prefix}${count}`; // Fallback for Custom
+    };
+
     const openTableModal = (table = null) => {
         if (table) {
             setEditingTable(table);
             setTableForm({ table_number: table.table_number, capacity: table.capacity, floor: table.floor || 'Main Hall' });
         } else {
             setEditingTable(null);
-            setTableForm({ table_number: '', capacity: 4, floor: activeSection });
+            setTableForm({ table_number: generateNextTableName(tables, settings, activeSection), capacity: 4, floor: activeSection });
         }
         setTableModalOpen(true);
     };
@@ -252,6 +288,24 @@ const FloorPlan = () => {
         },
         onError: () => toast.error("Failed to save table")
     });
+
+    const deleteTableMutation = useMutation({
+        mutationFn: async (id) => {
+            return api.delete(`/admin/tables/${id}`);
+        },
+        onSuccess: () => {
+            toast.success("Table deleted successfully!");
+            queryClient.invalidateQueries({ queryKey: ['operator-tables'] });
+            setDeleteTableId(null);
+        },
+        onError: () => toast.error("Failed to delete table")
+    });
+
+    const handleDeleteTableSubmit = () => {
+        if (deleteTableId) {
+            deleteTableMutation.mutate(deleteTableId);
+        }
+    };
 
     const handleTableSubmit = () => {
         if (tableForm.table_number && tableForm.capacity > 0) {
@@ -320,9 +374,9 @@ const FloorPlan = () => {
                                                 <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 mt-0.5">{sec.tables} Tables</p>
                                             </div>
                                         </div>
-                                        <ChevronRight size={14} className={`${activeSection === sec.name ? 'text-indigo-500' : 'text-gray-300'} ${(!isEditing && sec.name !== 'Main Hall') ? 'group-hover:opacity-0' : 'opacity-100'} transition-opacity`} />
+                                        <ChevronRight size={14} className={`${activeSection === sec.name ? 'text-indigo-500' : 'text-gray-300'} ${(isEditing || sec.name === 'Main Hall') ? 'opacity-100' : 'group-hover:opacity-0'} transition-opacity`} />
                                     </button>
-                                    {!isEditing && sec.name !== 'Main Hall' && (
+                                    {isEditing && sec.name !== 'Main Hall' && (
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); setDeleteModalSection(sec.name); }}
                                             className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
@@ -369,40 +423,58 @@ const FloorPlan = () => {
                             >
                                 {currentTables.map((table, idx) => {
                                     const colors = getStatusColor(table.status);
-                                    const seats = Array.from({ length: table.capacity }).map((_, i) => i);
+                                    const displayedCapacity = Math.min(table.capacity, 20);
+                                    const topSeatsCount = Math.ceil(displayedCapacity / 2);
+                                    
+                                    // Calculate dynamic width. Minimum 96px (w-24). Each seat is 12px with 8px gap. + 32px padding.
+                                    const requiredWidth = (topSeatsCount * 12) + (Math.max(0, topSeatsCount - 1) * 8) + 32;
+                                    const tableWidth = Math.max(96, requiredWidth);
+
+                                    const seats = Array.from({ length: displayedCapacity }).map((_, i) => i);
                                     const pos = positions[table.id] || getDefaultPosition(idx);
                                     
                                     return (
                                         <div 
                                             key={table.id} 
                                             className={`absolute group cursor-pointer ${isEditing ? 'cursor-grab active:cursor-grabbing hover:ring-4 hover:ring-indigo-300/50 rounded-xl' : ''} ${draggingTable?.id === table.id ? 'z-50 opacity-90' : 'z-10'}`}
-                                            style={{ left: pos.x, top: pos.y, width: '96px', height: '64px' }}
+                                            style={{ left: pos.x, top: pos.y, width: `${tableWidth}px`, height: '64px' }}
                                             onPointerDown={(e) => handlePointerDown(e, table.id)}
                                         >
                                             <div className="absolute -top-2 left-0 right-0 flex justify-center gap-2">
-                                                {seats.slice(0, Math.ceil(table.capacity / 2)).map(s => (
+                                                {seats.slice(0, topSeatsCount).map(s => (
                                                     <div key={`t-${s}`} className={`w-3 h-3 rounded-full border-2 ${colors.border} bg-white dark:bg-slate-900`}></div>
                                                 ))}
                                             </div>
                                             <div className="absolute -bottom-2 left-0 right-0 flex justify-center gap-2">
-                                                {seats.slice(Math.ceil(table.capacity / 2)).map(s => (
+                                                {seats.slice(topSeatsCount).map(s => (
                                                     <div key={`b-${s}`} className={`w-3 h-3 rounded-full border-2 ${colors.border} bg-white dark:bg-slate-900`}></div>
                                                 ))}
                                             </div>
                                             
                                             {isEditing && (
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); openTableModal(table); }}
-                                                    onPointerDown={(e) => e.stopPropagation()}
-                                                    className="absolute -top-3 -right-3 w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md z-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <Pencil size={12} />
-                                                </button>
+                                                <>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); setDeleteTableId(table.id); }}
+                                                        onPointerDown={(e) => e.stopPropagation()}
+                                                        className="absolute -top-3 -left-3 w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); openTableModal(table); }}
+                                                        onPointerDown={(e) => e.stopPropagation()}
+                                                        className="absolute -top-3 -right-3 w-7 h-7 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full flex items-center justify-center shadow-md z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                </>
                                             )}
 
-                                            <div className={`w-24 h-16 rounded-xl border-2 ${colors.border} ${colors.bg} flex flex-col items-center justify-center shadow-sm relative transition-transform ${!isEditing && 'group-hover:scale-105'}`}>
+                                            <div className={`w-full h-full rounded-xl border-2 ${colors.border} ${colors.bg} flex flex-col items-center justify-center shadow-sm relative transition-transform ${!isEditing && 'group-hover:scale-105'}`}>
                                                 <span className={`font-black text-[15px] ${colors.text}`}>{table.table_number}</span>
-                                                <span className={`text-[10px] font-bold ${colors.text} opacity-80`}>{table.capacity} Seats</span>
+                                                <span className={`text-[10px] font-bold ${colors.text} opacity-80`}>
+                                                    {table.capacity} Seats {table.capacity > 20 && ' (Large)'}
+                                                </span>
                                             </div>
                                         </div>
                                     );
@@ -483,7 +555,7 @@ const FloorPlan = () => {
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl w-[400px] border border-gray-100 dark:border-slate-800">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Section</h2>
-                        <div className="mb-6">
+                        <div className="mb-4">
                             <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 uppercase tracking-wide">Section Name</label>
                             <input 
                                 type="text" 
@@ -492,6 +564,16 @@ const FloorPlan = () => {
                                 className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                                 placeholder="e.g. Patio, Rooftop"
                                 autoFocus
+                            />
+                        </div>
+                        <div className="mb-6">
+                            <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 uppercase tracking-wide">Prefix (Optional)</label>
+                            <input 
+                                type="text" 
+                                value={newSectionPrefix}
+                                onChange={(e) => setNewSectionPrefix(e.target.value)}
+                                className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                                placeholder="e.g. P-, RT-"
                             />
                         </div>
                         <div className="flex justify-end space-x-3">
@@ -546,7 +628,14 @@ const FloorPlan = () => {
                                 <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 uppercase tracking-wide">Section / Floor</label>
                                 <select 
                                     value={tableForm.floor}
-                                    onChange={(e) => setTableForm({...tableForm, floor: e.target.value})}
+                                    onChange={(e) => {
+                                        const newFloor = e.target.value;
+                                        setTableForm(prev => ({
+                                            ...prev, 
+                                            floor: newFloor,
+                                            table_number: editingTable ? prev.table_number : generateNextTableName(tables, settings, newFloor)
+                                        }));
+                                    }}
                                     className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                                 >
                                     {floorsOrAreas.map(f => (
@@ -560,6 +649,20 @@ const FloorPlan = () => {
                             <button onClick={handleTableSubmit} disabled={!tableForm.table_number || tableMutation.isPending} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
                                 {editingTable ? 'Save Changes' : 'Create Table'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Table Modal */}
+            {deleteTableId && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-xl w-[400px] border border-gray-100 dark:border-slate-800">
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Table</h2>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">Are you sure you want to delete this table? This action cannot be undone.</p>
+                        <div className="flex justify-end space-x-3">
+                            <button onClick={() => setDeleteTableId(null)} className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                            <button onClick={handleDeleteTableSubmit} disabled={deleteTableMutation.isPending} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">Delete Table</button>
                         </div>
                     </div>
                 </div>

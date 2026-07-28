@@ -28,6 +28,13 @@ class SettingsService:
                 return int(val)
             except:
                 return default
+        def parse_json_dict(val, default=None):
+            if not val:
+                return default or {}
+            try:
+                return json.loads(val)
+            except:
+                return default or {}
         
         # Provide defaults if not exist
         return RestaurantSettingsResponse(
@@ -45,9 +52,11 @@ class SettingsService:
             is_closed_early=parse_bool(settings_dict.get("is_closed_early")),
             holidays=parse_json_list(settings_dict.get("holidays")),
             merged_table_initial=settings_dict.get("merged_table_initial", "M-"),
+            normal_table_prefix=settings_dict.get("normal_table_prefix", "T-"),
             table_naming_convention=settings_dict.get("table_naming_convention", "Numeric"),
             total_tables=parse_int(settings_dict.get("total_tables")),
-            floors_or_areas=parse_json_list(settings_dict.get("floors_or_areas"))
+            floors_or_areas=parse_json_list(settings_dict.get("floors_or_areas")),
+            floor_prefixes=parse_json_dict(settings_dict.get("floor_prefixes"))
         )
 
     async def update_settings(self, db: AsyncSession, settings_in: RestaurantSettingsUpdate) -> RestaurantSettingsResponse:

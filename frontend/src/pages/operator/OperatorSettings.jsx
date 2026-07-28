@@ -103,13 +103,18 @@ const OperatorSettings = () => {
         is_closed_early: false,
         holidays: [],
         merged_table_initial: 'M-',
+        normal_table_prefix: 'T-',
         table_naming_convention: 'Numeric',
         total_tables: 0,
-        floors_or_areas: []
+        floors_or_areas: [],
+        floor_prefixes: {}
     });
+
+    const [actualTotalTables, setActualTotalTables] = useState(0);
 
     const [newHoliday, setNewHoliday] = useState({ date: '', reason: '' });
     const [newFloor, setNewFloor] = useState('');
+    const [newFloorPrefix, setNewFloorPrefix] = useState('');
 
     const [status, setStatus] = useState({ loading: true, saving: false, error: null, successMessage: null });
 
@@ -120,7 +125,15 @@ const OperatorSettings = () => {
                 const data = response.data.data;
                 if (!data.holidays) data.holidays = [];
                 if (!data.floors_or_areas) data.floors_or_areas = [];
+                if (!data.floor_prefixes) data.floor_prefixes = {};
+                if (!data.normal_table_prefix) data.normal_table_prefix = 'T-';
                 setRestaurantSettings(data);
+                
+                try {
+                    const tablesRes = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
+                    setActualTotalTables(tablesRes.data.data?.length || 0);
+                } catch (e) { console.error(e); }
+                
                 setStatus(prev => ({ ...prev, loading: false }));
             } catch (error) {
                 console.error("Failed to load restaurant settings", error);
@@ -169,15 +182,25 @@ const OperatorSettings = () => {
         if (newFloor.trim() && !restaurantSettings.floors_or_areas.includes(newFloor.trim())) {
             setRestaurantSettings(prev => ({
                 ...prev,
-                floors_or_areas: [...prev.floors_or_areas, newFloor.trim()]
+                floors_or_areas: [...prev.floors_or_areas, newFloor.trim()],
+                floor_prefixes: {
+                    ...prev.floor_prefixes,
+                    [newFloor.trim()]: newFloorPrefix.trim() || ''
+                }
             }));
             setNewFloor('');
+            setNewFloorPrefix('');
         }
     };
     const handleRemoveFloor = (index) => {
-        const updated = [...restaurantSettings.floors_or_areas];
-        updated.splice(index, 1);
-        setRestaurantSettings(prev => ({ ...prev, floors_or_areas: updated }));
+        const floorName = restaurantSettings.floors_or_areas[index];
+        const updatedFloors = [...restaurantSettings.floors_or_areas];
+        updatedFloors.splice(index, 1);
+        
+        const updatedPrefixes = { ...restaurantSettings.floor_prefixes };
+        delete updatedPrefixes[floorName];
+        
+        setRestaurantSettings(prev => ({ ...prev, floors_or_areas: updatedFloors, floor_prefixes: updatedPrefixes }));
     };
 
     const handleSave = async (e) => {
@@ -468,9 +491,16 @@ const OperatorSettings = () => {
                                     </div>
                                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Merged Table Initial</label>
+                                            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Merged Table Prefix</label>
                                             <input 
                                                 type="text" name="merged_table_initial" value={restaurantSettings.merged_table_initial || ''} onChange={handleSettingsChange} placeholder="e.g. M-"
+                                                className="block w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Normal Table Prefix</label>
+                                            <input 
+                                                type="text" name="normal_table_prefix" value={restaurantSettings.normal_table_prefix || ''} onChange={handleSettingsChange} placeholder="e.g. T-"
                                                 className="block w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
                                             />
                                         </div>
@@ -486,18 +516,25 @@ const OperatorSettings = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Total Tables</label>
-                                            <input 
-                                                type="number" name="total_tables" value={restaurantSettings.total_tables || 0} onChange={handleSettingsChange} min="0"
-                                                className="block w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
-                                            />
+                                            <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Current Total Tables</label>
+                                            <div className="relative">
+                                                <input 
+                                                    type="number" value={actualTotalTables} disabled
+                                                    className="block w-full px-3 py-2 bg-gray-100 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-600 dark:text-slate-400 cursor-not-allowed" 
+                                                />
+                                                <span className="absolute right-3 top-2 text-[10px] font-bold text-gray-400">READ ONLY</span>
+                                            </div>
                                         </div>
 
                                         <div className="md:col-span-2">
                                             <label className="block text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Floors or Areas</label>
                                             <div className="flex gap-2 mb-3">
                                                 <input 
-                                                    type="text" value={newFloor} onChange={(e) => setNewFloor(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddFloor(); } }} placeholder="e.g. Ground Floor, Patio"
+                                                    type="text" value={newFloor} onChange={(e) => setNewFloor(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddFloor(); } }} placeholder="Area Name (e.g. Patio)"
+                                                    className="block flex-[2] px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
+                                                />
+                                                <input 
+                                                    type="text" value={newFloorPrefix} onChange={(e) => setNewFloorPrefix(e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') { e.preventDefault(); handleAddFloor(); } }} placeholder="Prefix (e.g. P-)"
                                                     className="block flex-1 px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500" 
                                                 />
                                                 <button 
@@ -511,7 +548,7 @@ const OperatorSettings = () => {
                                             <div className="flex flex-wrap gap-2">
                                                 {restaurantSettings.floors_or_areas && restaurantSettings.floors_or_areas.map((floor, idx) => (
                                                     <div key={idx} className="flex items-center gap-1 bg-cyan-50 dark:bg-slate-800 text-cyan-700 dark:text-cyan-400 px-3 py-1.5 rounded-md text-xs font-bold border border-cyan-100 dark:border-slate-700">
-                                                        {floor}
+                                                        {floor} {restaurantSettings.floor_prefixes?.[floor] ? `(${restaurantSettings.floor_prefixes[floor]})` : ''}
                                                         <button type="button" onClick={() => handleRemoveFloor(idx)} className="text-cyan-500 hover:text-cyan-900 dark:hover:text-cyan-200 ml-1">
                                                             <Trash2 className="w-3 h-3" />
                                                         </button>

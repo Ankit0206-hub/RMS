@@ -20,9 +20,11 @@ class RestaurantSettingsUpdate(BaseModel):
     is_closed_early: Optional[bool] = False
     holidays: Optional[List[HolidayItem]] = []
     merged_table_initial: Optional[str] = "M-"
+    normal_table_prefix: Optional[str] = "T-"
     table_naming_convention: Optional[str] = "Numeric"
     total_tables: Optional[int] = 0
     floors_or_areas: Optional[List[str]] = []
+    floor_prefixes: Optional[dict] = {}
 
 class RestaurantSettingsResponse(RestaurantSettingsUpdate):
     pass
