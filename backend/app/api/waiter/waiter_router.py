@@ -19,6 +19,7 @@ from app.models.menu import MenuCategory, MenuItem
 from app.schemas.waiter import WaiterTableResponse, WaiterMenuCategory, WaiterStartSessionRequest
 from app.schemas.ordering import OrderCreate
 from app.websocket.connection_manager import manager
+from app.utils.storage import upload_file_to_r2_or_local, delete_file_r2_or_local
 
 router = APIRouter(prefix="/waiter", tags=["Waiter Portal"])
 
@@ -64,23 +65,15 @@ async def upload_avatar(
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File provided is not an image")
         
-    ext = file.filename.split(".")[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    upload_dir = os.path.join("static", "uploads", "profiles")
-    os.makedirs(upload_dir, exist_ok=True)
-    file_path = os.path.join(upload_dir, filename)
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Upload to R2 or Local
+    new_image_url = await upload_file_to_r2_or_local(file, directory="profiles")
         
     # Delete old image if it exists
     if current_user.image_url:
-        old_file = os.path.join(".", current_user.image_url.lstrip("/"))
-        if os.path.exists(old_file) and not old_file.endswith("profiles"): # simple safeguard
-            os.remove(old_file)
+        delete_file_r2_or_local(current_user.image_url)
             
-    # Save relative URL (which main.py mounts as /static)
-    current_user.image_url = f"/static/uploads/profiles/{filename}"
+    # Save URL
+    current_user.image_url = new_image_url
     await db.commit()
     await db.refresh(current_user)
     return {"message": "Avatar uploaded successfully", "image_url": current_user.image_url}

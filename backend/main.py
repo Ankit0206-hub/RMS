@@ -86,6 +86,8 @@ app.include_router(customer_reviews.router, prefix="/api/v1/customer", tags=["Cu
 app.include_router(admin_reviews.router, prefix="/api/v1/admin", tags=["Admin Reviews"])
 app.include_router(websocket_router.router, prefix="/api/v1", tags=["WebSockets"])
 
+import os
+os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
