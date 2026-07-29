@@ -130,6 +130,7 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
             res.append({
                 "id": cat.id,
                 "name": cat.name,
+                "is_spicy_customizable": cat.is_spicy_customizable,
                 "items": [
                     {
                         "id": item.id,
@@ -139,6 +140,7 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
                         "image_url": item.images[0].image_url if getattr(item, 'images', None) and len(item.images) > 0 else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
                         "is_veg": item.is_veg,
                         "half_price": float(item.half_price) if item.half_price is not None else None,
+                        "is_spicy_customizable": item.is_spicy_customizable,
                         "avg_rating": ratings_dict.get(item.id, {}).get("avg_rating", 0),
                         "rating_count": ratings_dict.get(item.id, {}).get("rating_count", 0)
                     }

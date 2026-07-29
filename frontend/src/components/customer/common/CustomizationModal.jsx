@@ -22,11 +22,11 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
 
   if (!isOpen || !food) return null;
 
-  const hasPortions = food.hasPortions ?? true;
-  const customizableSpice = food.customizableSpice ?? true;
+  const hasPortions = food.half_price != null;
+  const customizableSpice = food.is_spicy_customizable ?? food.category?.is_spicy_customizable ?? false;
   
   const basePrice = food.basePrice || food.price || 0;
-  const currentPrice = portion === "Half" ? Math.round(basePrice * 0.6) : basePrice;
+  const currentPrice = portion === "Half" ? (food.half_price ?? Math.round(basePrice * 0.6)) : basePrice;
 
   const handleAdd = () => {
     if (isEditing) {
@@ -92,7 +92,7 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
                       </div>
                       <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{p} Plate</span>
                     </div>
-                    <span className="text-[14px] font-bold text-gray-700 dark:text-slate-300">₹{p === 'Half' ? Math.round(basePrice * 0.6) : basePrice}</span>
+                    <span className="text-[14px] font-bold text-gray-700 dark:text-slate-300">₹{p === 'Half' ? (food.half_price ?? Math.round(basePrice * 0.6)) : basePrice}</span>
                   </label>
                 ))}
               </div>

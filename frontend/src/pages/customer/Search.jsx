@@ -56,7 +56,7 @@ export default function SearchPage() {
           {/* Header */}
           <div className="flex items-center gap-3">
 
-            <button onClick={() => navigate(-1)}>
+            <button onClick={() => navigate('/customer/home')}>
               <ArrowLeft size={22} />
             </button>
 

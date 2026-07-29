@@ -26,7 +26,7 @@ export default function Language() {
 
   const saveLanguage = () => {
     localStorage.setItem("language", language);
-    navigate(-1);
+    navigate('/customer/settings');
   };
 
   return (
@@ -38,7 +38,7 @@ export default function Language() {
 
         <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
-          <button onClick={() => navigate(-1)}>
+          <button onClick={() => navigate('/customer/settings')}>
             <ArrowLeft size={22} />
           </button>
 

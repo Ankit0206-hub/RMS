@@ -26,3 +26,10 @@ dummy_data.py
 .vscode/
 .idea/
 Makefile
+
+# User Uploaded Static Images
+backend/static/
+frontend/src/assets/images/
+
+# Scratch Scripts / Secrets
+backend/check_db.py

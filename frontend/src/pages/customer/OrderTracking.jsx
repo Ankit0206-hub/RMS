@@ -104,7 +104,7 @@ export default function OrderTracking() {
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-1">
+          <button onClick={() => navigate('/customer/orders')} className="p-1">
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Track Order</h1>

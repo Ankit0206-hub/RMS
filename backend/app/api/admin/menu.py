@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.schemas.admin.menu import MenuItemCreate, MenuItemUpdate, MenuItemResponse, MenuItemAvailabilityPatch
@@ -7,8 +7,20 @@ from app.schemas.common import StandardResponse, PaginationMeta
 from app.services.admin.menu_service import menu_service
 from app.models.security import Admin
 from app.api.deps import get_current_admin_or_operator
+from app.utils.storage import upload_file_to_r2_or_local
 
 router = APIRouter()
+
+@router.post("/upload-image", response_model=StandardResponse[dict])
+async def upload_menu_image(
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File provided is not an image")
+    
+    image_url = await upload_file_to_r2_or_local(file, directory="menu_items")
+    return StandardResponse(data={"image_url": image_url})
 
 @router.get("/kpis", response_model=StandardResponse[dict])
 async def get_menu_kpis(

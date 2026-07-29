@@ -25,18 +25,29 @@ export default function FoodList() {
     customerApi.getMenu().then(data => {
       const catData = data.find(c => c.name.toLowerCase().replace(/\s+/g, "-") === category);
       if (catData) {
-        const mappedItems = catData.items.map(dish => ({
+        const mappedItems = catData.items.map(dish => {
+          let img_url = dish.image_url;
+          if (img_url && img_url.startsWith('/')) {
+            img_url = `http://localhost:8000${img_url}`;
+          }
+          return {
           id: dish.id,
           name: dish.name,
           price: dish.price,
-          rating: 4.8,
+          rating: dish.avg_rating || 4.8,
           desc: dish.description,
           isVeg: dish.is_veg,
-          isSpicy: dish.customizable_spice,
-          hasPortions: dish.has_portions,
-          customizableSpice: dish.customizable_spice,
-          image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800"
-        }));
+          isSpicy: dish.is_spicy_customizable ?? catData.is_spicy_customizable ?? false,
+          hasPortions: dish.half_price != null,
+          half_price: dish.half_price,
+          customizableSpice: dish.is_spicy_customizable ?? catData.is_spicy_customizable ?? false,
+          image: img_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800",
+          is_spicy_customizable: dish.is_spicy_customizable,
+          category: {
+              is_spicy_customizable: catData.is_spicy_customizable
+          }
+        };
+        });
         setCurrentData(mappedItems);
       }
       setLoading(false);

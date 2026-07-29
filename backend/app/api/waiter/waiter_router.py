@@ -178,6 +178,7 @@ async def get_menu(
             res.append(WaiterMenuCategory(
                 id=cat.id,
                 name=cat.name,
+                is_spicy_customizable=cat.is_spicy_customizable,
                 items=active_items
             ))
     return res

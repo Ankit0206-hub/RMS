@@ -15,4 +15,15 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/admin/menu/upload-image', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
 export default api;

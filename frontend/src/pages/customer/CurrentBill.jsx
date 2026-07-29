@@ -31,7 +31,7 @@ export default function CurrentBill() {
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-1">
+          <button onClick={() => navigate('/customer/home')} className="p-1">
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Current Bill</h1>
@@ -72,7 +72,11 @@ export default function CurrentBill() {
                 >
                   <div className="h-20 w-20 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 dark:text-slate-400 overflow-hidden shrink-0">
                     {item.image ? (
-                      <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                      <img 
+                        src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
+                        alt={item.name} 
+                        className="h-full w-full object-cover" 
+                      />
                     ) : (
                       <span className="text-2xl">🍽️</span>
                     )}

@@ -39,7 +39,7 @@ export default function OrderDetails() {
     <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white dark:bg-slate-900/80 backdrop-blur-md px-5 py-4 shadow-sm flex items-center">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+        <button onClick={() => navigate('/customer/orders')} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
           <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
         </button>
         <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">
@@ -104,7 +104,11 @@ export default function OrderDetails() {
               <div key={item.id} className="bg-white dark:bg-slate-900 rounded-[20px] p-3 shadow-sm border border-gray-100 dark:border-slate-800 flex gap-4 items-center">
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-800/50 flex-shrink-0 overflow-hidden shadow-sm">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img 
+                      src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover" 
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">🍽️</div>
                   )}

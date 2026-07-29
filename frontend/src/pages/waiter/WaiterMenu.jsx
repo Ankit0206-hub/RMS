@@ -28,11 +28,15 @@ export default function WaiterMenu() {
                 let allItems = [];
                 data.forEach(c => {
                     c.items.forEach(i => {
+                        let img_url = i.image_url;
+                        if (img_url && img_url.startsWith('/')) {
+                            img_url = `http://localhost:8000${img_url}`;
+                        }
                         allItems.push({
                             ...i,
-                            category: c.name,
+                            category: { name: c.name, is_spicy_customizable: c.is_spicy_customizable },
                             qty: 0,
-                            img: i.image_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80'
+                            img: img_url || 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=100&q=80'
                         });
                     });
                 });
@@ -70,7 +74,7 @@ export default function WaiterMenu() {
         setItems(items.map(item => {
             if (item.id === customizingItem.id) {
                 const basePrice = item.originalPrice || item.price;
-                const newPrice = prepType === 'Half Plate' ? Math.round(basePrice * 0.6) : basePrice;
+                const newPrice = prepType === 'Half Plate' ? (item.half_price != null ? item.half_price : Math.round(basePrice * 0.6)) : basePrice;
                 return { ...item, qty: 1, prepType, spiceLevel, price: newPrice, originalPrice: basePrice };
             }
             return item;
@@ -89,7 +93,7 @@ export default function WaiterMenu() {
         }));
     };
 
-    const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
+    const cartCount = items.filter(item => item.qty > 0).length;
     const cartTotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     return (
@@ -99,7 +103,7 @@ export default function WaiterMenu() {
             <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
                     <div className="flex items-center w-full max-w-7xl mx-auto justify-between relative">
-                        <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm z-10">
+                        <button onClick={() => navigate('/waiter/tables')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm z-10">
                             <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                         </button>
                         <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight absolute left-1/2 -translate-x-1/2">
@@ -149,7 +153,7 @@ export default function WaiterMenu() {
                     ) : (
                         (() => {
                             const filteredItems = items.filter(item => {
-                                const matchesCat = activeCat === 'All' || item.category === activeCat;
+                                const matchesCat = activeCat === 'All' || item.category.name === activeCat;
                                 const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
                                 return matchesCat && matchesSearch;
                             });
@@ -232,43 +236,46 @@ export default function WaiterMenu() {
                             <h2 className="text-xl font-black text-gray-800 mb-6 text-center">{customizingItem.name}</h2>
                             
                             <div className="space-y-5">
-                                <div>
-                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Preparation</label>
-                                    <div className="flex gap-2">
-                                        {['Full Plate', 'Half Plate'].map(type => (
-                                            <button 
-                                                key={type}
-                                                onClick={() => setPrepType(type)}
-                                                className={`flex-1 py-3 rounded-xl font-bold text-[15px] transition-all border ${
-                                                    prepType === type 
-                                                    ? 'bg-rose-400 text-white border-rose-400 shadow-md' 
-                                                    : 'bg-white/50 text-gray-700 border-white/60'
-                                                }`}
-                                            >
-                                                {type}
-                                            </button>
-                                        ))}
+                                {customizingItem.half_price != null && (
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Preparation</label>
+                                        <div className="flex gap-2">
+                                            {['Full Plate', 'Half Plate'].map(type => (
+                                                <button 
+                                                    key={type}
+                                                    onClick={() => setPrepType(type)}
+                                                    className={`flex-1 py-3 rounded-xl font-bold text-[15px] transition-all border ${
+                                                        prepType === type 
+                                                        ? 'bg-rose-400 text-white border-rose-400 shadow-md' 
+                                                        : 'bg-white/50 text-gray-700 border-white/60'
+                                                    }`}
+                                                >
+                                                    {type}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Spiciness</label>
-                                    <div className="flex gap-2">
-                                        {['Low Spicy', 'Medium', 'Extra Spicy'].map(level => (
-                                            <button 
-                                                key={level}
-                                                onClick={() => setSpiceLevel(level)}
-                                                className={`flex-1 py-3 px-1 rounded-xl font-bold text-[13px] sm:text-sm transition-all border ${
-                                                    spiceLevel === level 
-                                                    ? 'bg-amber-400 text-white border-amber-400 shadow-md' 
-                                                    : 'bg-white/50 text-gray-700 border-white/60'
-                                                }`}
-                                            >
-                                                {level}
-                                            </button>
-                                        ))}
+                                )}
+                                {(customizingItem.is_spicy_customizable ?? customizingItem.category?.is_spicy_customizable ?? false) && (
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Spiciness</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['Low Spicy', 'Medium', 'Extra Spicy'].map(level => (
+                                                <button 
+                                                    key={level}
+                                                    onClick={() => setSpiceLevel(level)}
+                                                    className={`flex-1 min-w-[30%] py-2 rounded-xl font-bold text-sm transition-all border ${
+                                                        spiceLevel === level 
+                                                        ? 'bg-orange-50 text-orange-600 border-orange-200' 
+                                                        : 'bg-white/50 text-gray-600 border-gray-100 hover:border-orange-100'
+                                                    }`}
+                                                >
+                                                    {level}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="flex gap-3 mt-8">

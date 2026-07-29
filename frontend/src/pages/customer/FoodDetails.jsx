@@ -26,20 +26,21 @@ export default function FoodDetails() {
   const [portion, setPortion] = useState("Full");
   const [spiceLevel, setSpiceLevel] = useState("Medium Spicy");
 
-  // Mock admin flags for customization availability if not present in data
-  const hasPortions = food?.hasPortions ?? true; // Defaulting to true for demo purposes
-  const customizableSpice = food?.customizableSpice ?? true; // Defaulting to true for demo purposes
+  // Determine if portions are available based on backend data
+  const hasPortions = food?.half_price != null;
+  const customizableSpice = food?.is_spicy_customizable ?? food?.category?.is_spicy_customizable ?? false;
   
   // Calculate dynamic price based on portion
   const basePrice = food?.price || 0;
-  const currentPrice = portion === "Half" ? Math.round(basePrice * 0.6) : basePrice;
+  const halfPrice = food?.half_price || Math.round(basePrice * 0.6);
+  const currentPrice = portion === "Half" ? halfPrice : basePrice;
 
   if (!food) {
     return (
       <PageLayout>
         <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-slate-800/50">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/customer/home')}
             className="rounded-xl bg-orange-500 px-6 py-3 font-medium text-white"
           >
             Go Back
@@ -61,7 +62,7 @@ export default function FoodDetails() {
           />
 
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/customer/home')}
             className="absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-sm shadow-sm"
           >
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
@@ -107,8 +108,7 @@ export default function FoodDetails() {
 
           {/* Description */}
           <p className="mt-5 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
-            {food.desc || food.description ||
-              `A rich and creamy dish of paneer (cottage cheese) in a tomato, butter and cashew sauce (known as makhani gravy).`}
+            {food.desc || food.description || "No description available."}
           </p>
 
           {/* Customization: Portion */}
@@ -124,7 +124,7 @@ export default function FoodDetails() {
                       </div>
                       <span className="text-sm font-medium text-gray-900 dark:text-white">{p} Plate</span>
                     </div>
-                    <span className="text-sm font-bold text-gray-700 dark:text-slate-300">₹{p === 'Half' ? Math.round(basePrice * 0.6) : basePrice}</span>
+                    <span className="text-sm font-bold text-gray-700 dark:text-slate-300">₹{p === 'Half' ? halfPrice : basePrice}</span>
                   </label>
                 ))}
               </div>

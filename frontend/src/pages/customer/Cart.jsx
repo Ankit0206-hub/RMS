@@ -95,112 +95,61 @@ export default function Cart() {
           </div>
         ) : (
           <>
-            {/* Cart Items */}
-            <div className="space-y-4">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white dark:bg-slate-900 p-3 shadow-sm border border-gray-100 dark:border-slate-800 flex gap-4 relative"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="h-20 w-20 object-cover"
-                  />
-                  <div className="flex-1 flex flex-col justify-center">
-                    <h2 className="font-bold text-gray-900 dark:text-white leading-tight pr-8">
-                      {item.name}
-                    </h2>
-
-                    {(item.portion || item.spiceLevel || item.instructions) && (
-                      <div className="mt-2">
-                        <button 
-                          onClick={() => toggleExpand(item.id)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition"
-                        >
-                          Customization
-                          <ChevronDown size={12} className={`transition-transform duration-200 ${expandedItems[item.id] ? 'rotate-180' : ''}`} />
-                        </button>
+            <div className="bg-white dark:bg-slate-900 rounded-[24px] p-5 shadow-sm border border-gray-100 dark:border-slate-800">
+              <div className="flex items-center mb-5">
+                <div className="bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 p-2 rounded-xl mr-3 border border-gray-100 dark:border-slate-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-shopping-bag"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+                <h2 className="font-black text-gray-800 dark:text-white text-lg">Order Items</h2>
+              </div>
+              
+              <div className="space-y-1">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex justify-between items-center py-4 border-b border-gray-100 dark:border-slate-800 last:border-0 last:pb-0">
+                    <div className="flex items-center flex-1 pr-2">
+                      <img src={item.image} alt={item.name} className="h-14 w-14 rounded-xl object-cover shadow-sm mr-3 border border-gray-100 dark:border-slate-800"/>
+                      <div>
+                        <h3 className="font-bold text-gray-800 dark:text-white text-[15px] leading-tight">{item.name}</h3>
                         
-                        {expandedItems[item.id] && (
-                          <div className="mt-2 pl-5 p-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-100 dark:border-slate-800 animate-in fade-in slide-in-from-top-2">
-                            <div className="flex justify-between items-start gap-2">
-                              <div className="flex flex-col gap-1">
-                                <p className="text-[11px] font-semibold text-gray-600 dark:text-slate-400 leading-snug">
-                                  {item.portion && `• ${item.portion} Plate`}
-                                </p>
-                                <p className="text-[11px] font-semibold text-gray-600 dark:text-slate-400 leading-snug">
-                                  {item.spiceLevel && `• ${item.spiceLevel}`}
-                                  {(!item.portion && !item.spiceLevel) && "• Customise"}
-                                </p>
-                              </div>
-                              <button 
-                                onClick={() => setEditingItem(item)}
-                                className="flex items-center gap-1 text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded flex-shrink-0"
-                              >
-                                <Edit2 size={10} /> Edit
-                              </button>
-                            </div>
-                            
-                            {item.instructions && (
-                              <p className="text-[11px] font-medium text-gray-500 dark:text-slate-400 mt-2 italic border-l-2 border-orange-200 pl-2 leading-relaxed">
-                                {item.instructions}
-                              </p>
-                            )}
-                          </div>
+                        {(item.portion || item.spiceLevel || item.instructions || item.half_price != null || item.is_spicy_customizable || item.category?.is_spicy_customizable) && (
+                          <button onClick={() => setEditingItem(item)} className="flex items-center gap-1.5 mt-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-2.5 py-1 rounded-lg shadow-sm active:scale-95 transition-transform text-left">
+                            <Edit2 className="w-3.5 h-3.5 text-gray-500 dark:text-slate-400 shrink-0" />
+                            <span className="text-[11px] font-bold text-gray-600 dark:text-slate-300 line-clamp-1">
+                                {item.portion || item.spiceLevel ? [item.portion ? `${item.portion} Plate` : '', item.spiceLevel].filter(Boolean).join(', ') : 'Customize...'}
+                            </span>
+                          </button>
                         )}
-                      </div>
-                    )}
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <p className="font-bold text-gray-900 dark:text-white">
-                        ₹{item.price}
-                      </p>
-
-                      <div className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-1 bg-gray-50 dark:bg-slate-800/50">
-                        <button
-                          onClick={() => {
-                            if (item.quantity === 1) removeFromCart(item.id);
-                            else decreaseQuantity(item.id);
-                          }}
-                          className="text-gray-500 dark:text-slate-400 hover:text-orange-500 transition p-1"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="font-bold text-gray-900 dark:text-white text-sm w-4 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => increaseQuantity(item.id)}
-                          className="text-gray-500 dark:text-slate-400 hover:text-orange-500 transition p-1"
-                        >
-                          <Plus size={16} />
-                        </button>
+                        
+                        {item.instructions && (
+                          <p className="text-[10px] font-medium text-gray-500 dark:text-slate-400 mt-1 italic line-clamp-1">
+                            Note: {item.instructions}
+                          </p>
+                        )}
+                        
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 font-bold">₹ {item.price}</p>
                       </div>
                     </div>
+                    
+                    <div className="flex items-center bg-gray-50 dark:bg-slate-800 rounded-xl p-1 shadow-inner border border-gray-100 dark:border-slate-700 shrink-0">
+                      <button onClick={() => {
+                        if (item.quantity === 1) removeFromCart(item.id);
+                        else decreaseQuantity(item.id);
+                      }} className="p-1.5 bg-white dark:bg-slate-700 rounded-lg shadow-sm active:scale-95 transition-all">
+                        <Minus className="h-4 w-4 md:h-5 md:w-5 text-gray-700 dark:text-slate-300"/>
+                      </button>
+                      <span className="w-8 md:w-10 text-center font-black text-sm md:text-base text-gray-800 dark:text-white">{item.quantity}</span>
+                      <button onClick={() => increaseQuantity(item.id)} className="p-1.5 bg-white dark:bg-slate-700 rounded-lg shadow-sm active:scale-95 transition-all">
+                        <Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-700 dark:text-slate-300"/>
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Remove Button Top Right */}
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="absolute top-3 right-3 p-1.5 rounded-full bg-red-50 text-red-500"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Add More Items Button */}
-            <button
-              onClick={() => navigate("/customer/categories")}
-              className="w-full border-2 border-dashed border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-4 flex items-center justify-center gap-2 hover:border-orange-500 transition group"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 group-hover:bg-orange-50 group-hover:text-orange-500 transition">
-                <Plus size={16} className="text-gray-500 dark:text-slate-400 group-hover:text-orange-500 transition" />
+                ))}
               </div>
-              <span className="font-bold text-gray-700 dark:text-slate-300 group-hover:text-orange-500 transition">Add More Items</span>
-            </button>
+              
+              <button onClick={() => navigate("/customer/categories")} className="w-full mt-5 py-3.5 bg-rose-50 dark:bg-rose-900/10 border-2 border-dashed border-rose-300/60 rounded-2xl text-rose-500 font-bold text-[15px] flex items-center justify-center hover:bg-rose-100 dark:hover:bg-rose-900/20 transition-colors">
+                  <Plus className="h-5 w-5 mr-2" /> Add More Items
+              </button>
+            </div>
 
             {/* Bill Summary */}
             <div className="bg-white dark:bg-slate-900 p-5 shadow-sm border border-gray-100 dark:border-slate-800 mt-2">
