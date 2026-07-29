@@ -62,7 +62,7 @@ export default function PopularFoods() {
                 {/* Header */}
                 <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex items-center gap-4 p-5">
-                        <button onClick={() => navigate(-1)}>
+                        <button onClick={() => navigate('/customer/home')}>
                             <ArrowLeft size={24} />
                         </button>
 

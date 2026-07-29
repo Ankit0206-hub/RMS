@@ -77,7 +77,7 @@ export default function WaiterNotifications() {
             <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="bg-white/10 backdrop-blur-xl px-4  py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
                     <div className="relative flex items-center w-full  mx-auto justify-center">
-                        <button onClick={() => navigate(-1)} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm">
+                        <button onClick={() => navigate('/waiter/tables')} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm">
                             <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                         </button>
                         <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Notifications</h1>

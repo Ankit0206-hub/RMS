@@ -62,7 +62,7 @@ export default function WaiterStartSession() {
  {/* Header */}
  <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-center shadow-sm sticky top-0 z-20 border-b border-white/20 w-full shrink-0">
      <div className="flex items-center w-full mx-auto relative justify-center">
-         <button onClick={() => navigate(-1)} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm z-10">
+         <button onClick={() => navigate('/waiter/tables')} className="absolute left-0 p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors shadow-sm z-10">
              <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
          </button>
          <div className="text-center flex-1">

@@ -64,7 +64,7 @@ export default function Profile() {
             <div className="flex h-full flex-col">
                 {/* Header */}
                 <div className="bg-white dark:bg-slate-900 px-5 py-4 shadow-sm flex items-center justify-between relative z-10">
-                    <button onClick={() => navigate(-1)} className="text-gray-900 dark:text-white">
+                    <button onClick={() => navigate('/customer/home')} className="text-gray-900 dark:text-white">
                         <ArrowLeft size={22} />
                     </button>
                     <h1 className="text-xl font-bold text-gray-900 dark:text-white absolute left-1/2 -translate-x-1/2">Profile</h1>

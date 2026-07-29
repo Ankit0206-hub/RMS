@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy import func, extract
 from datetime import datetime
-from app.models.menu import MenuItem, MenuCategory
+from app.models.menu import MenuItem, MenuCategory, FoodImage
 from app.schemas.admin.menu import MenuItemCreate, MenuItemUpdate
 
 class MenuRepository:
@@ -62,13 +62,22 @@ class MenuRepository:
             name=obj_in.name,
             description=obj_in.description,
             price=obj_in.price,
+            half_price=obj_in.half_price,
+            is_active=obj_in.is_active,
             is_available=obj_in.is_available,
             is_veg=obj_in.is_veg,
+            is_spicy_customizable=obj_in.is_spicy_customizable,
             kitchen_id=obj_in.kitchen_id
         )
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
+        
+        if getattr(obj_in, 'image_url', None):
+            food_image = FoodImage(menu_item_id=db_obj.id, image_url=obj_in.image_url, is_primary=True)
+            db.add(food_image)
+            await db.commit()
+            
         return await self.get_by_id(db, db_obj.id)
 
     async def create_bulk(self, db: AsyncSession, objs_in: List[MenuItemCreate]) -> List[MenuItem]:
@@ -79,12 +88,21 @@ class MenuRepository:
                 name=obj.name,
                 description=obj.description,
                 price=obj.price,
+                half_price=obj.half_price,
+                is_active=obj.is_active,
                 is_available=obj.is_available,
                 is_veg=obj.is_veg,
+                is_spicy_customizable=obj.is_spicy_customizable,
                 kitchen_id=obj.kitchen_id
             ) for obj in objs_in
         ]
         db.add_all(db_objs)
+        await db.commit()
+        
+        for obj_in, db_obj in zip(objs_in, db_objs):
+            if getattr(obj_in, 'image_url', None):
+                food_image = FoodImage(menu_item_id=db_obj.id, image_url=obj_in.image_url, is_primary=True)
+                db.add(food_image)
         await db.commit()
         
         # Refresh and load relations is a bit tricky for bulk in SQLAlchemy.
@@ -92,17 +110,30 @@ class MenuRepository:
         # To be perfectly safe, we can fetch them by their codes.
         codes = [obj.item_code for obj in objs_in]
         result = await db.execute(
-            select(MenuItem).options(selectinload(MenuItem.category)).filter(MenuItem.item_code.in_(codes))
+            select(MenuItem).options(selectinload(MenuItem.category), selectinload(MenuItem.images)).filter(MenuItem.item_code.in_(codes))
         )
         return result.scalars().all()
 
     async def update(self, db: AsyncSession, db_obj: MenuItem, obj_in: MenuItemUpdate) -> MenuItem:
-        update_data = obj_in.model_dump(exclude_unset=True)
+        update_data = obj_in.model_dump(exclude_unset=True, exclude={"image_url"})
         for field, value in update_data.items():
             setattr(db_obj, field, value)
             
         await db.commit()
         await db.refresh(db_obj)
+        
+        if getattr(obj_in, 'image_url', None) is not None:
+            # Delete existing images
+            delete_img_stmt = select(FoodImage).where(FoodImage.menu_item_id == db_obj.id)
+            img_result = await db.execute(delete_img_stmt)
+            for img in img_result.scalars().all():
+                await db.delete(img)
+            
+            # Add new image
+            food_image = FoodImage(menu_item_id=db_obj.id, image_url=obj_in.image_url, is_primary=True)
+            db.add(food_image)
+            await db.commit()
+            
         return await self.get_by_id(db, db_obj.id)
 
     async def update_availability(self, db: AsyncSession, db_obj: MenuItem, is_available: bool) -> MenuItem:

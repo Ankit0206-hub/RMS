@@ -14,8 +14,10 @@ const menuItemSchema = z.object({
     name: z.string().min(1, "Item Name is required"),
     description: z.string().optional(),
     price: z.coerce.number().min(0.1, "Price must be greater than 0"),
+    half_price: z.coerce.number().min(0.1, "Half plate price must be greater than 0").optional().or(z.literal('')),
     is_available: z.boolean().default(true),
     is_veg: z.boolean().default(true),
+    is_spicy_customizable: z.enum(['inherit', 'yes', 'no']).default('inherit')
 });
 
 const AddMenuItem = () => {
@@ -58,7 +60,20 @@ const AddMenuItem = () => {
     });
 
     const onSubmit = (data) => {
-        createMutation.mutate(data);
+        const payload = { ...data };
+        if (payload.half_price === '' || isNaN(payload.half_price)) {
+            payload.half_price = null;
+        }
+        
+        if (payload.is_spicy_customizable === 'inherit') {
+            payload.is_spicy_customizable = null;
+        } else if (payload.is_spicy_customizable === 'yes') {
+            payload.is_spicy_customizable = true;
+        } else {
+            payload.is_spicy_customizable = false;
+        }
+        
+        createMutation.mutate(payload);
     };
 
     return (
@@ -130,7 +145,7 @@ const AddMenuItem = () => {
                         <div className="space-y-4 md:col-span-2">
                             <h3 className="text-sm font-bold text-gray-900">Details & Pricing</h3>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">Category *</label>
                                     <select 
@@ -146,7 +161,7 @@ const AddMenuItem = () => {
                                     {errors.category_id && <p className="text-red-500 text-xs mt-1">{errors.category_id.message}</p>}
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Price (₹) *</label>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Full Price (₹) *</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
                                         <input 
@@ -158,6 +173,20 @@ const AddMenuItem = () => {
                                         />
                                     </div>
                                     {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price.message}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Half Price (₹) (Optional)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₹</span>
+                                        <input 
+                                            type="number" 
+                                            step="0.01"
+                                            {...register('half_price')}
+                                            placeholder="0.00"
+                                            className="w-full pl-8 bg-gray-50 border border-gray-200 text-sm rounded-lg pr-3 py-2.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                                        />
+                                    </div>
+                                    {errors.half_price && <p className="text-red-500 text-xs mt-1">{errors.half_price.message}</p>}
                                 </div>
                             </div>
                         </div>
@@ -187,6 +216,20 @@ const AddMenuItem = () => {
                                 <div>
                                     <label htmlFor="is_veg" className="text-sm font-semibold text-gray-900 cursor-pointer">Vegetarian Item</label>
                                     <p className="text-xs text-gray-500">Displays the green veg indicator</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 ml-auto border-l pl-6 border-gray-200">
+                                <div>
+                                    <label className="text-sm font-semibold text-gray-900 block mb-1">Spicy Customization</label>
+                                    <select 
+                                        {...register('is_spicy_customizable')}
+                                        className="bg-white border border-gray-200 text-xs rounded-lg px-2 py-1 outline-none focus:border-indigo-500 transition-all"
+                                    >
+                                        <option value="inherit">Inherit from Category</option>
+                                        <option value="yes">Yes, allowed</option>
+                                        <option value="no">No, disabled</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

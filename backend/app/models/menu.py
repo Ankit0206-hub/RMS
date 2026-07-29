@@ -12,6 +12,8 @@ class MenuCategory(TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_spicy_customizable: Mapped[bool] = mapped_column(Boolean, default=False)
+    image_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
     items: Mapped[List["MenuItem"]] = relationship(back_populates="category", cascade="all, delete-orphan")
 
@@ -29,6 +31,7 @@ class MenuItem(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_available: Mapped[bool] = mapped_column(Boolean, default=True)
     is_veg: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_spicy_customizable: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
 
     category: Mapped["MenuCategory"] = relationship(back_populates="items")
     images: Mapped[List["FoodImage"]] = relationship(back_populates="menu_item", cascade="all, delete-orphan")

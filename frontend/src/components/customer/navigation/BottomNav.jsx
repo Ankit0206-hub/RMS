@@ -54,7 +54,7 @@ export default function BottomNav({ active = "home" }) {
     }
   }, [customerSession]);
 
-  const cartItemCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
+  const cartItemCount = cartItems.length;
   
   return (
     <div className="flex flex-col w-full z-50 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800">

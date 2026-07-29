@@ -22,6 +22,8 @@ class WaiterMenuItem(BaseModel):
     is_veg: bool = True
     is_available: bool = True
     image_url: Optional[str] = None
+    half_price: Optional[float] = None
+    is_spicy_customizable: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -29,6 +31,7 @@ class WaiterMenuCategory(BaseModel):
     id: int
     name: str
     items: List[WaiterMenuItem] = []
+    is_spicy_customizable: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True)
 

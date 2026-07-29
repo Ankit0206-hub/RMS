@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import api from '../../services/api';
+import api, { uploadImage } from '../../services/api';
 import toast from 'react-hot-toast';
 
 const EditItemModal = ({ item, onClose }) => {
@@ -14,7 +14,9 @@ const EditItemModal = ({ item, onClose }) => {
     category_id: '',
     kitchen_id: '',
     is_veg: true,
-    is_available: true
+    is_available: true,
+    is_spicy_customizable: 'inherit',
+    image_file: null
   });
 
   const { data: categories } = useQuery({
@@ -43,7 +45,9 @@ const EditItemModal = ({ item, onClose }) => {
         category_id: item.category_id || '',
         kitchen_id: item.kitchen_id || '',
         is_veg: item.is_veg !== undefined ? item.is_veg : true,
-        is_available: item.is_available !== undefined ? item.is_available : true
+        is_available: item.is_available !== undefined ? item.is_available : true,
+        is_spicy_customizable: item.is_spicy_customizable === null ? 'inherit' : (item.is_spicy_customizable ? 'yes' : 'no'),
+        image_file: null
       });
     }
   }, [item]);
@@ -66,13 +70,32 @@ const EditItemModal = ({ item, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let spicyVal = null;
+      if (formData.is_spicy_customizable === 'yes') spicyVal = true;
+      if (formData.is_spicy_customizable === 'no') spicyVal = false;
+
+      let image_url = undefined;
+      if (formData.image_file) {
+        try {
+            const uploadRes = await uploadImage(formData.image_file);
+            image_url = uploadRes.data.image_url;
+        } catch (e) {
+            toast.error("Failed to upload image");
+        }
+      }
+
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
         half_price: formData.half_price ? parseFloat(formData.half_price) : null,
         category_id: parseInt(formData.category_id),
-        kitchen_id: formData.kitchen_id ? parseInt(formData.kitchen_id) : null
+        kitchen_id: formData.kitchen_id ? parseInt(formData.kitchen_id) : null,
+        is_spicy_customizable: spicyVal
       };
+      delete payload.image_file;
+      if (image_url) {
+          payload.image_url = image_url;
+      }
 
       await updateItemMutation.mutateAsync(payload);
       queryClient.invalidateQueries(['menuItems']);
@@ -175,14 +198,51 @@ const EditItemModal = ({ item, onClose }) => {
               </select>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" name="is_veg" checked={formData.is_veg} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
-              <label className="text-sm font-semibold text-gray-700">Is Veg?</label>
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Update Image</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={(e) => setFormData({...formData, image_file: e.target.files[0]})}
+                className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-200 rounded-lg px-2"
+              />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" name="is_available" checked={formData.is_available} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
-              <label className="text-sm font-semibold text-gray-700">In Stock?</label>
+            <div className="md:col-span-2 flex flex-col md:flex-row gap-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_veg}
+                  onChange={(e) => setFormData({ ...formData, is_veg: e.target.checked })}
+                  className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Vegetarian</span>
+              </label>
+
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_available}
+                  onChange={(e) => setFormData({ ...formData, is_available: e.target.checked })}
+                  className="w-4 h-4 text-indigo-500 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Available</span>
+              </label>
+
+              <div className="flex items-center space-x-3 ml-auto border-l pl-6 border-gray-200">
+                <div>
+                  <label className="text-sm font-semibold text-gray-900 block mb-1">Spicy Customization</label>
+                  <select
+                    value={formData.is_spicy_customizable}
+                    onChange={(e) => setFormData({ ...formData, is_spicy_customizable: e.target.value })}
+                    className="bg-white border border-gray-200 text-xs rounded-lg px-2 py-1 outline-none focus:border-indigo-500 transition-all"
+                  >
+                    <option value="inherit">Inherit from Category</option>
+                    <option value="yes">Yes, allowed</option>
+                    <option value="no">No, disabled</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 

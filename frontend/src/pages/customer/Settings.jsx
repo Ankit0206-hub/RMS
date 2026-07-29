@@ -63,7 +63,7 @@ export default function Settings() {
 
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 px-5 py-4 shadow-sm flex items-center relative z-10">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+          <button onClick={() => navigate('/customer/profile')} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
           <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">

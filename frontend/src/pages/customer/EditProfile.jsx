@@ -20,7 +20,7 @@ export default function EditProfile() {
 
                 {/* Header */}
                 <div className="flex items-center bg-white dark:bg-slate-900 px-5 py-4 shadow-sm">
-                    <button onClick={() => navigate(-1)}>
+                    <button onClick={() => navigate('/customer/profile')}>
                         <ArrowLeft size={22} />
                     </button>
 

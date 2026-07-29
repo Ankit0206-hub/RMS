@@ -21,7 +21,9 @@ class CategoryRepository:
         db_obj = MenuCategory(
             name=obj_in.name,
             description=obj_in.description,
-            is_active=obj_in.is_active
+            is_active=obj_in.is_active,
+            is_spicy_customizable=obj_in.is_spicy_customizable,
+            image_url=obj_in.image_url
         )
         db.add(db_obj)
         await db.commit()

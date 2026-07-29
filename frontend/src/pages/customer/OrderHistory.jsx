@@ -63,7 +63,7 @@ export default function OrderHistory() {
     <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white dark:bg-slate-900/80 backdrop-blur-md px-5 py-4 shadow-sm flex items-center">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+        <button onClick={() => navigate('/customer/profile')} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
           <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
         </button>
         <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">
@@ -142,7 +142,11 @@ export default function OrderHistory() {
                     {order.items.slice(0, 4).map((item, i) => (
                       <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 dark:bg-slate-800 overflow-hidden shadow-sm relative z-[4] flex items-center justify-center" style={{ zIndex: 10 - i }}>
                         {item.image ? (
-                          <img src={item.image} alt="" className="w-full h-full object-cover" />
+                          <img 
+                            src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
+                            alt="" 
+                            className="w-full h-full object-cover" 
+                          />
                         ) : (
                           <span className="text-xs">🍽️</span>
                         )}

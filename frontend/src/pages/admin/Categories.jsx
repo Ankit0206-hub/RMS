@@ -10,7 +10,8 @@ import { Button, Input, Modal, DataTable } from '../../components/ui';
 const categorySchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     description: z.string().optional(),
-    is_active: z.boolean().default(true)
+    is_active: z.boolean().default(true),
+    is_spicy_customizable: z.boolean().default(false)
 });
 
 const Categories = () => {
@@ -19,7 +20,7 @@ const Categories = () => {
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: zodResolver(categorySchema),
-        defaultValues: { name: '', description: '', is_active: true }
+        defaultValues: { name: '', description: '', is_active: true, is_spicy_customizable: false }
     });
 
     const { data: categories, isLoading } = useQuery({
@@ -65,6 +66,14 @@ const Categories = () => {
     const columns = [
         { header: "Name", accessorKey: "name", cellClassName: "text-gray-900 font-medium" },
         { header: "Description", cell: (row) => row.description || '-' },
+        { 
+            header: "Spicy Config", 
+            cell: (row) => (
+                <span className={`px-2 py-1 rounded text-xs font-medium ${row.is_spicy_customizable ? 'bg-orange-50 text-orange-600' : 'bg-gray-100 text-gray-500'}`}>
+                    {row.is_spicy_customizable ? 'Spicy Allowed' : 'Disabled'}
+                </span>
+            )
+        },
         { 
             header: "Status", 
             cell: (row) => (
@@ -120,13 +129,23 @@ const Categories = () => {
                         error={errors.description}
                         placeholder="e.g. Cold and hot drinks"
                     />
-                    <div className="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            {...register("is_active")} 
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-200 rounded bg-white"
-                        />
-                        <label className="ml-2 block text-sm text-gray-700">Active</label>
+                    <div className="flex flex-col space-y-2">
+                        <div className="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                {...register("is_active")} 
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-200 rounded bg-white"
+                            />
+                            <label className="ml-2 block text-sm text-gray-700">Active</label>
+                        </div>
+                        <div className="flex items-center">
+                            <input 
+                                type="checkbox" 
+                                {...register("is_spicy_customizable")} 
+                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-200 rounded bg-white"
+                            />
+                            <label className="ml-2 block text-sm text-gray-700">Spicy Customization Allowed</label>
+                        </div>
                     </div>
                     <div className="pt-4 flex justify-end space-x-3">
                         <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>

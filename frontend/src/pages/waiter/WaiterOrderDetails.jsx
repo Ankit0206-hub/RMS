@@ -85,7 +85,7 @@ export default function WaiterOrderDetails() {
 
             <div className="relative z-10 flex flex-col flex-1">
                 <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
-                    <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
+                    <button onClick={() => navigate('/waiter/orders')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
                         <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                     </button>
                     <div className="flex items-center w-full mx-auto justify-center">

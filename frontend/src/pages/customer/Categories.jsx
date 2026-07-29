@@ -76,14 +76,19 @@ export default function Categories() {
         {/* Categories Grid */}
         <div className="flex-1 px-6 md:px-10 mt-8 pb-32">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {filteredCategories.map((cat, index) => (
+            {filteredCategories.map((cat, index) => {
+              let img_url = cat.image_url;
+              if (img_url && img_url.startsWith('/')) {
+                img_url = `http://localhost:8000${img_url}`;
+              }
+              return (
               <div
                 key={cat.name}
                 onClick={() => navigate(`/customer/food-list/${cat.name.toLowerCase().replace(/\s+/g, "-")}`)}
                 className="group relative h-48 md:h-56 rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 <img
-                  src={defaultImages[index % defaultImages.length]}
+                  src={img_url || defaultImages[index % defaultImages.length]}
                   alt={cat.name}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -96,7 +101,7 @@ export default function Categories() {
                   </h3>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
           
           {filteredCategories.length === 0 && (

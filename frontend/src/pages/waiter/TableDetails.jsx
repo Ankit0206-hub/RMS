@@ -82,7 +82,7 @@ export default function TableDetails() {
 
  <div className="relative z-10 flex flex-col min-h-screen">
  <div className="bg-white/10 backdrop-blur-xl px-4 py-4 flex items-center shadow-sm sticky top-0 z-20 border-b border-white/20">
- <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
+ <button onClick={() => navigate('/waiter/tables')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
  <ArrowLeft className="h-5 w-5"/>
  </button>
  <div>

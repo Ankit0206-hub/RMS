@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import api from '../../services/api';
+import api, { uploadImage } from '../../services/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
 import Select from 'react-select';
@@ -15,7 +15,9 @@ const AddCategoryWithItems = () => {
     const [category, setCategory] = useState({
         name: '',
         description: '',
-        is_active: true
+        is_active: true,
+        is_spicy_customizable: false,
+        image_file: null
     });
     
     const [isNewCategory, setIsNewCategory] = useState(true);
@@ -38,7 +40,7 @@ const AddCategoryWithItems = () => {
     });
 
     const [items, setItems] = useState([
-        { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true }
+        { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true, is_spicy_customizable: 'inherit', image_file: null }
     ]);
 
     const handleCategoryChange = (e) => {
@@ -60,7 +62,7 @@ const AddCategoryWithItems = () => {
     };
 
     const addItemRow = () => {
-        setItems(prev => [...prev, { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true }]);
+        setItems(prev => [...prev, { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true, is_spicy_customizable: 'inherit', image_file: null }]);
     };
 
     const removeItemRow = (index) => {
@@ -105,19 +107,50 @@ const AddCategoryWithItems = () => {
             let categoryIdToUse = selectedCategoryId;
 
             if (isNewCategory) {
+                // Upload category image if present
+                let categoryData = { ...category };
+                if (categoryData.image_file) {
+                    try {
+                        const uploadRes = await uploadImage(categoryData.image_file);
+                        categoryData.image_url = uploadRes.data.image_url;
+                    } catch (e) {
+                        toast.error("Failed to upload category image");
+                    }
+                }
+                delete categoryData.image_file;
+
                 // 1. Create Category
-                const newCategory = await createCategoryMutation.mutateAsync(category);
+                const newCategory = await createCategoryMutation.mutateAsync(categoryData);
                 categoryIdToUse = newCategory.id;
             }
             
-            // 2. Prepare items with target category_id
-            const bulkItems = validItems.map(item => ({
-                ...item,
-                price: parseFloat(item.price),
-                half_price: item.half_price ? parseFloat(item.half_price) : null,
-                kitchen_id: item.kitchen_id ? parseInt(item.kitchen_id) : null,
-                category_id: categoryIdToUse
-            }));
+            // 2. Prepare items with target category_id and upload images
+            const bulkItems = [];
+            for (const item of validItems) {
+                let spicyVal = null;
+                if (item.is_spicy_customizable === 'yes') spicyVal = true;
+                if (item.is_spicy_customizable === 'no') spicyVal = false;
+                
+                let image_url = null;
+                if (item.image_file) {
+                    try {
+                        const uploadRes = await uploadImage(item.image_file);
+                        image_url = uploadRes.data.image_url;
+                    } catch (e) {
+                        toast.error(`Failed to upload image for ${item.name}`);
+                    }
+                }
+                
+                bulkItems.push({
+                    ...item,
+                    price: parseFloat(item.price),
+                    half_price: item.half_price ? parseFloat(item.half_price) : null,
+                    kitchen_id: item.kitchen_id ? parseInt(item.kitchen_id) : null,
+                    category_id: categoryIdToUse,
+                    is_spicy_customizable: spicyVal,
+                    image_url: image_url
+                });
+            }
 
             // 3. Bulk Create Items
             await createBulkItemsMutation.mutateAsync(bulkItems);
@@ -196,8 +229,31 @@ const AddCategoryWithItems = () => {
                                 <input 
                                     type="file"
                                     accept="image/*"
+                                    onChange={(e) => setCategory({...category, image_file: e.target.files[0]})}
                                     className="w-full px-4 py-1.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 />
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-slate-300">
+                                    <input 
+                                        type="checkbox"
+                                        name="is_active"
+                                        checked={category.is_active}
+                                        onChange={handleCategoryChange}
+                                        className="w-4 h-4 text-blue-600 rounded"
+                                    />
+                                    <span>Active</span>
+                                </label>
+                                <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-slate-300">
+                                    <input 
+                                        type="checkbox"
+                                        name="is_spicy_customizable"
+                                        checked={category.is_spicy_customizable}
+                                        onChange={handleCategoryChange}
+                                        className="w-4 h-4 text-blue-600 rounded"
+                                    />
+                                    <span>Spicy Config Allowed</span>
+                                </label>
                             </div>
                         </div>
                     ) : (
@@ -243,6 +299,7 @@ const AddCategoryWithItems = () => {
                                     <th className="px-4 py-3 font-bold w-32">Image</th>
                                     <th className="px-4 py-3 font-bold w-20 text-center">Is Veg?</th>
                                     <th className="px-4 py-3 font-bold w-32 text-center">In Stock?</th>
+                                    <th className="px-4 py-3 font-bold w-32 text-center">Spicy?</th>
                                     <th className="px-4 py-3 font-bold w-16 text-center"></th>
                                 </tr>
                             </thead>
@@ -321,6 +378,11 @@ const AddCategoryWithItems = () => {
                                             <input 
                                                 type="file" 
                                                 accept="image/*"
+                                                onChange={(e) => {
+                                                    const newItems = [...items];
+                                                    newItems[index].image_file = e.target.files[0];
+                                                    setItems(newItems);
+                                                }}
                                                 className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-slate-700 dark:file:text-slate-300"
                                             />
                                         </td>
@@ -341,6 +403,18 @@ const AddCategoryWithItems = () => {
                                                 onChange={(e) => handleItemChange(index, e)}
                                                 className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
                                             />
+                                        </td>
+                                        <td className="px-2 py-3">
+                                            <select
+                                                name="is_spicy_customizable"
+                                                value={item.is_spicy_customizable}
+                                                onChange={(e) => handleItemChange(index, e)}
+                                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
+                                            >
+                                                <option value="inherit">Inherit</option>
+                                                <option value="yes">Yes</option>
+                                                <option value="no">No</option>
+                                            </select>
                                         </td>
                                         <td className="px-2 py-3 text-center">
                                             <button 

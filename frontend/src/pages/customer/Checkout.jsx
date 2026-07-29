@@ -45,7 +45,7 @@ export default function Checkout() {
 
             <div className="bg-white dark:bg-slate-900 shadow-sm flex items-center px-5 py-4">
 
-                <button onClick={() => navigate(-1)}>
+                <button onClick={() => navigate('/customer/cart')}>
                     <ArrowLeft size={22} />
                 </button>
 

@@ -21,7 +21,7 @@ export default function WaiterOrderHistory() {
  <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
  <div className="flex items-center w-full max-w-4xl mx-auto justify-between">
  <div className="flex items-center">
- <button onClick={() => navigate(-1)} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
+ <button onClick={() => navigate('/waiter/profile')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
  <ArrowLeft className="h-5 w-5"strokeWidth={2.5} />
  </button>
  <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Order History</h1>

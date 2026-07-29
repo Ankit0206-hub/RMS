@@ -41,7 +41,7 @@ export default function Logout() {
           </button>
 
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/customer/profile')}
             className="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 py-3 text-base font-medium text-gray-700 dark:text-slate-300 transition hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
           >
             Cancel
