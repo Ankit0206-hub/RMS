@@ -32,7 +32,7 @@ import Help from "../pages/customer/Help.jsx";
 import About from "../pages/customer/About.jsx";
 import Privacy from "../pages/customer/Privacy.jsx";
 import Terms from "../pages/customer/Terms.jsx";
-import Loyalty from "../pages/customer/Loyalty.jsx";
+
 import PopularFoods from "../pages/customer/PopularFoods.jsx";
 import Offers from "../pages/customer/Offers.jsx";
 import Addresses from "../pages/customer/Addresses.jsx";
@@ -81,7 +81,7 @@ export default function AppRoutes() {
         <Route path="about" element={<About />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
-        <Route path="loyalty" element={<Loyalty />} />
+
         <Route path="popular-foods" element={<PopularFoods />} />
         <Route path="offers" element={<Offers />} />
         <Route path="addresses" element={<Addresses />} />
