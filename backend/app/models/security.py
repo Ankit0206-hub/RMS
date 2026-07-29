@@ -61,6 +61,10 @@ class Employee(TimestampMixin, Base):
     def role_name(self) -> str:
         return self.role.name if self.role else ""
 
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}".strip()
+
 class LoginHistory(TimestampMixin, Base):
     __tablename__ = "login_history"
 
