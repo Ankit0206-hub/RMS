@@ -2,9 +2,9 @@ from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, delete
 from datetime import datetime
-from app.models.menu import MenuItem, MenuCategory, FoodImage
+from app.models.menu import MenuItem, MenuCategory, FoodImage, VariantGroup, VariantItem, AddonGroup, AddonItem
 from app.schemas.admin.menu import MenuItemCreate, MenuItemUpdate
 
 class MenuRepository:
@@ -38,7 +38,11 @@ class MenuRepository:
         }
 
     async def get_all(self, db: AsyncSession, skip: int = 0, limit: int = 100, category_id: Optional[int] = None) -> List[MenuItem]:
-        query = select(MenuItem).options(selectinload(MenuItem.category))
+        query = select(MenuItem).options(
+            selectinload(MenuItem.category),
+            selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
+            selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
+        )
         if category_id is not None:
             query = query.filter(MenuItem.category_id == category_id)
         
@@ -47,7 +51,11 @@ class MenuRepository:
 
     async def get_by_id(self, db: AsyncSession, item_id: int) -> Optional[MenuItem]:
         result = await db.execute(
-            select(MenuItem).options(selectinload(MenuItem.category)).filter(MenuItem.id == item_id)
+            select(MenuItem).options(
+                selectinload(MenuItem.category),
+                selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
+                selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
+            ).filter(MenuItem.id == item_id)
         )
         return result.scalar_one_or_none()
         
@@ -66,6 +74,7 @@ class MenuRepository:
             is_active=obj_in.is_active,
             is_available=obj_in.is_available,
             is_veg=obj_in.is_veg,
+            item_type=obj_in.item_type,
             is_spicy_customizable=obj_in.is_spicy_customizable,
             kitchen_id=obj_in.kitchen_id
         )
@@ -73,6 +82,28 @@ class MenuRepository:
         await db.commit()
         await db.refresh(db_obj)
         
+        if getattr(obj_in, 'variant_groups', None):
+            for vg_schema in obj_in.variant_groups:
+                vg = VariantGroup(menu_item_id=db_obj.id, name=vg_schema.name)
+                db.add(vg)
+                await db.commit()
+                await db.refresh(vg)
+                for vi_schema in vg_schema.variants:
+                    vi = VariantItem(group_id=vg.id, name=vi_schema.name, extra_price=vi_schema.extra_price, is_default=vi_schema.is_default)
+                    db.add(vi)
+                await db.commit()
+                
+        if getattr(obj_in, 'addon_groups', None):
+            for ag_schema in obj_in.addon_groups:
+                ag = AddonGroup(menu_item_id=db_obj.id, name=ag_schema.name, min_selections=ag_schema.min_selections, max_selections=ag_schema.max_selections)
+                db.add(ag)
+                await db.commit()
+                await db.refresh(ag)
+                for ai_schema in ag_schema.addons:
+                    ai = AddonItem(group_id=ag.id, name=ai_schema.name, price=ai_schema.price, item_type=ai_schema.item_type)
+                    db.add(ai)
+                await db.commit()
+
         if getattr(obj_in, 'image_url', None):
             food_image = FoodImage(menu_item_id=db_obj.id, image_url=obj_in.image_url, is_primary=True)
             db.add(food_image)
@@ -115,13 +146,39 @@ class MenuRepository:
         return result.scalars().all()
 
     async def update(self, db: AsyncSession, db_obj: MenuItem, obj_in: MenuItemUpdate) -> MenuItem:
-        update_data = obj_in.model_dump(exclude_unset=True, exclude={"image_url"})
+        update_data = obj_in.model_dump(exclude_unset=True, exclude={"image_url", "variant_groups", "addon_groups"})
         for field, value in update_data.items():
             setattr(db_obj, field, value)
             
         await db.commit()
         await db.refresh(db_obj)
         
+        if getattr(obj_in, 'variant_groups', None) is not None:
+            await db.execute(delete(VariantGroup).where(VariantGroup.menu_item_id == db_obj.id))
+            await db.commit()
+            for vg_schema in obj_in.variant_groups:
+                vg = VariantGroup(menu_item_id=db_obj.id, name=vg_schema.name)
+                db.add(vg)
+                await db.commit()
+                await db.refresh(vg)
+                for vi_schema in vg_schema.variants:
+                    vi = VariantItem(group_id=vg.id, name=vi_schema.name, extra_price=vi_schema.extra_price, is_default=vi_schema.is_default)
+                    db.add(vi)
+                await db.commit()
+
+        if getattr(obj_in, 'addon_groups', None) is not None:
+            await db.execute(delete(AddonGroup).where(AddonGroup.menu_item_id == db_obj.id))
+            await db.commit()
+            for ag_schema in obj_in.addon_groups:
+                ag = AddonGroup(menu_item_id=db_obj.id, name=ag_schema.name, min_selections=ag_schema.min_selections, max_selections=ag_schema.max_selections)
+                db.add(ag)
+                await db.commit()
+                await db.refresh(ag)
+                for ai_schema in ag_schema.addons:
+                    ai = AddonItem(group_id=ag.id, name=ai_schema.name, price=ai_schema.price, item_type=ai_schema.item_type)
+                    db.add(ai)
+                await db.commit()
+
         if getattr(obj_in, 'image_url', None) is not None:
             # Delete existing images
             delete_img_stmt = select(FoodImage).where(FoodImage.menu_item_id == db_obj.id)

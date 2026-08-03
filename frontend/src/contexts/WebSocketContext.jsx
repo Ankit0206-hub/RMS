@@ -40,6 +40,7 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                 } else if (data.event === 'order.updated') {
                     toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
                         icon: 'ℹ️',
@@ -47,12 +48,17 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                 } else if (data.event === 'bill.created') {
                     toast.success(`Bill generated for Table ${data.payload.table_number || data.payload.session_id}`);
                     queryClient.invalidateQueries({ queryKey: ['bills'] });
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                } else if (data.event === 'ORDER_ITEM_UPDATED') {
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
+                    queryClient.invalidateQueries({ queryKey: ['prepared_items'] });
                 }
             } catch (err) {
                 console.error("Failed to parse websocket message", err);

@@ -1,40 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { kitchenApi } from '../../services/kitchenApi';
 import { Clock, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const Prepared = () => {
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
 
-    const fetchPrepared = async () => {
-        try {
+    const { data: orders = [], isLoading } = useQuery({
+        queryKey: ['prepared_items'],
+        queryFn: async () => {
             const res = await kitchenApi.getPreparedItems();
-            setOrders(res.data || []);
-        } catch (error) {
-            console.error('Failed to fetch prepared items', error);
-        } finally {
-            setLoading(false);
+            return res.data || [];
         }
-    };
-
-    useEffect(() => {
-        fetchPrepared();
-        const interval = setInterval(fetchPrepared, 10000);
-        return () => clearInterval(interval);
-    }, []);
+    });
 
     const handleRevertStatus = async (itemId) => {
         try {
             await kitchenApi.updateItemStatus(itemId, 'preparing');
             toast.success('Item moved back to Preparing');
-            fetchPrepared();
+            queryClient.invalidateQueries({ queryKey: ['prepared_items'] });
+            queryClient.invalidateQueries({ queryKey: ['orders'] });
+            queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
         } catch (error) {
             toast.error('Failed to update status');
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading prepared items...</div>;
+    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading prepared items...</div>;
 
     if (orders.length === 0) {
         return (

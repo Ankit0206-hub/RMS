@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import BigInteger, String, ForeignKey, Boolean, Integer, Numeric, Text, DateTime
+from sqlalchemy import BigInteger, String, ForeignKey, Boolean, Integer, Numeric, Text, DateTime, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 from app.models.mixins import TimestampMixin
@@ -49,6 +49,7 @@ class OrderItem(TimestampMixin, Base):
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     price_at_order: Mapped[float] = mapped_column(Numeric(10, 2))
     notes: Mapped[Optional[str]] = mapped_column(String(255))
+    customizations: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="received", index=True) # received, preparing, prepared, served
 
     order: Mapped["Order"] = relationship(back_populates="items")

@@ -66,11 +66,60 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("customerUser", JSON.stringify(user));
   }, [user]);
+  const generateCustomId = (food) => {
+    let id = String(food.id || food.name);
+    if (food.portion) id += '-P:' + food.portion;
+    if (food.spiceLevel) id += '-S:' + food.spiceLevel;
+    if (food.selectedVariants) {
+      id += '-V:' + Object.values(food.selectedVariants).sort().join(',');
+    }
+    if (food.selectedAddons) {
+      const activeAddons = Object.keys(food.selectedAddons).filter(k => food.selectedAddons[k]).sort();
+      if (activeAddons.length > 0) {
+        id += '-A:' + activeAddons.join(',');
+      }
+    }
+    return id;
+  };
+
+  const formatNotes = (food) => {
+    const notesParts = [];
+    if (food.portion) notesParts.push(`Portion: ${food.portion}`);
+    if (food.spiceLevel) notesParts.push(`Spiciness: ${food.spiceLevel}`);
+    if (food.selectedVariants && food.variant_groups) {
+      food.variant_groups.forEach(vg => {
+        const selectedId = food.selectedVariants[vg.id];
+        if (selectedId) {
+          const variant = vg.variants.find(v => v.id === selectedId);
+          if (variant) notesParts.push(`${vg.name}: ${variant.name}`);
+        }
+      });
+    }
+    if (food.selectedAddons && food.addon_groups) {
+      const addons = [];
+      food.addon_groups.forEach(ag => {
+        ag.addons.forEach(addon => {
+          if (food.selectedAddons[addon.id]) {
+            addons.push(addon.name);
+          }
+        });
+      });
+      if (addons.length > 0) notesParts.push(`Addons: ${addons.join(', ')}`);
+    }
+    if (food.instructions) {
+      notesParts.push(`Instructions: ${food.instructions}`);
+    }
+    return notesParts.join(' | ');
+  };
+
   const addToCart = (food, quantityToAdd = 1) => {
     // Generate a unique ID for the cart item based on customizations so they don't merge incorrectly
-    const customId = `${food.id || food.name}-${food.portion || 'Full'}-${food.spiceLevel || 'Normal'}`;
+    const customId = generateCustomId(food);
+    const formattedNotes = formatNotes(food);
+
     const item = {
       ...food,
+      notes: formattedNotes,
       cartItemId: customId,
       id: customId,
       originalId: food.id || food.name,
@@ -99,7 +148,8 @@ export const AppProvider = ({ children }) => {
   };
 
   const editCartItem = (oldId, newFoodObj, quantity) => {
-    const customId = `${newFoodObj.originalId || newFoodObj.id || newFoodObj.name}-${newFoodObj.portion || 'Full'}-${newFoodObj.spiceLevel || 'Normal'}`;
+    const customId = generateCustomId(newFoodObj);
+    const formattedNotes = formatNotes(newFoodObj);
     
     // Perform side effects outside the state updater
     toast.success(`Updated ${newFoodObj.name}`);
@@ -111,12 +161,13 @@ export const AppProvider = ({ children }) => {
       if (existing) {
         return filtered.map(item => 
           item.id === customId 
-            ? { ...item, quantity: item.quantity + quantity, instructions: newFoodObj.instructions }
+            ? { ...item, quantity: item.quantity + quantity, notes: formattedNotes, instructions: newFoodObj.instructions }
             : item
         );
       } else {
         const itemToAdd = {
           ...newFoodObj,
+          notes: formattedNotes,
           cartItemId: customId,
           id: customId,
           originalId: newFoodObj.originalId || newFoodObj.id || newFoodObj.name,

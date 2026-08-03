@@ -17,7 +17,8 @@ class EmployeeRepository:
         return result.scalar_one_or_none()
         
     async def get_by_id(self, db: AsyncSession, id: int) -> Optional[Employee]:
-        result = await db.execute(select(Employee).filter(Employee.id == id))
+        from sqlalchemy.orm import selectinload
+        result = await db.execute(select(Employee).options(selectinload(Employee.role)).filter(Employee.id == id))
         return result.scalar_one_or_none()
 
     async def get_all(self, db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Employee]:

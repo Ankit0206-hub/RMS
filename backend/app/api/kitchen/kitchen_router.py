@@ -34,6 +34,50 @@ async def check_and_update_order_status(db: AsyncSession, order_id: int):
         except Exception as e:
             print(f"Failed to automatically update order status to Cooked: {e}")
 
+@router.get("/stats", response_model=Dict[str, Any])
+async def get_kitchen_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_kitchen)
+):
+    """
+    Get dashboard statistics for the current kitchen user's assigned kitchen.
+    """
+    kitchen_id = current_user.kitchen_id
+    if not kitchen_id:
+        return {"totalOrders": 0, "preparing": 0, "ready": 0, "completed": 0}
+
+    from sqlalchemy import func
+
+    # Count items by status for this kitchen
+    query = (
+        select(OrderItem.status, func.count(OrderItem.id))
+        .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
+        .filter(MenuItem.kitchen_id == kitchen_id)
+        .group_by(OrderItem.status)
+    )
+    result = await db.execute(query)
+    status_counts = dict(result.all())
+
+    # Count unique active orders for this kitchen
+    active_orders_query = (
+        select(func.count(func.distinct(OrderItem.order_id)))
+        .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
+        .join(Order, OrderItem.order_id == Order.id)
+        .filter(
+            MenuItem.kitchen_id == kitchen_id,
+            Order.status.notin_(["Completed", "Cancelled", "Served"])
+        )
+    )
+    active_orders_result = await db.execute(active_orders_query)
+    total_active_orders = active_orders_result.scalar() or 0
+
+    return {
+        "totalOrders": total_active_orders,
+        "preparing": status_counts.get("preparing", 0),
+        "ready": status_counts.get("prepared", 0),
+        "completed": status_counts.get("served", 0)
+    }
+
 @router.get("/orders", response_model=Dict[str, Any])
 async def get_kitchen_orders(
     db: AsyncSession = Depends(get_db),
@@ -179,7 +223,7 @@ async def update_item_status(
             "order_id": item.order_id,
             "status": item.status
         },
-        target_roles=["waiter"]
+        target_roles=["waiter", "kitchen"]
     )
 
     await check_and_update_order_status(db, item.order_id)
@@ -235,10 +279,9 @@ async def update_order_items_status(
                 "order_id": order_id,
                 "status": status_update.status
             },
-            target_roles=["waiter"]
+            target_roles=["waiter", "kitchen"]
         )
 
     await check_and_update_order_status(db, order_id)
 
     return {"message": "Order items updated successfully", "updated_count": len(updated_ids), "status": status_update.status}
-

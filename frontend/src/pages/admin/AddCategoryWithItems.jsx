@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import api, { uploadImage } from '../../services/api';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
-import Select from 'react-select';
+import { 
+    ArrowLeft, Plus, Trash2, Save, Image as ImageIcon, Info, ChevronRight, X, Clock
+} from 'lucide-react';
 
 const AddCategoryWithItems = () => {
     const navigate = useNavigate();
@@ -12,18 +13,27 @@ const AddCategoryWithItems = () => {
     const isOperator = window.location.pathname.startsWith('/operator');
     const returnPath = isOperator ? '/operator/menu-items' : '/admin/menu';
 
-    const [category, setCategory] = useState({
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [isAddingCategory, setIsAddingCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    
+    // Add Item Form State
+    const [isAddingItem, setIsAddingItem] = useState(false);
+    const [itemForm, setItemForm] = useState({
+        item_code: '',
         name: '',
         description: '',
-        is_active: true,
-        is_spicy_customizable: false,
-        image_file: null
+        item_type: 'veg',
+        kitchen_id: '',
+        price: '',
+        half_price: '',
+        image_file: null,
+        image_preview: null,
+        variant_groups: [],
+        addon_groups: []
     });
-    
-    const [isNewCategory, setIsNewCategory] = useState(true);
-    const [selectedCategoryId, setSelectedCategoryId] = useState('');
 
-    const { data: categories } = useQuery({
+    const { data: categories, isLoading: isCatLoading } = useQuery({
         queryKey: ['categoriesList'],
         queryFn: async () => {
             const response = await api.get('/admin/categories/');
@@ -39,411 +49,461 @@ const AddCategoryWithItems = () => {
         }
     });
 
-    const [items, setItems] = useState([
-        { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true, is_spicy_customizable: 'inherit', image_file: null }
-    ]);
+    const defaultKitchenId = React.useMemo(() => {
+        if (!kitchens) return '';
+        const main = kitchens.find(k => k.name.toLowerCase().includes('main'));
+        if (main) return main.id.toString();
+        return kitchens.length > 0 ? kitchens[0].id.toString() : '';
+    }, [kitchens]);
 
-    const handleCategoryChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setCategory(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
+    React.useEffect(() => {
+        if (defaultKitchenId && !itemForm.kitchen_id) {
+            setItemForm(prev => ({ ...prev, kitchen_id: defaultKitchenId }));
+        }
+    }, [defaultKitchenId]);
 
-    const handleItemChange = (index, e) => {
-        const { name, value, type, checked } = e.target;
-        const newItems = [...items];
-        newItems[index] = {
-            ...newItems[index],
-            [name]: type === 'checkbox' ? checked : value
-        };
-        setItems(newItems);
-    };
-
-    const addItemRow = () => {
-        setItems(prev => [...prev, { item_code: '', name: '', description: '', price: '', half_price: '', kitchen_id: '', is_veg: true, is_available: true, is_spicy_customizable: 'inherit', image_file: null }]);
-    };
-
-    const removeItemRow = (index) => {
-        if (items.length === 1) return;
-        setItems(prev => prev.filter((_, i) => i !== index));
-    };
+    const selectedCategory = categories?.find(c => c.id === selectedCategoryId);
 
     const createCategoryMutation = useMutation({
         mutationFn: async (data) => {
             const res = await api.post('/admin/categories/', data);
             return res.data.data;
+        },
+        onSuccess: (newCat) => {
+            queryClient.invalidateQueries(['categoriesList']);
+            setNewCategoryName('');
+            setIsAddingCategory(false);
+            setSelectedCategoryId(newCat.id);
+            toast.success("Category created!");
         }
     });
 
-    const createBulkItemsMutation = useMutation({
-        mutationFn: async (bulkData) => {
-            const res = await api.post('/admin/menu/bulk', bulkData);
+    const createItemMutation = useMutation({
+        mutationFn: async (data) => {
+            const res = await api.post('/admin/menu/', data);
             return res.data.data;
+        },
+        onSuccess: () => {
+            toast.success("Item added successfully!");
+            queryClient.invalidateQueries(['menuItemsList']);
+            resetItemForm();
+            setIsAddingItem(false);
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.detail || "Failed to create item");
         }
     });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (isNewCategory && !category.name.trim()) {
-            toast.error("Category name is required");
-            return;
-        }
-        
-        if (!isNewCategory && !selectedCategoryId) {
-            toast.error("Please select an existing category");
-            return;
-        }
+    const handleAddCategory = () => {
+        if (!newCategoryName.trim()) return;
+        createCategoryMutation.mutate({ name: newCategoryName, is_active: true });
+    };
 
-        const validItems = items.filter(i => i.name.trim() && i.item_code.trim() && i.price);
-        if (validItems.length === 0) {
-            toast.error("Please add at least one valid menu item with Code, Name, and Price.");
-            return;
-        }
+    const resetItemForm = () => {
+        setItemForm({
+            item_code: '',
+            name: '',
+            description: '',
+            item_type: 'veg',
+            kitchen_id: defaultKitchenId,
+            price: '',
+            half_price: '',
+            image_file: null,
+            image_preview: null,
+            variant_groups: [],
+            addon_groups: []
+        });
+    };
 
-        try {
-            let categoryIdToUse = selectedCategoryId;
-
-            if (isNewCategory) {
-                // Upload category image if present
-                let categoryData = { ...category };
-                if (categoryData.image_file) {
-                    try {
-                        const uploadRes = await uploadImage(categoryData.image_file);
-                        categoryData.image_url = uploadRes.data.image_url;
-                    } catch (e) {
-                        toast.error("Failed to upload category image");
-                    }
-                }
-                delete categoryData.image_file;
-
-                // 1. Create Category
-                const newCategory = await createCategoryMutation.mutateAsync(categoryData);
-                categoryIdToUse = newCategory.id;
-            }
-            
-            // 2. Prepare items with target category_id and upload images
-            const bulkItems = [];
-            for (const item of validItems) {
-                let spicyVal = null;
-                if (item.is_spicy_customizable === 'yes') spicyVal = true;
-                if (item.is_spicy_customizable === 'no') spicyVal = false;
-                
-                let image_url = null;
-                if (item.image_file) {
-                    try {
-                        const uploadRes = await uploadImage(item.image_file);
-                        image_url = uploadRes.data.image_url;
-                    } catch (e) {
-                        toast.error(`Failed to upload image for ${item.name}`);
-                    }
-                }
-                
-                bulkItems.push({
-                    ...item,
-                    price: parseFloat(item.price),
-                    half_price: item.half_price ? parseFloat(item.half_price) : null,
-                    kitchen_id: item.kitchen_id ? parseInt(item.kitchen_id) : null,
-                    category_id: categoryIdToUse,
-                    is_spicy_customizable: spicyVal,
-                    image_url: image_url
-                });
-            }
-
-            // 3. Bulk Create Items
-            await createBulkItemsMutation.mutateAsync(bulkItems);
-            
-            queryClient.invalidateQueries(['categories']);
-            queryClient.invalidateQueries(['menuItems']);
-            queryClient.invalidateQueries(['menu', 'kpis']);
-
-            toast.success(isNewCategory ? "Category and items created successfully!" : "Items added to category successfully!");
-            navigate(returnPath);
-        } catch (error) {
-            console.error("Error creating/adding items:", error);
-            toast.error(error.response?.data?.detail || "Failed to process request.");
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setItemForm(prev => ({
+                ...prev,
+                image_file: file,
+                image_preview: URL.createObjectURL(file)
+            }));
         }
     };
 
-    return (
-        <div className="space-y-6 pb-10 font-inter">
-            {/* Header */}
-            <div className="flex items-center space-x-4">
-                <div className="flex-1">
-                    {/* Header text removed */}
-                </div>
-            </div>
+    // Variant Handlers
+    const addVariantGroup = () => {
+        setItemForm(prev => ({
+            ...prev,
+            variant_groups: [...prev.variant_groups, { name: '', variants: [{ name: '', extra_price: 0 }] }]
+        }));
+    };
+    const updateVariantGroup = (gIndex, field, value) => {
+        const updated = [...itemForm.variant_groups];
+        updated[gIndex][field] = value;
+        setItemForm({ ...itemForm, variant_groups: updated });
+    };
+    const addVariant = (gIndex) => {
+        const updated = [...itemForm.variant_groups];
+        updated[gIndex].variants.push({ name: '', extra_price: 0 });
+        setItemForm({ ...itemForm, variant_groups: updated });
+    };
+    const updateVariant = (gIndex, vIndex, field, value) => {
+        const updated = [...itemForm.variant_groups];
+        updated[gIndex].variants[vIndex][field] = value;
+        setItemForm({ ...itemForm, variant_groups: updated });
+    };
+    const removeVariantGroup = (gIndex) => {
+        const updated = itemForm.variant_groups.filter((_, i) => i !== gIndex);
+        setItemForm({ ...itemForm, variant_groups: updated });
+    };
+    const removeVariant = (gIndex, vIndex) => {
+        const updated = [...itemForm.variant_groups];
+        updated[gIndex].variants = updated[gIndex].variants.filter((_, i) => i !== vIndex);
+        setItemForm({ ...itemForm, variant_groups: updated });
+    };
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Category Details */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
-                        <h3 className="font-bold text-gray-900 dark:text-white text-[15px]">Category Selection</h3>
-                        <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
-                            <button
-                                type="button"
-                                onClick={() => setIsNewCategory(true)}
-                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${isNewCategory ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'}`}
+    // Addon Handlers
+    const addAddonGroup = () => {
+        setItemForm(prev => ({
+            ...prev,
+            addon_groups: [...prev.addon_groups, { name: '', min_selections: 0, max_selections: 10, addons: [{ name: '', price: 0, item_type: 'veg' }] }]
+        }));
+    };
+    const updateAddonGroup = (gIndex, field, value) => {
+        const updated = [...itemForm.addon_groups];
+        updated[gIndex][field] = value;
+        setItemForm({ ...itemForm, addon_groups: updated });
+    };
+    const addAddon = (gIndex) => {
+        const updated = [...itemForm.addon_groups];
+        updated[gIndex].addons.push({ name: '', price: 0, item_type: 'veg' });
+        setItemForm({ ...itemForm, addon_groups: updated });
+    };
+    const updateAddon = (gIndex, aIndex, field, value) => {
+        const updated = [...itemForm.addon_groups];
+        updated[gIndex].addons[aIndex][field] = value;
+        setItemForm({ ...itemForm, addon_groups: updated });
+    };
+    const removeAddonGroup = (gIndex) => {
+        const updated = itemForm.addon_groups.filter((_, i) => i !== gIndex);
+        setItemForm({ ...itemForm, addon_groups: updated });
+    };
+    const removeAddon = (gIndex, aIndex) => {
+        const updated = [...itemForm.addon_groups];
+        updated[gIndex].addons = updated[gIndex].addons.filter((_, i) => i !== aIndex);
+        setItemForm({ ...itemForm, addon_groups: updated });
+    };
+
+    const handleSaveItem = async () => {
+        if (!itemForm.name || !itemForm.price || !itemForm.item_code) {
+            toast.error("Please fill required fields (Code, Name, Price)");
+            return;
+        }
+
+        let imageUrl = null;
+        if (itemForm.image_file) {
+            imageUrl = await uploadImage(itemForm.image_file);
+        }
+
+        const payload = {
+            category_id: selectedCategoryId,
+            item_code: itemForm.item_code,
+            name: itemForm.name,
+            description: itemForm.description,
+            price: parseFloat(itemForm.price),
+            half_price: itemForm.half_price ? parseFloat(itemForm.half_price) : null,
+            item_type: itemForm.item_type,
+            kitchen_id: itemForm.kitchen_id ? parseInt(itemForm.kitchen_id) : null,
+            is_active: true,
+            is_available: true,
+            image_url: imageUrl,
+            variant_groups: itemForm.variant_groups,
+            addon_groups: itemForm.addon_groups
+        };
+
+        createItemMutation.mutate(payload);
+    };
+
+    return (
+        <div className="flex h-[calc(100vh-4rem)] bg-gray-50 dark:bg-slate-900/50">
+            {/* Left Sidebar - Categories */}
+            <div className="w-80 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col h-full overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-900 z-10">
+                    <button onClick={() => navigate(returnPath)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-slate-400" />
+                    </button>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Menu Builder</h2>
+                    <div className="w-9" />
+                </div>
+
+                <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50">
+                    {isAddingCategory ? (
+                        <div className="flex gap-2">
+                            <input
+                                autoFocus
+                                type="text"
+                                placeholder="Category Name"
+                                value={newCategoryName}
+                                onChange={e => setNewCategoryName(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                                className="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <button 
+                                onClick={handleAddCategory}
+                                disabled={createCategoryMutation.isPending}
+                                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                             >
-                                Create New
+                                <Save className="w-4 h-4" />
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsNewCategory(false)}
-                                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${!isNewCategory ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'}`}
-                            >
-                                Select Existing
+                            <button onClick={() => setIsAddingCategory(false)} className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg">
+                                <X className="w-4 h-4" />
                             </button>
-                        </div>
-                    </div>
-                    
-                    {isNewCategory ? (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Category Name *</label>
-                                <input 
-                                    type="text"
-                                    name="name"
-                                    value={category.name}
-                                    onChange={handleCategoryChange}
-                                    required={isNewCategory}
-                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                    placeholder="e.g. Starters, Main Course"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Description</label>
-                                <input 
-                                    type="text"
-                                    name="description"
-                                    value={category.description}
-                                    onChange={handleCategoryChange}
-                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                    placeholder="Optional category description"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Category Image</label>
-                                <input 
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setCategory({...category, image_file: e.target.files[0]})}
-                                    className="w-full px-4 py-1.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                                />
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-slate-300">
-                                    <input 
-                                        type="checkbox"
-                                        name="is_active"
-                                        checked={category.is_active}
-                                        onChange={handleCategoryChange}
-                                        className="w-4 h-4 text-blue-600 rounded"
-                                    />
-                                    <span>Active</span>
-                                </label>
-                                <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-slate-300">
-                                    <input 
-                                        type="checkbox"
-                                        name="is_spicy_customizable"
-                                        checked={category.is_spicy_customizable}
-                                        onChange={handleCategoryChange}
-                                        className="w-4 h-4 text-blue-600 rounded"
-                                    />
-                                    <span>Spicy Config Allowed</span>
-                                </label>
-                            </div>
                         </div>
                     ) : (
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">Select Category *</label>
-                            <Select
-                                options={categories?.map(c => ({ value: c.id, label: c.name })) || []}
-                                value={categories?.map(c => ({ value: c.id, label: c.name })).find(c => c.value === selectedCategoryId) || null}
-                                onChange={(opt) => setSelectedCategoryId(opt ? opt.value : '')}
-                                isClearable
-                                isSearchable
-                                placeholder="Search or select a category..."
-                                classNamePrefix="react-select"
-                                className="text-sm react-select-container"
-                            />
-                        </div>
+                        <button 
+                            onClick={() => setIsAddingCategory(true)}
+                            className="w-full py-2.5 px-4 text-sm font-semibold text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-xl transition-colors flex items-center justify-center border border-dashed border-indigo-200 dark:border-indigo-500/30"
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> Add Category
+                        </button>
                     )}
                 </div>
 
-                {/* Menu Items Details */}
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col space-y-4">
-                    <div className="flex justify-between items-center border-b border-gray-100 dark:border-slate-800 pb-3">
-                        <h3 className="font-bold text-gray-900 dark:text-white text-[15px]">Menu Items</h3>
-                        <button 
-                            type="button" 
-                            onClick={addItemRow}
-                            className="text-xs font-bold text-[#6366f1] bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors flex items-center"
+                <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                    {isCatLoading ? (
+                        <div className="p-4 text-center text-sm text-gray-500">Loading categories...</div>
+                    ) : categories?.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => { setSelectedCategoryId(cat.id); setIsAddingItem(false); }}
+                            className={`w-full text-left px-4 py-3 rounded-xl transition-all flex justify-between items-center ${selectedCategoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
                         >
-                            <Plus className="w-3.5 h-3.5 mr-1" /> Add Row
+                            <span>{cat.name}</span>
+                            <ChevronRight className={`w-4 h-4 ${selectedCategoryId === cat.id ? 'opacity-100' : 'opacity-0'}`} />
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Right Main Content */}
+            <div className="flex-1 h-full overflow-hidden flex flex-col relative bg-gray-50 dark:bg-slate-900/50">
+                {!selectedCategoryId ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
+                        <Plus className="w-16 h-16 mb-4 opacity-20" />
+                        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">No Category Selected</h3>
+                        <p>Select a category from the left to start adding items.</p>
+                    </div>
+                ) : !isAddingItem ? (
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{selectedCategory?.name}</h3>
+                        <p className="text-gray-500 mb-6">You can now add items to this category.</p>
+                        <button 
+                            onClick={() => setIsAddingItem(true)}
+                            className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 flex items-center"
+                        >
+                            <Plus className="w-5 h-5 mr-2" /> Add an Item
                         </button>
                     </div>
+                ) : (
+                    <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-slate-900/50">
+                        {/* Header */}
+                        <div className="px-8 py-5 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center sticky top-0 z-20 shadow-sm">
+                            <button onClick={() => setIsAddingItem(false)} className="mr-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <ArrowLeft className="w-5 h-5" />
+                            </button>
+                            <div>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-white">Add an Item</h2>
+                                <p className="text-sm text-gray-500">In {selectedCategory?.name}</p>
+                            </div>
+                        </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="text-xs uppercase bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400">
-                                <tr>
-                                    <th className="px-4 py-3 font-bold">Item Code *</th>
-                                    <th className="px-4 py-3 font-bold">Name *</th>
-                                    <th className="px-4 py-3 font-bold">Description</th>
-                                    <th className="px-4 py-3 font-bold w-28">Full Price (₹) *</th>
-                                    <th className="px-4 py-3 font-bold w-28">Half Price (₹)</th>
-                                    <th className="px-4 py-3 font-bold w-36">Kitchen</th>
-                                    <th className="px-4 py-3 font-bold w-32">Image</th>
-                                    <th className="px-4 py-3 font-bold w-20 text-center">Is Veg?</th>
-                                    <th className="px-4 py-3 font-bold w-32 text-center">In Stock?</th>
-                                    <th className="px-4 py-3 font-bold w-32 text-center">Spicy?</th>
-                                    <th className="px-4 py-3 font-bold w-16 text-center"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {items.map((item, index) => (
-                                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:bg-slate-800/50/50">
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="text" 
-                                                name="item_code" 
-                                                value={item.item_code} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                required
-                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                                placeholder="Code"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="text" 
-                                                name="name" 
-                                                value={item.name} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                required
-                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                                placeholder="Name"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="text" 
-                                                name="description" 
-                                                value={item.description} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                                placeholder="Optional desc"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="number" 
-                                                step="0.01"
-                                                name="price" 
-                                                value={item.price} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                required
-                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                                placeholder="0.00"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="number" 
-                                                step="0.01"
-                                                name="half_price" 
-                                                value={item.half_price} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                                placeholder="0.00"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <select
-                                                name="kitchen_id"
-                                                value={item.kitchen_id}
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
+                        {/* Scrollable Form Area */}
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                            
+                            {/* Basic Details Card */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Basic Details</h3>
+                                
+                                <div className="flex gap-6">
+                                    <div className="flex-1 space-y-4">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Item Code*</label>
+                                            <input type="text" placeholder="e.g. R01" value={itemForm.item_code} onChange={e => setItemForm({...itemForm, item_code: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Type Item name*</label>
+                                            <input type="text" placeholder="Item Name" value={itemForm.name} onChange={e => setItemForm({...itemForm, name: e.target.value})} className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500" />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-2">Item type*</label>
+                                            <div className="flex gap-3">
+                                                {['veg', 'non-veg', 'egg'].map(type => (
+                                                    <label key={type} className={`flex items-center px-4 py-2 rounded-xl cursor-pointer border transition-colors ${itemForm.item_type === type ? (type === 'veg' ? 'border-green-500 bg-green-50 text-green-700' : type === 'non-veg' ? 'border-red-500 bg-red-50 text-red-700' : 'border-yellow-500 bg-yellow-50 text-yellow-700') : 'border-gray-200 bg-white'}`}>
+                                                        <input type="radio" name="item_type" value={type} checked={itemForm.item_type === type} onChange={e => setItemForm({...itemForm, item_type: e.target.value})} className="sr-only" />
+                                                        <span className="capitalize font-bold text-sm">{type === 'veg' ? '🟢 Veg' : type === 'non-veg' ? '🔴 Non-veg' : '🟡 Egg'}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Kitchen (Optional)</label>
+                                            <select 
+                                                value={itemForm.kitchen_id} 
+                                                onChange={e => setItemForm({...itemForm, kitchen_id: e.target.value})} 
+                                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500"
                                             >
-                                                <option value="">No Kitchen</option>
+                                                <option value="">No Kitchen Assigned</option>
                                                 {kitchens?.map(k => (
                                                     <option key={k.id} value={k.id}>{k.name}</option>
                                                 ))}
                                             </select>
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <input 
-                                                type="file" 
-                                                accept="image/*"
-                                                onChange={(e) => {
-                                                    const newItems = [...items];
-                                                    newItems[index].image_file = e.target.files[0];
-                                                    setItems(newItems);
-                                                }}
-                                                className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-slate-700 dark:file:text-slate-300"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3 text-center">
-                                            <input 
-                                                type="checkbox" 
-                                                name="is_veg" 
-                                                checked={item.is_veg} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3 text-center">
-                                            <input 
-                                                type="checkbox" 
-                                                name="is_available" 
-                                                checked={item.is_available} 
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 dark:border-slate-600 focus:ring-blue-500 cursor-pointer"
-                                            />
-                                        </td>
-                                        <td className="px-2 py-3">
-                                            <select
-                                                name="is_spicy_customizable"
-                                                value={item.is_spicy_customizable}
-                                                onChange={(e) => handleItemChange(index, e)}
-                                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded text-xs focus:outline-none focus:border-blue-500"
-                                            >
-                                                <option value="inherit">Inherit</option>
-                                                <option value="yes">Yes</option>
-                                                <option value="no">No</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-2 py-3 text-center">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => removeItemRow(index)}
-                                                disabled={items.length === 1}
-                                                className="p-1.5 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">+ Add a description</label>
+                                            <textarea placeholder="Items with clear descriptions are twice as likely to be ordered" value={itemForm.description} onChange={e => setItemForm({...itemForm, description: e.target.value})} rows={3} className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="w-40 flex-shrink-0">
+                                        <label className="cursor-pointer block w-full h-40 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl overflow-hidden relative group hover:border-indigo-500 transition-colors">
+                                            {itemForm.image_preview ? (
+                                                <img src={itemForm.image_preview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-gray-50 dark:bg-slate-800">
+                                                    <ImageIcon className="w-8 h-8 mb-2" />
+                                                    <span className="text-xs font-bold text-center">ADD<br/>PHOTO</span>
+                                                    <div className="absolute bottom-[-10px] bg-white rounded-full p-1 shadow">
+                                                        <Plus className="w-4 h-4 text-green-600" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-                <div className="flex justify-end">
-                    <button 
-                        type="submit"
-                        disabled={createCategoryMutation.isPending || createBulkItemsMutation.isPending}
-                        className="px-6 py-2.5 bg-[#6366f1] text-white rounded-lg text-sm font-bold hover:bg-indigo-600 transition-colors flex items-center shadow-sm shadow-indigo-200 disabled:opacity-50"
-                    >
-                        <Save className="w-4 h-4 mr-2" />
-                        {isNewCategory ? "Save Category & Items" : "Save Items"}
-                    </button>
-                </div>
-            </form>
+                            {/* Item Pricing Card */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Item Pricing</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Full Price*</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-2.5 text-gray-500 font-bold">₹</span>
+                                            <input type="number" placeholder="Item Price" value={itemForm.price} onChange={e => setItemForm({...itemForm, price: e.target.value})} className="w-full pl-8 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Half Price (Optional)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-2.5 text-gray-500 font-bold">₹</span>
+                                            <input type="number" placeholder="Half Price" value={itemForm.half_price} onChange={e => setItemForm({...itemForm, half_price: e.target.value})} className="w-full pl-8 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Customisations Card */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Customisations</h3>
+                                    <p className="text-sm text-gray-500">Include variants (e.g. Size, Preparation type)</p>
+                                </div>
+                                
+                                {itemForm.variant_groups.map((vg, gIndex) => (
+                                    <div key={gIndex} className="mb-6 p-4 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800/50">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <input type="text" placeholder="Variant Group Name (e.g. Size)" value={vg.name} onChange={e => updateVariantGroup(gIndex, 'name', e.target.value)} className="font-bold bg-transparent border-b border-gray-300 dark:border-slate-600 focus:border-indigo-500 focus:outline-none px-1 py-1" />
+                                            <button onClick={() => removeVariantGroup(gIndex)} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {vg.variants.map((v, vIndex) => (
+                                                <div key={vIndex} className="flex gap-3 items-center">
+                                                    <input type="text" placeholder="Option (e.g. Small)" value={v.name} onChange={e => updateVariant(gIndex, vIndex, 'name', e.target.value)} className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm" />
+                                                    <div className="relative w-32">
+                                                        <span className="absolute left-3 top-2 text-gray-500 font-bold text-sm">+₹</span>
+                                                        <input type="number" placeholder="Extra Price" value={v.extra_price} onChange={e => updateVariant(gIndex, vIndex, 'extra_price', e.target.value)} className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm" />
+                                                    </div>
+                                                    <button onClick={() => removeVariant(gIndex, vIndex)} className="p-2 text-gray-400 hover:text-red-500"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                            <button onClick={() => addVariant(gIndex)} className="text-xs font-bold text-indigo-600 hover:text-indigo-700">+ Add Option</button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button onClick={addVariantGroup} className="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center">
+                                    + Create my own variant
+                                </button>
+                            </div>
+
+                            {/* Add-ons Card */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <div className="mb-6">
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Include add-ons</h3>
+                                    <p className="text-sm text-gray-500">Additional items that customers can buy with this dish</p>
+                                </div>
+
+                                {itemForm.addon_groups.map((ag, gIndex) => (
+                                    <div key={gIndex} className="mb-6 p-4 border border-gray-200 dark:border-slate-700 rounded-xl bg-gray-50 dark:bg-slate-800/50">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <input type="text" placeholder="Add-on Group Name (e.g. Toppings)" value={ag.name} onChange={e => updateAddonGroup(gIndex, 'name', e.target.value)} className="font-bold bg-transparent border-b border-gray-300 dark:border-slate-600 focus:border-indigo-500 focus:outline-none px-1 py-1" />
+                                            <button onClick={() => removeAddonGroup(gIndex)} className="text-red-500 hover:text-red-700"><Trash2 className="w-4 h-4" /></button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {ag.addons.map((a, aIndex) => (
+                                                <div key={aIndex} className="flex gap-3 items-center">
+                                                    <input type="text" placeholder="Item Name (e.g. Extra Cheese)" value={a.name} onChange={e => updateAddon(gIndex, aIndex, 'name', e.target.value)} className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm" />
+                                                    <div className="relative w-28">
+                                                        <span className="absolute left-3 top-2 text-gray-500 font-bold text-sm">₹</span>
+                                                        <input type="number" placeholder="Price" value={a.price} onChange={e => updateAddon(gIndex, aIndex, 'price', e.target.value)} className="w-full pl-7 pr-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm" />
+                                                    </div>
+                                                    <select value={a.item_type} onChange={e => updateAddon(gIndex, aIndex, 'item_type', e.target.value)} className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm">
+                                                        <option value="veg">Veg</option>
+                                                        <option value="non-veg">Non-veg</option>
+                                                        <option value="egg">Egg</option>
+                                                    </select>
+                                                    <button onClick={() => removeAddon(gIndex, aIndex)} className="p-2 text-gray-400 hover:text-red-500"><X className="w-4 h-4" /></button>
+                                                </div>
+                                            ))}
+                                            <button onClick={() => addAddon(gIndex)} className="text-xs font-bold text-indigo-600 hover:text-indigo-700">+ Add Item</button>
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button onClick={addAddonGroup} className="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center">
+                                    + Create my own add-on
+                                </button>
+                            </div>
+
+                            {/* Item Timings Card */}
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Item Timings</h3>
+                                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                                    <div className="flex items-center text-sm font-medium text-gray-700 dark:text-slate-300">
+                                        <Clock className="w-4 h-4 mr-2 text-gray-400" />
+                                        Item is available at all times when restaurant is open
+                                    </div>
+                                    <button className="text-sm font-bold text-orange-600">Change</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer Action Bar */}
+                        <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 flex justify-end sticky bottom-0 z-20">
+                            <button 
+                                onClick={handleSaveItem}
+                                disabled={createItemMutation.isPending}
+                                className="w-full sm:w-auto px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-colors disabled:opacity-50"
+                            >
+                                {createItemMutation.isPending ? 'Saving...' : 'Save & Submit for review'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

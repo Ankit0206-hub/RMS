@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { ChefHat, Plus, Edit2, Trash2 } from 'lucide-react';
+import { ChefHat, Plus, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
 
 const Kitchens = () => {
   const queryClient = useQueryClient();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedKitchen, setSelectedKitchen] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -87,6 +88,7 @@ const Kitchens = () => {
       email: '',
       password: ''
     });
+    setShowPassword(false);
     setIsEditModalOpen(true);
   };
 
@@ -107,6 +109,14 @@ const Kitchens = () => {
     }));
   };
 
+  const handleGenerateCredentials = () => {
+    const baseName = formData.name ? formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'kitchen';
+    const email = `${baseName}@dineops.com`;
+    const password = Math.random().toString(36).slice(-8);
+    setFormData(prev => ({ ...prev, email, password }));
+    setShowPassword(true);
+  };
+
   return (
     <div className="p-4 sm:p-6 w-full font-inter">
       <div className="flex justify-between items-center mb-6">
@@ -120,6 +130,7 @@ const Kitchens = () => {
         <button
           onClick={() => {
             setFormData({ name: '', description: '', is_active: true, email: '', password: '' });
+            setShowPassword(false);
             setIsAddModalOpen(true);
           }}
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
@@ -232,7 +243,16 @@ const Kitchens = () => {
               
               {isAddModalOpen && (
                 <div className="pt-4 border-t border-gray-100 mt-4">
-                  <h4 className="text-sm font-bold text-gray-900 mb-3">Kitchen Login Credentials</h4>
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-sm font-bold text-gray-900">Kitchen Login Credentials</h4>
+                    <button
+                      type="button"
+                      onClick={handleGenerateCredentials}
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded transition-colors"
+                    >
+                      Auto-Generate
+                    </button>
+                  </div>
                   <div className="space-y-4">
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1">Login Email *</label>
@@ -249,16 +269,25 @@ const Kitchens = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1">Password *</label>
-                      <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required={isAddModalOpen}
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                        placeholder="Enter password"
-                        autoComplete="new-password"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required={isAddModalOpen}
+                          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 pr-10"
+                          placeholder="Enter password"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

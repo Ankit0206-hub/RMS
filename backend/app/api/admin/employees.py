@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.schemas.admin.employees import EmployeeCreate, EmployeeResponse, EmployeeUpdate
+from app.schemas.admin.employees import EmployeeCreate, EmployeeResponse, EmployeeUpdate, EmployeeBreakToggle
 from app.schemas.common import StandardResponse, PaginationMeta
 from typing import Any
 from app.services.admin.employee_service import employee_service
@@ -77,5 +77,16 @@ async def delete_employee(
     db: AsyncSession = Depends(get_db),
     current_admin = Depends(get_current_admin_or_operator)
 ):
-    success = await employee_service.delete_employee(db, employee_id)
-    return StandardResponse(data=success, message="Employee deleted successfully")
+    deleted = await employee_service.delete_employee(db, employee_id)
+    return StandardResponse(data={"deleted": deleted})
+
+@router.post("/{employee_id}/toggle-break", response_model=StandardResponse[EmployeeResponse])
+async def toggle_employee_break(
+    employee_id: int,
+    toggle_data: EmployeeBreakToggle,
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(get_current_admin_or_operator)
+):
+    data = await employee_service.toggle_break(db, employee_id, toggle_data)
+    status_str = "on break" if toggle_data.is_on_break else "back from break"
+    return StandardResponse(data=data, message=f"Employee marked {status_str}")

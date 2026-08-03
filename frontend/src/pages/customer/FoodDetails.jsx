@@ -26,14 +26,71 @@ export default function FoodDetails() {
   const [portion, setPortion] = useState("Full");
   const [spiceLevel, setSpiceLevel] = useState("Medium Spicy");
 
-  // Determine if portions are available based on backend data
+  // Determine if legacy portions/spiciness are available
   const hasPortions = food?.half_price != null;
   const customizableSpice = food?.is_spicy_customizable ?? food?.category?.is_spicy_customizable ?? false;
   
-  // Calculate dynamic price based on portion
+  // State for dynamic customizations
+  // selectedVariants: { [groupId]: variantId }
+  const [selectedVariants, setSelectedVariants] = useState(() => {
+    const defaultVariants = {};
+    if (food?.variant_groups) {
+      food.variant_groups.forEach(vg => {
+        const defaultVar = vg.variants.find(v => v.is_default);
+        if (defaultVar) {
+          defaultVariants[vg.id] = defaultVar.id;
+        } else if (vg.variants.length > 0) {
+          defaultVariants[vg.id] = vg.variants[0].id;
+        }
+      });
+    }
+    return defaultVariants;
+  });
+
+  // selectedAddons: { [addonId]: boolean }
+  const [selectedAddons, setSelectedAddons] = useState({});
+
+  // Calculate dynamic price
   const basePrice = food?.price || 0;
   const halfPrice = food?.half_price || Math.round(basePrice * 0.6);
-  const currentPrice = portion === "Half" ? halfPrice : basePrice;
+  
+  const calculateTotalPrice = () => {
+    let total = portion === "Half" ? halfPrice : basePrice;
+    
+    // Add variant prices
+    if (food?.variant_groups) {
+      food.variant_groups.forEach(vg => {
+        const selectedId = selectedVariants[vg.id];
+        if (selectedId) {
+          const variant = vg.variants.find(v => v.id === selectedId);
+          if (variant) total += variant.extra_price;
+        }
+      });
+    }
+
+    // Add addon prices
+    if (food?.addon_groups) {
+      food.addon_groups.forEach(ag => {
+        ag.addons.forEach(addon => {
+          if (selectedAddons[addon.id]) {
+            total += addon.price;
+          }
+        });
+      });
+    }
+
+    return total;
+  };
+
+  const currentPrice = calculateTotalPrice();
+
+  const handleVariantChange = (groupId, variantId) => {
+    setSelectedVariants(prev => ({ ...prev, [groupId]: variantId }));
+  };
+
+  const handleAddonChange = (addonId) => {
+    setSelectedAddons(prev => ({ ...prev, [addonId]: !prev[addonId] }));
+  };
 
   if (!food) {
     return (
@@ -111,7 +168,7 @@ export default function FoodDetails() {
             {food.desc || food.description || "No description available."}
           </p>
 
-          {/* Customization: Portion */}
+          {/* Legacy Customization: Portion */}
           {hasPortions && (
             <div className="mt-8">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Portion</h3>
@@ -131,7 +188,7 @@ export default function FoodDetails() {
             </div>
           )}
 
-          {/* Customization: Preparation Type */}
+          {/* Legacy Customization: Preparation Type */}
           {customizableSpice && (
             <div className="mt-6">
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">Preparation Type</h3>
@@ -147,6 +204,53 @@ export default function FoodDetails() {
               </div>
             </div>
           )}
+
+          {/* Dynamic Variant Groups */}
+          {food?.variant_groups?.map((vg) => (
+            <div key={vg.id} className="mt-8">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-3">{vg.name}</h3>
+              <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 p-4">
+                {vg.variants.map((v) => (
+                  <label key={v.id} onClick={() => handleVariantChange(vg.id, v.id)} className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${selectedVariants[vg.id] === v.id ? 'border-orange-500' : 'border-gray-300 dark:border-slate-600'}`}>
+                        {selectedVariants[vg.id] === v.id && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{v.name}</span>
+                    </div>
+                    {v.extra_price > 0 && (
+                      <span className="text-sm font-bold text-gray-700 dark:text-slate-300">+₹{v.extra_price}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Dynamic Addon Groups */}
+          {food?.addon_groups?.map((ag) => (
+            <div key={ag.id} className="mt-6">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">{ag.name}</h3>
+              {ag.max_selections > 0 && (
+                <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">Choose up to {ag.max_selections}</p>
+              )}
+              <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 p-4">
+                {ag.addons.map((addon) => (
+                  <label key={addon.id} onClick={() => handleAddonChange(addon.id)} className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded border ${selectedAddons[addon.id] ? 'border-orange-500 bg-orange-500' : 'border-gray-300 dark:border-slate-600 bg-transparent'}`}>
+                        {selectedAddons[addon.id] && <span className="text-white text-xs">✓</span>}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{addon.name}</span>
+                    </div>
+                    {addon.price > 0 && (
+                      <span className="text-sm font-bold text-gray-700 dark:text-slate-300">+₹{addon.price}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {/* Special Instructions */}
           <div className="mt-6">
@@ -211,8 +315,10 @@ export default function FoodDetails() {
                   addToCart({ 
                     ...food, 
                     instructions,
-                    portion,
-                    spiceLevel,
+                    portion: hasPortions ? portion : undefined,
+                    spiceLevel: customizableSpice ? spiceLevel : undefined,
+                    selectedVariants,
+                    selectedAddons,
                     price: currentPrice,
                     basePrice: basePrice
                   }, quantity);

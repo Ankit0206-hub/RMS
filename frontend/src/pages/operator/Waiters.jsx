@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { 
-    Users, UserCheck, Bell, ClipboardList, Wallet, 
+    Users, UserCheck, UserMinus, Bell, ClipboardList, Wallet, 
     ChevronRight, Plus, Search, Filter, RotateCcw, Eye, 
     MoreVertical, X, Phone, Mail, MapPin, Clock, Calendar, Star,
-    ChevronLeft, ChevronDown, Power
+    ChevronLeft, ChevronDown, Power, Coffee
 } from 'lucide-react';
 import { Modal, Input } from '../../components/ui';
 
@@ -21,11 +21,13 @@ const Waiters = () => {
 
     const [isAddWaiterModalOpen, setIsAddWaiterModalOpen] = useState(false);
     const [isEditWaiterModalOpen, setIsEditWaiterModalOpen] = useState(false);
+    const [isTakeBreakModalOpen, setIsTakeBreakModalOpen] = useState(false);
+    const [breakWaiter, setBreakWaiter] = useState(null);
+    const [coverWaiterId, setCoverWaiterId] = useState('');
     const [editingWaiterData, setEditingWaiterData] = useState(null);
     const [newWaiterData, setNewWaiterData] = useState({
         first_name: '',
         last_name: '',
-        email: '',
         phone: '',
         gender: '',
         employee_code: '',
@@ -91,6 +93,7 @@ const Waiters = () => {
                 last_name: '',
                 email: '',
                 phone: '',
+                gender: '',
                 employee_code: '',
                 password: '',
                 role_id: 2,
@@ -125,6 +128,51 @@ const Waiters = () => {
         },
         onError: (error) => {
             const message = error.response?.data?.message || 'Failed to update waiter';
+            toast.error(message);
+        }
+    });
+
+    const { data: attendanceData } = useQuery({
+        queryKey: ['adminAttendance', selectedDate],
+        queryFn: async () => {
+            const res = await api.get('/admin/attendance', { params: { date: selectedDate } });
+            return res.data.data || [];
+        }
+    });
+
+    const toggleAttendanceMutation = useMutation({
+        mutationFn: async ({ employee_id, date, status }) => {
+            const response = await api.post('/admin/attendance', { employee_id, date, status });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['adminAttendance']);
+            toast.success('Attendance updated successfully');
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || 'Failed to update attendance';
+            toast.error(message);
+        }
+    });
+
+    const toggleBreakMutation = useMutation({
+        mutationFn: async ({ employee_id, is_on_break, cover_employee_id }) => {
+            const response = await api.post(`/admin/employees/${employee_id}/toggle-break`, { 
+                is_on_break, 
+                cover_employee_id 
+            });
+            return response.data;
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries(['adminTables']);
+            setIsTakeBreakModalOpen(false);
+            setBreakWaiter(null);
+            setCoverWaiterId('');
+            toast.success(variables.is_on_break ? 'Waiter is now on break' : 'Waiter returned from break');
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || 'Failed to toggle break';
             toast.error(message);
         }
     });
@@ -179,7 +227,12 @@ const Waiters = () => {
                 const waiterAnalytics = (analyticsData?.top_waiters || []).find(tw => tw.id === e.id);
                 const sales = waiterAnalytics ? waiterAnalytics.sales : 0;
                 
+                const attendanceRecord = (attendanceData || []).find(a => a.employee_id === e.id);
+                const attendanceStatus = attendanceRecord ? attendanceRecord.status : 'Present';
+                
                 let status = isServing ? 'Serving' : 'Available';
+                if (e.is_on_break) status = 'Break';
+                if (attendanceStatus === 'Absent') status = 'Absent';
                 if (!e.is_active) status = 'Offline';
 
                 const sections = ['Main Hall', 'Garden Area', 'Terrace'];
@@ -191,6 +244,7 @@ const Waiters = () => {
                     status,
                     section: mockSection,
                     currentTables: assignedTables.map(t => t.table_number).join(', ') || '-',
+                    currentTablesCount: assignedTables.length,
                     ordersToday: isServing ? assignedTables.length : 0, // proxy for orders today
                     salesToday: sales,
                     rating: '5.0',
@@ -254,6 +308,7 @@ const Waiters = () => {
             case 'Serving': return 'bg-emerald-50 text-emerald-600';
             case 'Available': return 'bg-blue-50 text-blue-600';
             case 'Break': return 'bg-orange-50 text-orange-500';
+            case 'Absent': return 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400';
             case 'Offline': return 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400';
             default: return 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400';
         }
@@ -341,8 +396,8 @@ const Waiters = () => {
                                             <option>All Status</option>
                                             <option>Serving</option>
                                             <option>Available</option>
+                                            <option>Absent</option>
                                             <option>Break</option>
-                                            <option>Offline</option>
                                         </select>
                                     </div>
                                     <div className="flex flex-col shrink-0">
@@ -435,8 +490,39 @@ const Waiters = () => {
                                                     <button 
                                                         onClick={(e) => { e.stopPropagation(); setSelectedWaiter(waiter); }}
                                                         className="p-1.5 text-indigo-500 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
+                                                        title="View Profile"
                                                     >
                                                         <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        title={waiter.status === 'Absent' ? 'Mark Present' : 'Mark Absent'}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const newStatus = waiter.status === 'Absent' ? 'Present' : 'Absent';
+                                                            toggleAttendanceMutation.mutate({ employee_id: waiter.id, date: selectedDate, status: newStatus });
+                                                        }}
+                                                        className={`p-1.5 rounded transition-colors ${waiter.status === 'Absent' ? 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100' : 'text-orange-500 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20'}`}
+                                                    >
+                                                        {waiter.status === 'Absent' ? <UserCheck size={16} /> : <UserMinus size={16} />}
+                                                    </button>
+                                                    <button
+                                                        title={waiter.status === 'Break' ? 'End Break' : 'Take Break'}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (waiter.status === 'Break') {
+                                                                toggleBreakMutation.mutate({ employee_id: waiter.id, is_on_break: false, cover_employee_id: null });
+                                                            } else {
+                                                                if (waiter.currentTablesCount > 0) {
+                                                                    setBreakWaiter(waiter);
+                                                                    setIsTakeBreakModalOpen(true);
+                                                                } else {
+                                                                    toggleBreakMutation.mutate({ employee_id: waiter.id, is_on_break: true, cover_employee_id: null });
+                                                                }
+                                                            }
+                                                        }}
+                                                        className={`p-1.5 rounded transition-colors ${waiter.status === 'Break' ? 'text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20' : 'text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700'}`}
+                                                    >
+                                                        <Coffee size={16} />
                                                     </button>
                                                     <button 
                                                         onClick={(e) => {
@@ -483,6 +569,36 @@ const Waiters = () => {
                                                 <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(waiter.status)}`}>
                                                     {waiter.status}
                                                 </span>
+                                                <button
+                                                    title={waiter.status === 'Absent' ? 'Mark Present' : 'Mark Absent'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const newStatus = waiter.status === 'Absent' ? 'Present' : 'Absent';
+                                                        toggleAttendanceMutation.mutate({ employee_id: waiter.id, date: selectedDate, status: newStatus });
+                                                    }}
+                                                    className={`p-1.5 rounded transition-colors ${waiter.status === 'Absent' ? 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100' : 'text-orange-500 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20'}`}
+                                                >
+                                                    {waiter.status === 'Absent' ? <UserCheck size={14} /> : <UserMinus size={14} />}
+                                                </button>
+                                                <button
+                                                    title={waiter.status === 'Break' ? 'End Break' : 'Take Break'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (waiter.status === 'Break') {
+                                                            toggleBreakMutation.mutate({ employee_id: waiter.id, is_on_break: false, cover_employee_id: null });
+                                                        } else {
+                                                            if (waiter.currentTablesCount > 0) {
+                                                                setBreakWaiter(waiter);
+                                                                setIsTakeBreakModalOpen(true);
+                                                            } else {
+                                                                toggleBreakMutation.mutate({ employee_id: waiter.id, is_on_break: true, cover_employee_id: null });
+                                                            }
+                                                        }
+                                                    }}
+                                                    className={`p-1.5 rounded transition-colors ${waiter.status === 'Break' ? 'text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20' : 'text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700'}`}
+                                                >
+                                                    <Coffee size={14} />
+                                                </button>
                                                 <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -910,6 +1026,73 @@ const Waiters = () => {
                             </button>
                         </div>
                     </form>
+                )}
+            </Modal>
+
+            {/* Take Break Modal */}
+            <Modal
+                isOpen={isTakeBreakModalOpen}
+                onClose={() => {
+                    setIsTakeBreakModalOpen(false);
+                    setBreakWaiter(null);
+                    setCoverWaiterId('');
+                }}
+                title="Waiter Going on Break"
+            >
+                {breakWaiter && (
+                    <div className="space-y-4">
+                        <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+                            <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300">
+                                {breakWaiter.first_name} is currently assigned to <strong>{breakWaiter.currentTablesCount} table{breakWaiter.currentTablesCount > 1 ? 's' : ''}</strong> (Tables: {breakWaiter.currentTables}). 
+                                Who should cover these tables while they are on break?
+                            </p>
+                        </div>
+                        <div className="flex flex-col space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Cover Waiter</label>
+                            <select
+                                value={coverWaiterId}
+                                onChange={(e) => setCoverWaiterId(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            >
+                                <option value="">Select a waiter</option>
+                                {waiters.filter(w => (w.status === 'Available' || w.status === 'Serving') && w.id !== breakWaiter.id).map(w => (
+                                    <option key={w.id} value={w.id}>{w.first_name} {w.last_name} ({w.status})</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsTakeBreakModalOpen(false);
+                                    setBreakWaiter(null);
+                                    setCoverWaiterId('');
+                                }}
+                                className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (!coverWaiterId) {
+                                        toast.error("Please select a cover waiter");
+                                        return;
+                                    }
+                                    toggleBreakMutation.mutate({ 
+                                        employee_id: breakWaiter.id, 
+                                        is_on_break: true, 
+                                        cover_employee_id: parseInt(coverWaiterId) 
+                                    });
+                                }}
+                                disabled={toggleBreakMutation.isPending || !coverWaiterId}
+                                className="px-4 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:opacity-50 flex items-center"
+                            >
+                                <Coffee size={16} className="mr-2" />
+                                {toggleBreakMutation.isPending ? 'Processing...' : 'Confirm Break'}
+                            </button>
+                        </div>
+                    </div>
                 )}
             </Modal>
         </div>

@@ -83,4 +83,55 @@ class EmployeeService:
     async def get_employee_kpis(self, db: AsyncSession) -> dict:
         return await employee_repo.get_kpis(db)
 
+    async def toggle_break(self, db: AsyncSession, employee_id: int, toggle_data: "EmployeeBreakToggle") -> "Employee":
+        employee = await self.get_employee(db, employee_id)
+        
+        from app.models.restaurant import TableAssignment
+        from sqlalchemy import select, update
+        
+        if toggle_data.is_on_break:
+            employee.is_on_break = True
+            
+            result = await db.execute(select(TableAssignment).where(
+                TableAssignment.employee_id == employee_id,
+                TableAssignment.is_active == True
+            ))
+            assignments = result.scalars().all()
+            
+            table_ids = [a.table_id for a in assignments]
+            employee.break_cover_data = {"table_ids": table_ids}
+            
+            if table_ids:
+                if not toggle_data.cover_employee_id:
+                    raise HTTPException(status_code=400, detail="Must provide cover_employee_id to take over tables")
+                
+                await db.execute(update(TableAssignment).where(
+                    TableAssignment.employee_id == employee_id,
+                    TableAssignment.is_active == True
+                ).values(is_active=False))
+                
+                for tid in table_ids:
+                    new_assign = TableAssignment(table_id=tid, employee_id=toggle_data.cover_employee_id, is_active=True)
+                    db.add(new_assign)
+                    
+        else:
+            employee.is_on_break = False
+            data = employee.break_cover_data
+            if data and isinstance(data, dict) and "table_ids" in data:
+                table_ids = data["table_ids"]
+                if table_ids:
+                    await db.execute(update(TableAssignment).where(
+                        TableAssignment.table_id.in_(table_ids),
+                        TableAssignment.is_active == True
+                    ).values(is_active=False))
+                    
+                    for tid in table_ids:
+                        new_assign = TableAssignment(table_id=tid, employee_id=employee_id, is_active=True)
+                        db.add(new_assign)
+                        
+            employee.break_cover_data = None
+            
+        await db.commit()
+        return await self.get_employee(db, employee_id)
+
 employee_service = EmployeeService()

@@ -14,6 +14,38 @@ class WaiterTableResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class WaiterVariantItem(BaseModel):
+    id: int
+    name: str
+    extra_price: float = 0.0
+    is_default: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+class WaiterVariantGroup(BaseModel):
+    id: int
+    name: str
+    variants: List[WaiterVariantItem] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+class WaiterAddonItem(BaseModel):
+    id: int
+    name: str
+    price: float = 0.0
+    item_type: str = "veg"
+
+    model_config = ConfigDict(from_attributes=True)
+
+class WaiterAddonGroup(BaseModel):
+    id: int
+    name: str
+    min_selections: int = 0
+    max_selections: int = 10
+    addons: List[WaiterAddonItem] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
 class WaiterMenuItem(BaseModel):
     id: int
     name: str
@@ -24,6 +56,8 @@ class WaiterMenuItem(BaseModel):
     image_url: Optional[str] = None
     half_price: Optional[float] = None
     is_spicy_customizable: Optional[bool] = None
+    variant_groups: List[WaiterVariantGroup] = []
+    addon_groups: List[WaiterAddonGroup] = []
 
     model_config = ConfigDict(from_attributes=True)
 

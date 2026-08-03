@@ -1,17 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, ChefHat, ConciergeBell, CheckCircle2, Clock, History } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { kitchenApi } from '../../services/kitchenApi';
 
 const KitchenDashboard = () => {
     const navigate = useNavigate();
 
-    // Dummy data
-    const stats = {
-        totalOrders: 12,
-        preparing: 5,
-        ready: 2,
-        completed: 9
-    };
+    const { data: stats = { totalOrders: 0, preparing: 0, ready: 0, completed: 0 }, isLoading } = useQuery({
+        queryKey: ['kitchen_stats'],
+        queryFn: kitchenApi.getStats,
+        refetchInterval: 60000 // Fallback refetch every minute
+    });
+
+    if (isLoading) {
+        return <div className="p-8 text-center text-gray-500">Loading dashboard...</div>;
+    }
 
     return (
         <div className="p-4 flex flex-col gap-6">

@@ -63,19 +63,63 @@ export default function WaiterMenu() {
     const [customizingItem, setCustomizingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
     const [spiceLevel, setSpiceLevel] = useState('Medium');
+    const [selectedVariants, setSelectedVariants] = useState({});
+    const [selectedAddons, setSelectedAddons] = useState({});
     
     const handleFirstAdd = (item) => {
         setCustomizingItem(item);
         setPrepType('Full Plate');
         setSpiceLevel('Medium');
+        const defaultVars = {};
+        if (item.variant_groups) {
+            item.variant_groups.forEach(vg => {
+                const defaultVar = vg.variants.find(v => v.is_default);
+                if (defaultVar) defaultVars[vg.id] = defaultVar.id;
+                else if (vg.variants.length > 0) defaultVars[vg.id] = vg.variants[0].id;
+            });
+        }
+        setSelectedVariants(defaultVars);
+        setSelectedAddons({});
     };
 
     const confirmCustomization = () => {
         setItems(items.map(item => {
             if (item.id === customizingItem.id) {
                 const basePrice = item.originalPrice || item.price;
-                const newPrice = prepType === 'Half Plate' ? (item.half_price != null ? item.half_price : Math.round(basePrice * 0.6)) : basePrice;
-                return { ...item, qty: 1, prepType, spiceLevel, price: newPrice, originalPrice: basePrice };
+                let newPrice = prepType === 'Half Plate' ? (item.half_price != null ? item.half_price : Math.round(basePrice * 0.6)) : basePrice;
+                
+                // Add variant prices
+                if (item.variant_groups) {
+                    item.variant_groups.forEach(vg => {
+                        const selectedId = selectedVariants[vg.id];
+                        if (selectedId) {
+                            const variant = vg.variants.find(v => v.id === selectedId);
+                            if (variant) newPrice += variant.extra_price;
+                        }
+                    });
+                }
+
+                // Add addon prices
+                if (item.addon_groups) {
+                    item.addon_groups.forEach(ag => {
+                        ag.addons.forEach(addon => {
+                            if (selectedAddons[addon.id]) {
+                                newPrice += addon.price;
+                            }
+                        });
+                    });
+                }
+                
+                return { 
+                    ...item, 
+                    qty: 1, 
+                    prepType,
+                    spiceLevel,
+                    selectedVariants, 
+                    selectedAddons, 
+                    price: newPrice, 
+                    originalPrice: basePrice 
+                };
             }
             return item;
         }));
@@ -176,12 +220,15 @@ export default function WaiterMenu() {
                                                 <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />
                                                 <div>
                                                     <h3 className="font-bold text-gray-800 md:text-lg leading-tight">{item.name}</h3>
-                                                    {(item.prepType || item.spiceLevel) && (
+                                                    {(item.selectedVariants && Object.keys(item.selectedVariants).length > 0) || (item.selectedAddons && Object.keys(item.selectedAddons).length > 0) || item.prepType || item.spiceLevel ? (
                                                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                                             {item.prepType && <span className="text-[10px] font-bold text-gray-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50 shadow-sm">{item.prepType}</span>}
                                                             {item.spiceLevel && <span className="text-[10px] font-bold text-amber-700 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-200/50 shadow-sm">{item.spiceLevel}</span>}
+                                                            {((item.selectedVariants && Object.keys(item.selectedVariants).length > 0) || (item.selectedAddons && Object.keys(item.selectedAddons).length > 0)) && (
+                                                                <span className="text-[10px] font-bold text-gray-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50 shadow-sm">Customized</span>
+                                                            )}
                                                         </div>
-                                                    )}
+                                                    ) : null}
                                                     <p className="text-sm text-gray-600 font-bold mt-1">₹ {item.price}</p>
                                                 </div>
                                             </div>
@@ -276,6 +323,51 @@ export default function WaiterMenu() {
                                         </div>
                                     </div>
                                 )}
+
+                                {customizingItem.variant_groups?.map((vg) => (
+                                    <div key={vg.id}>
+                                        <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">{vg.name}</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {vg.variants.map(v => (
+                                                <button 
+                                                    key={v.id}
+                                                    onClick={() => setSelectedVariants(prev => ({ ...prev, [vg.id]: v.id }))}
+                                                    className={`flex-1 min-w-[30%] py-2 rounded-xl font-bold text-sm transition-all border ${
+                                                        selectedVariants[vg.id] === v.id 
+                                                        ? 'bg-rose-400 text-white border-rose-400 shadow-md' 
+                                                        : 'bg-white/50 text-gray-700 border-white/60 hover:bg-white/80'
+                                                    }`}
+                                                >
+                                                    {v.name} {v.extra_price > 0 && `(+₹${v.extra_price})`}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {customizingItem.addon_groups?.map((ag) => (
+                                    <div key={ag.id}>
+                                        <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">
+                                            {ag.name} {ag.max_selections > 0 && <span className="text-[10px] lowercase normal-case text-gray-400">(Max {ag.max_selections})</span>}
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {ag.addons.map(addon => (
+                                                <button 
+                                                    key={addon.id}
+                                                    onClick={() => setSelectedAddons(prev => ({ ...prev, [addon.id]: !prev[addon.id] }))}
+                                                    className={`flex-1 min-w-[30%] py-2 px-3 rounded-xl font-bold text-sm transition-all border flex items-center justify-between ${
+                                                        selectedAddons[addon.id] 
+                                                        ? 'bg-rose-50 text-rose-600 border-rose-200' 
+                                                        : 'bg-white/50 text-gray-600 border-gray-100 hover:border-rose-100'
+                                                    }`}
+                                                >
+                                                    <span>{addon.name}</span>
+                                                    {addon.price > 0 && <span className="opacity-70 text-[11px] ml-1">+₹{addon.price}</span>}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <div className="flex gap-3 mt-8">

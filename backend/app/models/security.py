@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import BigInteger, String, ForeignKey, Boolean, DateTime
+from sqlalchemy import BigInteger, String, ForeignKey, Boolean, DateTime, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 from app.models.mixins import TimestampMixin
@@ -51,6 +51,8 @@ class Employee(TimestampMixin, Base):
     last_name: Mapped[str] = mapped_column(String(100))
     gender: Mapped[Optional[str]] = mapped_column(String(20))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_on_break: Mapped[bool] = mapped_column(Boolean, default=False)
+    break_cover_data: Mapped[Optional[dict]] = mapped_column(JSON)
     image_url: Mapped[Optional[str]] = mapped_column(String(500))
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"))
     kitchen_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("kitchens.id", ondelete="SET NULL"), index=True)
@@ -65,6 +67,14 @@ class Employee(TimestampMixin, Base):
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
+
+class EmployeeAttendance(TimestampMixin, Base):
+    __tablename__ = "employee_attendance"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    employee_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="CASCADE"), index=True)
+    date: Mapped[datetime.date] = mapped_column(DateTime, index=True)
+    status: Mapped[str] = mapped_column(String(20), default="Absent")
 
 class LoginHistory(TimestampMixin, Base):
     __tablename__ = "login_history"

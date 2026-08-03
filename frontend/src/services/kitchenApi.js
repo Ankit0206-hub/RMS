@@ -1,6 +1,10 @@
 import api from './api';
 
 export const kitchenApi = {
+    getStats: async () => {
+        const response = await api.get('/kitchen/stats');
+        return response.data;
+    },
     getOrders: async () => {
         const response = await api.get('/kitchen/orders');
         return response.data;

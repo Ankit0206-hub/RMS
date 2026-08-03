@@ -18,6 +18,8 @@ const Customers = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(null); // When null, show full list
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const { data: sessionsResponse, isLoading } = useQuery({
         queryKey: ['customerSessions', currentPage, itemsPerPage],
@@ -51,8 +53,42 @@ const Customers = () => {
                 c.phone.includes(lowerSearch)
             );
         }
+
+        if (statusFilter !== 'All') {
+            data = data.filter(c => c.status === statusFilter);
+        }
+
         return data;
-    }, [sessionsResponse, searchTerm]);
+    }, [sessionsResponse, searchTerm, statusFilter]);
+
+    const exportToCSV = () => {
+        if (!customersData || customersData.length === 0) return;
+        
+        const headers = ['ID', 'Name', 'Phone', 'No. of People', 'Date', 'Total Spent', 'Status'];
+        const csvRows = [headers.join(',')];
+        
+        customersData.forEach(c => {
+            const row = [
+                c.id,
+                `"${c.name}"`,
+                `"${c.phone}"`,
+                c.peoples,
+                `"${c.date}"`,
+                c.totalSpent.toFixed(2),
+                c.status
+            ];
+            csvRows.push(row.join(','));
+        });
+        
+        const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "customers_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     const { data: activeSessionsResponse } = useQuery({
         queryKey: ['activeCustomerSessions'],
@@ -172,12 +208,47 @@ const Customers = () => {
                         </div>
                         
                         <div className="flex items-center space-x-3">
-                            <button className="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                                <Filter className="w-3.5 h-3.5 mr-2 text-gray-500 dark:text-slate-400" />
-                                Filters
-                            </button>
+                            <div className="relative">
+                                <button 
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                                    className="flex items-center justify-between min-w-[140px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm"
+                                >
+                                    <div className="flex items-center">
+                                        <Filter className="w-3.5 h-3.5 mr-2 text-indigo-500" />
+                                        {statusFilter === 'All' ? 'All Statuses' : statusFilter}
+                                    </div>
+                                    <svg className={`w-3.5 h-3.5 ml-2 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                
+                                {isDropdownOpen && (
+                                    <div className="absolute top-full right-0 mt-2 w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden transform origin-top transition-all duration-200">
+                                        {['All', 'Active', 'Completed', 'Cancelled'].map((status) => (
+                                            <button
+                                                key={status}
+                                                onClick={() => {
+                                                    setStatusFilter(status);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                                    statusFilter === status 
+                                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' 
+                                                        : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                                                }`}
+                                            >
+                                                {status === 'All' ? 'All Statuses' : status}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             
-                            <button className="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                            <button 
+                                onClick={exportToCSV}
+                                className="flex items-center bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                            >
                                 <Download className="w-3.5 h-3.5 mr-2 text-gray-500 dark:text-slate-400" />
                                 Export
                             </button>

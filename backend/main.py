@@ -5,6 +5,7 @@ from app.core.config import settings
 
 from app.api.admin import auth as admin_auth
 from app.api.admin import employees as admin_employees
+from app.api.admin import attendance as admin_attendance
 from app.api.admin import settings as admin_settings
 from app.api.admin import tables as admin_tables
 from app.api.admin import categories as admin_categories
@@ -68,6 +69,7 @@ app.add_middleware(
 
 app.include_router(admin_auth.router, prefix="/api/v1/admin/auth", tags=["Admin Auth"])
 app.include_router(admin_employees.router, prefix="/api/v1/admin/employees", tags=["Admin Employees"])
+app.include_router(admin_attendance.router, prefix="/api/v1/admin/attendance", tags=["Admin Attendance"])
 app.include_router(admin_settings.router, prefix="/api/v1/admin/settings", tags=["Admin Settings"])
 app.include_router(admin_tables.router, prefix="/api/v1/admin/tables", tags=["Admin Tables"])
 app.include_router(admin_categories.router, prefix="/api/v1/admin/categories", tags=["Admin Categories"])

@@ -16,13 +16,38 @@ export default function WaiterCart() {
     const [editingItem, setEditingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
     const [spiceLevel, setSpiceLevel] = useState('Medium');
+    const [selectedVariants, setSelectedVariants] = useState({});
+    const [selectedAddons, setSelectedAddons] = useState({});
 
     const saveCustomization = () => {
         setItems(items.map(item => {
             if (item.id === editingItem.id) {
                 const basePrice = item.originalPrice || item.price;
-                const newPrice = prepType === 'Half Plate' ? Math.round(basePrice * 0.6) : basePrice;
-                return { ...item, prepType, spiceLevel, price: newPrice, originalPrice: basePrice };
+                let newPrice = prepType === 'Half Plate' ? (item.half_price != null ? item.half_price : Math.round(basePrice * 0.6)) : basePrice;
+                
+                // Add variant prices
+                if (item.variant_groups) {
+                    item.variant_groups.forEach(vg => {
+                        const selectedId = selectedVariants[vg.id];
+                        if (selectedId) {
+                            const variant = vg.variants.find(v => v.id === selectedId);
+                            if (variant) newPrice += variant.extra_price;
+                        }
+                    });
+                }
+
+                // Add addon prices
+                if (item.addon_groups) {
+                    item.addon_groups.forEach(ag => {
+                        ag.addons.forEach(addon => {
+                            if (selectedAddons[addon.id]) {
+                                newPrice += addon.price;
+                            }
+                        });
+                    });
+                }
+
+                return { ...item, prepType, spiceLevel, selectedVariants, selectedAddons, price: newPrice, originalPrice: basePrice };
             }
             return item;
         }));
@@ -78,10 +103,12 @@ export default function WaiterCart() {
                                                 setEditingItem(item);
                                                 setPrepType(item.prepType || 'Full Plate');
                                                 setSpiceLevel(item.spiceLevel || 'Medium');
+                                                setSelectedVariants(item.selectedVariants || {});
+                                                setSelectedAddons(item.selectedAddons || {});
                                             }} className="flex items-center gap-1.5 mt-1.5 bg-white/40 border border-white/50 px-2.5 py-1 rounded-lg shadow-sm active:scale-95 transition-transform text-left">
                                                 <Edit3 className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                                                 <span className="text-[11px] font-bold text-gray-600 line-clamp-1">
-                                                    {item.prepType || item.spiceLevel ? [item.prepType, item.spiceLevel].filter(Boolean).join(', ') : 'Customize...'}
+                                                    {(item.selectedVariants && Object.keys(item.selectedVariants).length > 0) || (item.selectedAddons && Object.keys(item.selectedAddons).length > 0) || item.prepType || item.spiceLevel ? 'Customized' : 'Customize...'}
                                                 </span>
                                             </button>
                                             <p className="text-sm text-gray-500 mt-1 font-bold">₹ {item.price}</p>
@@ -125,11 +152,34 @@ export default function WaiterCart() {
                                 const orderData = {
                                     session_id: sessionId,
                                     special_instructions: specialInstructions,
-                                    items: items.map(item => ({
-                                        menu_item_id: item.id,
-                                        quantity: item.qty,
-                                        notes: [item.prepType, item.spiceLevel].filter(Boolean).join(', ') || undefined
-                                    }))
+                                    items: items.map(item => {
+                                        const notesParts = [];
+                                        if (item.prepType) notesParts.push(item.prepType);
+                                        if (item.spiceLevel) notesParts.push(item.spiceLevel);
+                                        if (item.selectedVariants && item.variant_groups) {
+                                            item.variant_groups.forEach(vg => {
+                                                const selectedId = item.selectedVariants[vg.id];
+                                                if (selectedId) {
+                                                    const variant = vg.variants.find(v => v.id === selectedId);
+                                                    if (variant) notesParts.push(`${vg.name}: ${variant.name}`);
+                                                }
+                                            });
+                                        }
+                                        if (item.selectedAddons && item.addon_groups) {
+                                            const addons = [];
+                                            item.addon_groups.forEach(ag => {
+                                                ag.addons.forEach(addon => {
+                                                    if (item.selectedAddons[addon.id]) addons.push(addon.name);
+                                                });
+                                            });
+                                            if (addons.length > 0) notesParts.push(`Addons: ${addons.join(', ')}`);
+                                        }
+                                        return {
+                                            menu_item_id: item.id,
+                                            quantity: item.qty,
+                                            notes: notesParts.join(' | ') || undefined
+                                        };
+                                    })
                                 };
                                 await waiterApi.createOrder(sessionId, orderData);
                                 toast.success('Order placed successfully!');
@@ -152,41 +202,90 @@ export default function WaiterCart() {
                         <h2 className="text-xl font-black text-gray-800 mb-6 text-center">{editingItem.name}</h2>
 
                         <div className="space-y-5">
-                            <div>
-                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Preparation</label>
-                                <div className="flex gap-2">
-                                    {['Full Plate', 'Half Plate'].map(type => (
-                                        <button
-                                            key={type}
-                                            onClick={() => setPrepType(type)}
-                                            className={`flex-1 py-3 rounded-xl font-bold text-[15px] transition-all border ${prepType === type
-                                                ? 'bg-rose-400 text-white border-rose-400 shadow-md'
-                                                : 'bg-white/50 text-gray-700 border-white/60'
-                                                }`}
-                                        >
-                                            {type}
-                                        </button>
-                                    ))}
+                            {editingItem.half_price != null && (
+                                <div>
+                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Preparation</label>
+                                    <div className="flex gap-2">
+                                        {['Full Plate', 'Half Plate'].map(type => (
+                                            <button
+                                                key={type}
+                                                onClick={() => setPrepType(type)}
+                                                className={`flex-1 py-3 rounded-xl font-bold text-[15px] transition-all border ${prepType === type
+                                                    ? 'bg-rose-400 text-white border-rose-400 shadow-md'
+                                                    : 'bg-white/50 text-gray-700 border-white/60'
+                                                    }`}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            <div>
-                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Spiciness</label>
-                                <div className="flex gap-2">
-                                    {['Low Spicy', 'Medium', 'Extra Spicy'].map(level => (
-                                        <button
-                                            key={level}
-                                            onClick={() => setSpiceLevel(level)}
-                                            className={`flex-1 py-3 px-1 rounded-xl font-bold text-[13px] sm:text-sm transition-all border ${spiceLevel === level
-                                                ? 'bg-amber-400 text-white border-amber-400 shadow-md'
-                                                : 'bg-white/50 text-gray-700 border-white/60'
-                                                }`}
-                                        >
-                                            {level}
-                                        </button>
-                                    ))}
+                            {(editingItem.is_spicy_customizable ?? editingItem.category?.is_spicy_customizable ?? false) && (
+                                <div>
+                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Spiciness</label>
+                                    <div className="flex gap-2">
+                                        {['Low Spicy', 'Medium', 'Extra Spicy'].map(level => (
+                                            <button
+                                                key={level}
+                                                onClick={() => setSpiceLevel(level)}
+                                                className={`flex-1 py-3 px-1 rounded-xl font-bold text-[13px] sm:text-sm transition-all border ${spiceLevel === level
+                                                    ? 'bg-amber-400 text-white border-amber-400 shadow-md'
+                                                    : 'bg-white/50 text-gray-700 border-white/60'
+                                                    }`}
+                                            >
+                                                {level}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {editingItem.variant_groups?.map((vg) => (
+                                <div key={vg.id}>
+                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">{vg.name}</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {vg.variants.map(v => (
+                                            <button 
+                                                key={v.id}
+                                                onClick={() => setSelectedVariants(prev => ({ ...prev, [vg.id]: v.id }))}
+                                                className={`flex-1 min-w-[30%] py-2 rounded-xl font-bold text-sm transition-all border ${
+                                                    selectedVariants[vg.id] === v.id 
+                                                    ? 'bg-rose-400 text-white border-rose-400 shadow-md' 
+                                                    : 'bg-white/50 text-gray-700 border-white/60 hover:bg-white/80'
+                                                }`}
+                                            >
+                                                {v.name} {v.extra_price > 0 && `(+₹${v.extra_price})`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {editingItem.addon_groups?.map((ag) => (
+                                <div key={ag.id}>
+                                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">
+                                        {ag.name} {ag.max_selections > 0 && <span className="text-[10px] lowercase normal-case text-gray-400">(Max {ag.max_selections})</span>}
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {ag.addons.map(addon => (
+                                            <button 
+                                                key={addon.id}
+                                                onClick={() => setSelectedAddons(prev => ({ ...prev, [addon.id]: !prev[addon.id] }))}
+                                                className={`flex-1 min-w-[30%] py-2 px-3 rounded-xl font-bold text-sm transition-all border flex items-center justify-between ${
+                                                    selectedAddons[addon.id] 
+                                                    ? 'bg-rose-50 text-rose-600 border-rose-200' 
+                                                    : 'bg-white/50 text-gray-600 border-gray-100 hover:border-rose-100'
+                                                }`}
+                                            >
+                                                <span>{addon.name}</span>
+                                                {addon.price > 0 && <span className="opacity-70 text-[11px] ml-1">+₹{addon.price}</span>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="flex space-x-3 mt-8">

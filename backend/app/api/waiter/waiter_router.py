@@ -15,7 +15,7 @@ from app.api.deps import get_current_waiter
 from app.models.security import Employee
 from app.models.restaurant import RestaurantTable, TableAssignment
 from app.models.ordering import CustomerSession, Order, OrderItem
-from app.models.menu import MenuCategory, MenuItem
+from app.models.menu import MenuCategory, MenuItem, VariantGroup, VariantItem, AddonGroup, AddonItem
 from app.schemas.waiter import WaiterTableResponse, WaiterMenuCategory, WaiterStartSessionRequest
 from app.schemas.ordering import OrderCreate
 from app.websocket.connection_manager import manager
@@ -166,7 +166,8 @@ async def get_menu(
     current_user: Employee = Depends(get_current_waiter)
 ):
     query = select(MenuCategory).where(MenuCategory.is_active == True).options(
-        selectinload(MenuCategory.items)
+        selectinload(MenuCategory.items).selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
+        selectinload(MenuCategory.items).selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
     )
     result = await db.execute(query)
     categories = result.scalars().all()

@@ -11,7 +11,7 @@ from app.api.deps import get_current_customer_session
 from app.models.restaurant import RestaurantTable, TableAssignment
 from app.models.ordering import CustomerSession, Order, OrderItem
 from app.models.billing import Bill
-from app.models.menu import MenuCategory, MenuItem
+from app.models.menu import MenuCategory, MenuItem, VariantGroup, VariantItem, AddonGroup, AddonItem
 from app.api.websocket_router import manager
 
 router = APIRouter()
@@ -101,7 +101,9 @@ async def start_customer_session(
 @router.get("/menu")
 async def get_customer_menu(db: AsyncSession = Depends(get_db)):
     query = select(MenuCategory).where(MenuCategory.is_active == True).options(
-        selectinload(MenuCategory.items).selectinload(MenuItem.images)
+        selectinload(MenuCategory.items).selectinload(MenuItem.images),
+        selectinload(MenuCategory.items).selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
+        selectinload(MenuCategory.items).selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
     )
     result = await db.execute(query)
     categories = result.scalars().all()
@@ -142,7 +144,37 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
                         "half_price": float(item.half_price) if item.half_price is not None else None,
                         "is_spicy_customizable": item.is_spicy_customizable,
                         "avg_rating": ratings_dict.get(item.id, {}).get("avg_rating", 0),
-                        "rating_count": ratings_dict.get(item.id, {}).get("rating_count", 0)
+                        "rating_count": ratings_dict.get(item.id, {}).get("rating_count", 0),
+                        "variant_groups": [
+                            {
+                                "id": vg.id,
+                                "name": vg.name,
+                                "variants": [
+                                    {
+                                        "id": v.id,
+                                        "name": v.name,
+                                        "extra_price": float(v.extra_price),
+                                        "is_default": v.is_default
+                                    } for v in vg.variants
+                                ]
+                            } for vg in item.variant_groups
+                        ],
+                        "addon_groups": [
+                            {
+                                "id": ag.id,
+                                "name": ag.name,
+                                "min_selections": ag.min_selections,
+                                "max_selections": ag.max_selections,
+                                "addons": [
+                                    {
+                                        "id": a.id,
+                                        "name": a.name,
+                                        "price": float(a.price),
+                                        "item_type": a.item_type
+                                    } for a in ag.addons
+                                ]
+                            } for ag in item.addon_groups
+                        ]
                     }
                     for item in active_items
                 ]

@@ -9,6 +9,7 @@ class EmployeeBase(BaseModel):
     phone: str
     gender: Optional[str] = None
     is_active: Optional[bool] = True
+    is_on_break: Optional[bool] = False
     role_id: int
     kitchen_id: Optional[int] = None
 
@@ -38,3 +39,7 @@ class EmployeeResponse(EmployeeBase):
 
     class Config:
         from_attributes = True
+
+class EmployeeBreakToggle(BaseModel):
+    is_on_break: bool
+    cover_employee_id: Optional[int] = None
