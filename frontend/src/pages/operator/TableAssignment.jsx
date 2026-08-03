@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
+import { adminApi } from '../../services/adminApi';
 import { 
     Calendar, Clock, User, Users, Info, Plus, ChevronDown, 
     MoreVertical, Search, Filter, Trash2, Printer, Download, Eye, AlertTriangle
@@ -22,8 +23,8 @@ const TableAssignment = () => {
     const { data: tablesData, isLoading: tablesLoading } = useQuery({
         queryKey: ['adminTables'],
         queryFn: async () => {
-            const res = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
-            return res.data.data;
+            const res = await adminApi.getTables(1, 1000);
+            return res.data || [];
         }
     });
 
@@ -76,9 +77,41 @@ const TableAssignment = () => {
         }
     });
 
+    // Fetch Reservations for dynamic status
+    const { data: reservationsData } = useQuery({
+        queryKey: ['adminReservations'],
+        queryFn: async () => {
+            const res = await adminApi.getReservations(1, 1000);
+            return res.data || [];
+        }
+    });
+
     if (tablesLoading || employeesLoading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter text-sm lg:text-[15px] 2xl:text-base font-bold">Loading Floor Data...</div>;
 
-    const tables = tablesData || [];
+    const currentTime = new Date();
+    const activeReservations = (reservationsData || []).filter(r => r.status === 'Confirmed' || r.status === 'Pending');
+
+    const tables = (tablesData || []).map(dbTable => {
+        let status = dbTable.status || 'Available';
+        // Clear dummy states
+        if (status === 'Vacant' || status === 'Reserved') {
+            status = 'Available';
+        }
+
+        // Apply dynamic Reserved status within 15 minutes
+        if (status !== 'Occupied') {
+            const tableRes = activeReservations.filter(r => r.table_id === dbTable.id);
+            const nextRes = tableRes.find(r => new Date(r.reservation_time) > currentTime);
+            if (nextRes) {
+                const diffMins = (new Date(nextRes.reservation_time) - currentTime) / 60000;
+                if (diffMins <= 15) {
+                    status = 'Reserved';
+                }
+            }
+        }
+        return { ...dbTable, status };
+    });
+
     const uniqueFloors = ['All', ...new Set(tables.map(t => t.floor || 'Main Hall'))];
     const filteredTablesByFloor = tables.filter(t => !t.parent_table_id && (selectedFloor === 'All' || (t.floor || 'Main Hall') === selectedFloor));
 
@@ -104,6 +137,22 @@ const TableAssignment = () => {
 
     const activeWaiters = waiters.length; 
     const availableWaiters = waiters.filter(w => !w.status || w.status !== 'Inactive').length; 
+
+    // Auto-cleanup for "zombie" waiters (waiters deleted from DB but still assigned to tables)
+    React.useEffect(() => {
+        if (!tablesData || !employeesData) return;
+        
+        const currentWaiters = employeesData.filter(e => e.role_name?.toLowerCase() === 'waiter');
+        const activeWaiterIds = new Set(currentWaiters.map(w => w.id));
+        const zombieTables = tablesData.filter(t => t.assigned_waiter_id && !activeWaiterIds.has(t.assigned_waiter_id));
+        
+        if (zombieTables.length > 0) {
+            console.log(`Cleaning up ${zombieTables.length} zombie table assignments...`);
+            Promise.all(zombieTables.map(t => api.delete(`/admin/tables/${t.id}/assign`)))
+                .then(() => queryClient.invalidateQueries({ queryKey: ['adminTables'] }))
+                .catch(console.error);
+        }
+    }, [tablesData, employeesData, queryClient]);
 
     const handleAssign = async () => {
         if (selectedTables.length === 0 || !selectedWaiter) return;

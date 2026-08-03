@@ -5,6 +5,7 @@ import {
     Calendar, Users, User, Clock, Star, Leaf, Plus, Unlink
 } from 'lucide-react';
 import { adminApi } from '../../services/adminApi';
+import api from '../../services/api';
 import ReservationModal from '../../components/ReservationModal';
 
 const OperatorReservations = () => {
@@ -12,6 +13,8 @@ const OperatorReservations = () => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [tables, setTables] = useState([]);
     const [reservations, setReservations] = useState([]);
+    const [settings, setSettings] = useState({});
+    const [activeSection, setActiveSection] = useState('Main Hall');
     const [loading, setLoading] = useState(true);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,12 +28,14 @@ const OperatorReservations = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [tablesRes, reservationsRes] = await Promise.all([
+            const [tablesRes, reservationsRes, settingsRes] = await Promise.all([
                 adminApi.getTables(),
-                adminApi.getReservations()
+                adminApi.getReservations(),
+                adminApi.getSettings ? adminApi.getSettings() : api.get('/operator/settings/') // Fallback if adminApi.getSettings is missing
             ]);
             setTables(tablesRes.data || []);
             setReservations(reservationsRes.data || []);
+            setSettings(settingsRes?.data || settingsRes?.data?.data || {});
         } catch (error) {
             console.error("Error fetching data:", error);
             toast.error("Failed to load data");
@@ -124,87 +129,86 @@ const OperatorReservations = () => {
         }
     });
 
-    // Map fetched tables to the floor plan logic
-    const floorPlanTables = [
-        { id: 'T1', type: 'horizontal', defaultSeats: 4 },
-        { id: 'T2', type: 'horizontal', defaultSeats: 4 },
-        { id: 'T3', type: 'horizontal', defaultSeats: 4 },
-        { id: 'T4', type: 'vertical', defaultSeats: 6 },
-        { id: 'T5', type: 'vertical', defaultSeats: 6 },
-        { id: 'T12', type: 'square', defaultSeats: 2 },
-        { id: 'T6', type: 'square', defaultSeats: 2 },
-        { id: 'T7', type: 'square', defaultSeats: 2 },
-        { id: 'T8', type: 'square', defaultSeats: 2 },
-        { id: 'T9', type: 'horizontal', defaultSeats: 4 },
-        { id: 'T10', type: 'horizontal', defaultSeats: 4 },
-        { id: 'T11', type: 'horizontal', defaultSeats: 4 },
-    ].map(fpt => {
-        // Find matching table from DB (robust matching by extracting numbers)
-        const dbTable = tables.find(t => {
-            const dbNumStr = String(t.table_number).replace(/[^0-9]/g, '');
-            const fptNumStr = String(fpt.id).replace(/[^0-9]/g, '');
-            return dbNumStr === fptNumStr && dbNumStr !== '';
-        });
-        const seats = dbTable ? dbTable.capacity : fpt.defaultSeats;
+    // Dynamic sections setup
+    const uniqueTableFloors = [...new Set(tables.map(t => t.floor).filter(Boolean).filter(f => f !== 'Main Hall'))];
+    const floorsOrAreas = settings.floors_or_areas && settings.floors_or_areas.length > 0 
+        ? ['Main Hall', ...settings.floors_or_areas.filter(f => f !== 'Main Hall')]
+        : ['Main Hall', ...uniqueTableFloors];
         
-        // Check for reservations on this table
-        const tableReservations = sortedReservations.filter(r => 
-            r.table_id === dbTable?.id && 
-            (r.status === 'Confirmed' || r.status === 'Pending')
-        );
+    // Ensure active section is valid
+    useEffect(() => {
+        if (!floorsOrAreas.includes(activeSection) && floorsOrAreas.length > 0) {
+            setActiveSection(floorsOrAreas[0]);
+        }
+    }, [settings, tables, activeSection]);
 
-        let status = dbTable?.status || 'Available';
-        if (status === 'Vacant') status = 'Available';
-        
-        let guest = null;
-        let timeStr = null;
-        let isAvailableWithFutureRes = false;
+    // Map fetched tables to the floor plan logic dynamically
+    const displayTables = tables
+        .filter(t => (t.floor || 'Main Hall') === activeSection && !t.is_virtual)
+        .map(dbTable => {
+            const seats = dbTable.capacity || 4;
+            
+            // Check for reservations on this table
+            const tableReservations = sortedReservations.filter(r => 
+                r.table_id === dbTable.id && 
+                (r.status === 'Confirmed' || r.status === 'Pending')
+            );
 
-        if (status === 'Occupied') {
-            // keep occupied
-        } else if (tableReservations.length > 0) {
-            const nextRes = tableReservations.find(r => new Date(r.reservation_time) > currentTime);
-            if (nextRes) {
-                const resTime = new Date(nextRes.reservation_time);
-                const diffMins = (resTime - currentTime) / 60000;
+            let status = dbTable.status || 'Available';
+            // Clear out any old dummy "Reserved" or "Vacant" states saved directly on the table
+            if (status === 'Vacant' || status === 'Reserved') {
+                status = 'Available';
+            }
+            
+            let guest = null;
+            let timeStr = null;
+            let isAvailableWithFutureRes = false;
+
+            if (status === 'Occupied') {
+                // keep occupied
+            } else if (tableReservations.length > 0) {
+                const nextRes = tableReservations.find(r => new Date(r.reservation_time) > currentTime);
+                if (nextRes) {
+                    const resTime = new Date(nextRes.reservation_time);
+                    const diffMins = (resTime - currentTime) / 60000;
+                    
+                    guest = nextRes.customer_name;
+                    timeStr = formatTime(nextRes.reservation_time);
+                    
+                    if (diffMins <= 15) {
+                        status = 'Reserved'; // Within 15 mins, strictly reserved
+                    } else {
+                        status = 'Available'; // Available until 15 mins before
+                        isAvailableWithFutureRes = true;
+                    }
+                }
                 
-                guest = nextRes.customer_name;
-                timeStr = formatTime(nextRes.reservation_time);
-                
-                if (diffMins <= 15) {
-                    status = 'Reserved'; // Within 15 mins, strictly reserved
-                } else {
-                    status = 'Available'; // Available until 15 mins before
-                    isAvailableWithFutureRes = true;
+                const currentRes = tableReservations.find(r => new Date(r.reservation_time) <= currentTime);
+                if (currentRes && status !== 'Reserved') {
+                    status = 'Occupied';
+                    guest = currentRes.customer_name;
+                    timeStr = formatTime(currentRes.reservation_time);
+                    isAvailableWithFutureRes = false;
                 }
             }
             
-            const currentRes = tableReservations.find(r => new Date(r.reservation_time) <= currentTime);
-            if (currentRes && status !== 'Reserved') {
-                status = 'Occupied';
-                guest = currentRes.customer_name;
-                timeStr = formatTime(currentRes.reservation_time);
-                isAvailableWithFutureRes = false;
+            if (dbTable.status === 'Merged') {
+                status = 'Merged';
             }
-        }
-        
-        if (dbTable?.status === 'Merged') {
-            status = 'Merged';
-        }
 
-        return {
-            ...fpt,
-            dbId: dbTable?.id,
-            seats,
-            status,
-            guest,
-            time: timeStr,
-            isAvailableWithFutureRes,
-            isMerged: dbTable?.status === 'Merged'
-        };
-    }).filter(t => t.dbId !== undefined);
+            return {
+                id: dbTable.table_number,
+                dbId: dbTable.id,
+                seats,
+                status,
+                guest,
+                time: timeStr,
+                isAvailableWithFutureRes,
+                isMerged: dbTable.status === 'Merged'
+            };
+    });
     
-    const virtualTables = tables.filter(t => t.is_virtual);
+    const virtualTables = tables.filter(t => t.is_virtual && (t.floor || 'Main Hall') === activeSection);
 
     const getStatusColor = (status, isAvailableWithFutureRes) => {
         if (isAvailableWithFutureRes) {
@@ -373,11 +377,20 @@ const OperatorReservations = () => {
                                 </div>
 
                                 <div className="space-y-1">
-                                    {upcoming.map((guest, idx) => (
+                                    {upcoming.map((guest, idx) => {
+                                        const resTime = new Date(guest.reservation_time);
+                                        const isLate = (currentTime - resTime) > (15 * 60 * 1000); // 15 minutes grace period
+                                        const cardBgClass = selectedTable === guest.table?.table_number 
+                                            ? 'bg-amber-50/50 border-amber-200' 
+                                            : isLate 
+                                                ? 'bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-900/50' 
+                                                : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50';
+                                                
+                                        return (
                                         <div 
                                             key={guest.id}
                                             onClick={() => handleGuestClick(guest)}
-                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${selectedTable === guest.table?.table_number ? 'bg-amber-50/50 border-amber-200' : 'border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50'}`}
+                                            className={`flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border ${cardBgClass}`}
                                         >
                                             <div className="flex items-start space-x-3">
                                                 <div className="text-right w-14 pt-0.5">
@@ -389,13 +402,68 @@ const OperatorReservations = () => {
                                                     <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end space-y-2">
-                                                <div className={`border rounded px-1.5 py-0.5 text-[10px] font-bold ${getStatusColor('Reserved', false).badge}`}>
-                                                    {guest.table_number || 'No Table'}
+                                            <div className="flex flex-col items-end space-y-1.5 pt-0.5">
+                                                <div className={`border rounded px-1.5 py-0.5 text-[10px] font-bold ${isLate ? 'border-red-400 text-red-600 bg-red-50' : getStatusColor('Reserved', false).badge}`}>
+                                                    {isLate ? 'LATE (15m+)' : (guest.table_number || 'No Table')}
+                                                </div>
+                                                <div className="flex space-x-1.5">
+                                                    {isLate && (
+                                                        <button 
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                if (confirm(`Cancel reservation for ${guest.customer_name} (No-Show)?`)) {
+                                                                    try {
+                                                                        await adminApi.updateReservation(guest.id, { ...guest, status: 'Cancelled' });
+                                                                        toast.success("Reservation cancelled. Table freed.");
+                                                                        fetchData();
+                                                                    } catch (error) {
+                                                                        toast.error("Failed to cancel reservation.");
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="bg-white border border-red-200 hover:bg-red-50 text-red-600 text-[9px] font-bold px-2 py-1 rounded shadow-sm transition-colors"
+                                                        >
+                                                            No Show
+                                                        </button>
+                                                    )}
+                                                <button 
+                                                    onClick={async (e) => {
+                                                        e.stopPropagation();
+                                                        if (!guest.table_id) {
+                                                            toast.error("Please assign a table first by editing the reservation.");
+                                                            handleEditReservation(guest);
+                                                            return;
+                                                        }
+                                                        try {
+                                                            const tableToUpdate = tables.find(t => t.id === guest.table_id);
+                                                            if (tableToUpdate) {
+                                                                await api.put(`/admin/tables/${guest.table_id}`, { ...tableToUpdate, status: 'Occupied' });
+                                                            }
+                                                            
+                                                            // Create the actual ordering session for the waiter/customer
+                                                            await api.post('/admin/ordering/sessions', {
+                                                                table_id: guest.table_id,
+                                                                customer_name: guest.customer_name,
+                                                                customer_phone: guest.contact_number || '',
+                                                                number_of_people: guest.party_size || 1
+                                                            });
+
+                                                            await adminApi.updateReservation(guest.id, { ...guest, status: 'Completed' });
+                                                            toast.success(`${guest.customer_name} seated and ordering session started!`);
+                                                            fetchData();
+                                                        } catch (error) {
+                                                            console.error(error);
+                                                            toast.error("Failed to seat guest.");
+                                                        }
+                                                    }}
+                                                    className="bg-green-500 hover:bg-green-600 text-white text-[9px] font-bold px-2 py-1 rounded shadow-sm transition-colors"
+                                                >
+                                                    Seat Guest
+                                                </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+                                    )})}
                                 </div>
                             </div>
                         </>
@@ -409,51 +477,43 @@ const OperatorReservations = () => {
                 {/* Top Toolbar */}
                 <div className="h-16 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-between px-6 shrink-0 shadow-sm z-10">
                     
-                    {/* Left Controls */}
-                    <div className="flex items-center space-x-6">
-                        <div className="flex items-center bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 shadow-sm">
-                            <ChevronLeft className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
-                            <span className="mx-3">{currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                            <ChevronRight className="w-4 h-4 text-gray-500 dark:text-slate-400 cursor-pointer hover:text-gray-900 dark:text-white" />
-                        </div>
-                        
-                        <div className="flex items-center space-x-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-slate-300 cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 transition-colors">
-                            <span>Dinner</span>
-                            <ChevronDown className="w-4 h-4 text-gray-500 dark:text-slate-400" />
-                        </div>
-                    </div>
-
-                    {/* Center Room Tabs */}
-                    <div className="hidden md:flex items-center space-x-6 text-xs font-bold text-gray-600 dark:text-slate-400">
-                        <div className="flex items-center space-x-2 text-gray-900 dark:text-white border-b-2 border-indigo-600 pb-1 cursor-pointer">
-                            <span>Main Room</span>
-                            <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 px-1.5 rounded text-[10px]">8/12</span>
-                        </div>
-                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
-                            <span>Patio</span>
-                            <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 px-1.5 rounded text-[10px]">2/8</span>
-                        </div>
-                        <div className="flex items-center space-x-2 pb-1 hover:text-gray-800 dark:text-slate-200 cursor-pointer transition-colors">
-                            <span>Terrace</span>
-                            <span className="bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 px-1.5 rounded text-[10px]">6/6</span>
-                        </div>
+                    {/* Center Room Tabs (Now Left Aligned since left controls are gone) */}
+                    <div className="flex flex-1 mr-4 items-center space-x-6 text-xs font-bold text-gray-600 dark:text-slate-400 overflow-x-auto custom-scrollbar">
+                        {floorsOrAreas.map(floor => {
+                            const floorTables = tables.filter(t => (t.floor || 'Main Hall') === floor && !t.is_virtual);
+                            const occupiedCount = floorTables.filter(t => t.status === 'Occupied' || t.status === 'Merged').length;
+                            const totalCount = floorTables.length;
+                            
+                            return (
+                                <div 
+                                    key={floor} 
+                                    onClick={() => setActiveSection(floor)}
+                                    className={`flex items-center space-x-2 pb-1 cursor-pointer transition-colors whitespace-nowrap ${activeSection === floor ? 'text-gray-900 dark:text-white border-b-2 border-indigo-600' : 'hover:text-gray-800 dark:hover:text-slate-200'}`}
+                                >
+                                    <span>{floor}</span>
+                                    <span className={`px-1.5 rounded text-[10px] ${occupiedCount >= totalCount && totalCount > 0 ? 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400'}`}>
+                                        {occupiedCount}/{totalCount}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Right Controls */}
                     <div className="flex items-center space-x-5">
                         <div className="hidden lg:flex items-center space-x-4">
                             <div className="flex items-center space-x-2 text-xs">
-                                <Clock className="w-4 h-4 text-indigo-500" />
-                                <div>
-                                    <div className="text-gray-500 dark:text-slate-400 font-semibold text-[9px]">Avg. Wait</div>
-                                    <div className="text-gray-900 dark:text-white font-bold leading-tight">30 min</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center space-x-2 text-xs">
                                 <Users className="w-4 h-4 text-indigo-500" />
                                 <div>
-                                    <div className="text-gray-500 dark:text-slate-400 font-semibold text-[9px]">Current Capacity</div>
-                                    <div className="text-gray-900 dark:text-white font-bold leading-tight">80% Full</div>
+                                    <div className="text-gray-500 dark:text-slate-400 font-semibold text-[9px]">Section Capacity</div>
+                                    <div className="text-gray-900 dark:text-white font-bold leading-tight">
+                                        {(() => {
+                                            const totalSeats = displayTables.reduce((sum, t) => sum + (t.seats || 0), 0);
+                                            const occupiedSeats = displayTables.filter(t => t.status === 'Occupied' || t.status === 'Merged').reduce((sum, t) => sum + (t.seats || 0), 0);
+                                            const percent = totalSeats > 0 ? Math.round((occupiedSeats / totalSeats) * 100) : 0;
+                                            return `${percent}% Full`;
+                                        })()}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -508,7 +568,7 @@ const OperatorReservations = () => {
                         
                         {/* Dynamic Grid Layout matching Table Assignment */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-x-4 gap-y-8">
-                            {[...floorPlanTables].sort((a, b) => a.seats - b.seats).map(table => {
+                            {[...displayTables].sort((a, b) => a.seats - b.seats).map(table => {
                                 const isSelectedForMerge = isMergeMode && selectedTablesForMerge.includes(table.dbId);
                                 const isSelected = selectedTable === table.id && !isMergeMode;
                                 

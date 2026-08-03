@@ -27,7 +27,7 @@ class OrderingService:
         db.add(table)
         
         session = await self.repository.create_session(db, session_in.model_dump())
-        return session
+        return await self.get_session(db, session.id)
 
     async def get_sessions(self, db: AsyncSession, page: int, page_size: int, status: str = None):
         sessions, total = await self.repository.get_sessions(db, page, page_size, status)

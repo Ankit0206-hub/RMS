@@ -10,9 +10,8 @@ router = APIRouter(prefix="/billing", tags=["Admin - Billing"], dependencies=[De
 service = BillingService()
 
 @router.post("/bills", response_model=StandardResponse[BillResponse], dependencies=[Depends(get_strict_operator)])
-async def generate_bill(bill_in: BillCreate, db: AsyncSession = Depends(get_db)):
-    # In Admin, employee_id can be extracted from auth token eventually
-    bill = await service.generate_bill(db, bill_in.session_id)
+async def create_bill(bill_in: BillCreate, db: AsyncSession = Depends(get_db)):
+    bill = await service.generate_bill(db, session_id=bill_in.session_id, employee_id=None, discount_percentage=bill_in.discount_percentage)
     return StandardResponse(success=True, message="Bill generated successfully", data=bill)
 
 @router.get("/bills", response_model=StandardResponse[list[BillResponse]])

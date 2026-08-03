@@ -12,7 +12,7 @@ class BillingService:
         self.ordering_repository = OrderingRepository()
         self.menu_repository = MenuRepository()
 
-    async def generate_bill(self, db: AsyncSession, session_id: int, employee_id: int = None):
+    async def generate_bill(self, db: AsyncSession, session_id: int, employee_id: int = None, discount_percentage: float = 0.0):
         session = await self.ordering_repository.get_session_by_id(db, session_id)
         if not session:
             raise NotFoundException("Session not found")
@@ -39,11 +39,14 @@ class BillingService:
                         "total": item_total
                     })
 
+        import math
         # Calculate taxes and totals (hardcoded for simplicity right now, ideally loaded from config)
         total_tax = subtotal * 0.10 # 10% tax
         service_charge = subtotal * 0.05 # 5% service charge
-        total_discount = 0.0
-        grand_total = subtotal + total_tax + service_charge - total_discount
+        
+        pre_discount_total = subtotal + total_tax + service_charge
+        total_discount = pre_discount_total * (discount_percentage / 100.0) if discount_percentage else 0.0
+        grand_total = float(math.ceil(pre_discount_total - total_discount))
 
         bill_data = {
             "session_id": session_id,

@@ -46,22 +46,48 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        if (name === 'contact_number') {
+            // Strip any character that is not a digit
+            const numericValue = value.replace(/[^0-9]/g, '');
+            setFormData(prev => ({ ...prev, [name]: numericValue }));
+            return;
+        }
+        
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Time Validation (cannot book in the past)
+        const selectedTime = new Date(formData.reservation_time);
+        if (selectedTime < new Date()) {
+            // Optional: You could use toast.error here if you have it available, 
+            // but native alert is foolproof for a quick validation without importing toast
+            alert("Reservation time cannot be in the past!");
+            return;
+        }
+
+        // Phone Number Validation (strictly 10-15 digits only)
+        const phoneRegex = /^\d{10,15}$/;
+        if (!phoneRegex.test(formData.contact_number)) {
+            alert("Please enter a valid contact number (10 to 15 digits).");
+            return;
+        }
+
         setLoading(true);
         try {
+            // Append seconds to the local datetime string from the input to ensure naive local time is sent
+            const localTimeString = formData.reservation_time.length === 16 
+                ? formData.reservation_time + ':00' 
+                : formData.reservation_time;
+                
             const dataToSubmit = {
                 ...formData,
                 table_id: formData.table_id ? parseInt(formData.table_id) : null,
                 party_size: parseInt(formData.party_size),
-                // Ensure date is valid format
-                reservation_time: new Date(formData.reservation_time).toISOString()
+                reservation_time: localTimeString
             };
 
             if (reservation) {
@@ -73,13 +99,23 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
             onClose();
         } catch (error) {
             console.error("Failed to save reservation", error);
-            // Optionally add toast error here
         } finally {
             setLoading(false);
         }
     };
 
     if (!isOpen) return null;
+
+    // Filter tables based on party size
+    // Rule: capacity >= partySize and capacity <= Math.ceil(partySize / 2) * 2 + 2
+    const pSize = parseInt(formData.party_size) || 1;
+    const maxCapacity = Math.ceil(pSize / 2) * 2 + 2;
+    const filteredTables = tables.filter(t => t.capacity >= pSize && t.capacity <= maxCapacity);
+
+    // Get current local datetime string for the 'min' attribute
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const currentLocalISO = (new Date(now - tzOffset)).toISOString().slice(0, 16);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
@@ -117,10 +153,11 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
                             Contact Number
                         </label>
                         <input
-                            type="text"
+                            type="tel"
                             name="contact_number"
                             value={formData.contact_number}
                             onChange={handleChange}
+                            required
                             className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
                             placeholder="+1 234 567 890"
                         />
@@ -134,6 +171,7 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
                             <input
                                 type="datetime-local"
                                 name="reservation_time"
+                                min={currentLocalISO}
                                 value={formData.reservation_time}
                                 onChange={handleChange}
                                 required
@@ -184,7 +222,7 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
                                 className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
                             >
                                 <option value="">No Table</option>
-                                {tables.map(table => (
+                                {filteredTables.map(table => (
                                     <option key={table.id} value={table.id}>
                                         {table.table_number} ({table.capacity} seats)
                                     </option>

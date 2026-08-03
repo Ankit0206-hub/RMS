@@ -39,8 +39,7 @@ class BillBase(BaseModel):
 
 class BillCreate(BaseModel):
     session_id: int
-    # Typically, bills are generated automatically based on orders in the session.
-    # The actual calculation will happen in the service.
+    discount_percentage: Optional[float] = 0.0
 
 class BillSessionResponse(BaseModel):
     id: int

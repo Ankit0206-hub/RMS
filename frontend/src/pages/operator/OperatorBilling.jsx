@@ -133,7 +133,12 @@ const OperatorBilling = () => {
         (item) =>
           item.id.toString().includes(searchQuery) ||
           item.customer.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+      )
+      .sort((a, b) => {
+        if (a.status === "Bill Requested" && b.status !== "Bill Requested") return -1;
+        if (b.status === "Bill Requested" && a.status !== "Bill Requested") return 1;
+        return 0;
+      });
   }, [sessionsResponse, pendingBillsResponse, searchQuery]);
 
   // Process Recent Items
@@ -280,11 +285,11 @@ const OperatorBilling = () => {
   
   const grandTotal = matchingBill
     ? matchingBill.grand_total
-    : (isRoundOff ? Math.round(totalAfterDiscount) : totalAfterDiscount);
+    : Math.ceil(totalAfterDiscount);
     
   const roundOffDiff = matchingBill 
     ? 0 
-    : (isRoundOff ? grandTotal - totalAfterDiscount : 0);
+    : grandTotal - totalAfterDiscount;
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("Cash");
   const [paymentReceived, setPaymentReceived] = useState(grandTotal);
@@ -295,8 +300,8 @@ const OperatorBilling = () => {
 
   // Mutations
   const generateBillMutation = useMutation({
-    mutationFn: async (sessionId) =>
-      (await api.post("/admin/billing/bills", { session_id: sessionId })).data,
+    mutationFn: async ({ sessionId, discount }) =>
+      (await api.post("/admin/billing/bills", { session_id: sessionId, discount_percentage: discount })).data,
     onSuccess: () => {
       toast.success("Bill generated successfully!", { icon: "🧾" });
       queryClient.invalidateQueries({ queryKey: ["operator-pending-bills"] });
@@ -326,23 +331,58 @@ const OperatorBilling = () => {
       toast.error(err.response?.data?.message || "Error recording payment"),
   });
 
+  const [splitAmounts, setSplitAmounts] = useState({ Cash: "", UPI: "", Card: "" });
+
   const handleGenerateBill = () => {
     if (!selectedItem || selectedItem.type !== "session") return;
-    generateBillMutation.mutate(selectedItem.id);
+    generateBillMutation.mutate({ sessionId: selectedItem.id, discount: discountPercentage });
   };
 
-  const handleProceedToBill = () => {
+  const handleProceedToBill = async () => {
     if (!selectedItem) return;
     const billId = selectedItem.matchingBill?.id;
     if (!billId) {
       toast.error("Please generate the bill first!");
       return;
     }
-    recordPaymentMutation.mutate({
-      billId,
-      amount: paymentReceived,
-      method: selectedPaymentMethod,
-    });
+    
+    if (selectedPaymentMethod === "Split") {
+      const payments = Object.entries(splitAmounts)
+        .map(([method, amount]) => ({ method, amount: parseFloat(amount) || 0 }))
+        .filter((p) => p.amount > 0);
+        
+      const totalSplit = payments.reduce((sum, p) => sum + p.amount, 0);
+      if (Math.abs(totalSplit - grandTotal) > 0.01) {
+        toast.error(`Split amounts (₹${totalSplit.toFixed(2)}) must equal Grand Total (₹${grandTotal.toFixed(2)})`);
+        return;
+      }
+      
+      try {
+        const loadingToast = toast.loading("Recording split payments...");
+        await Promise.all(
+          payments.map((p) =>
+            api.post(`/admin/billing/bills/${billId}/payments`, {
+              amount: p.amount,
+              payment_method: p.method,
+            })
+          )
+        );
+        toast.dismiss(loadingToast);
+        toast.success("Split payments recorded successfully!", { icon: "🎉" });
+        queryClient.invalidateQueries({ queryKey: ["operator-sessions"] });
+        queryClient.invalidateQueries({ queryKey: ["operator-pending-bills"] });
+        queryClient.invalidateQueries({ queryKey: ["operator-paid-bills"] });
+        if (mainTab === "Active") setSelectedId(null);
+      } catch (err) {
+        toast.error("Error recording split payments");
+      }
+    } else {
+      recordPaymentMutation.mutate({
+        billId,
+        amount: paymentReceived,
+        method: selectedPaymentMethod,
+      });
+    }
   };
 
   const getStatusStyles = (status) => {
@@ -354,7 +394,7 @@ const OperatorBilling = () => {
       case "Pending Billing":
         return "bg-orange-500/10 text-orange-600 border-orange-200/50 dark:border-orange-500/20";
       case "Bill Requested":
-        return "bg-purple-500/10 text-purple-600 border-purple-200/50 dark:border-purple-500/20 font-black animate-pulse";
+        return "bg-rose-500/10 text-rose-600 border-rose-200/50 dark:border-rose-500/20 font-black";
       case "Billed":
         return "bg-blue-500/10 text-blue-600 border-blue-200/50 dark:border-blue-500/20";
       default:
@@ -461,7 +501,9 @@ const OperatorBilling = () => {
                     key={item.id}
                     onClick={() => setSelectedId(item.id)}
                     className={`relative overflow-hidden rounded-2xl p-4 border-l-4 transition-all duration-300 cursor-pointer ${
-                      isSelected
+                      item.status === 'Bill Requested'
+                        ? (isSelected ? "bg-rose-100 dark:bg-rose-900/40 border-rose-600 shadow-sm" : "bg-rose-50 dark:bg-rose-900/20 border-rose-500 shadow-sm animate-[pulse_2s_ease-in-out_infinite]")
+                        : isSelected
                         ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-600 shadow-sm"
                         : "bg-white dark:bg-slate-900 border-l-transparent border-gray-200 dark:border-slate-700 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md"
                     }`}
@@ -726,10 +768,45 @@ const OperatorBilling = () => {
                     ₹ {sgst.toFixed(2)}
                   </span>
                 </div>
+                {(!matchingBill || discountAmount > 0) && (
+                  <div className="flex justify-between items-center text-rose-500 dark:text-rose-400 pt-2">
+                    <span className="flex items-center space-x-2">
+                      <span>Discount</span>
+                      {!matchingBill && (
+                        <div className="relative flex items-center">
+                          <input 
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={discountPercentage || ''}
+                            onChange={e => setDiscountPercentage(parseFloat(e.target.value) || 0)}
+                            placeholder="0"
+                            className="w-14 pl-2 pr-4 py-0.5 text-xs text-right bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded outline-none text-rose-600 font-bold"
+                          />
+                          <span className="absolute right-1.5 text-[10px] font-bold">%</span>
+                        </div>
+                      )}
+                      {matchingBill && discountAmount > 0 && (
+                         <span className="text-xs bg-rose-100 dark:bg-rose-900/40 px-1.5 py-0.5 rounded text-rose-600">{(discountAmount / matchingBill.subtotal * 100).toFixed(0)}%</span>
+                      )}
+                    </span>
+                    <span className="font-mono">
+                      - ₹ {discountAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-900 dark:text-white pt-4 mt-2 border-t border-gray-100 dark:border-slate-800 font-black text-base">
                   <span>Total Amount</span>
-                  <span className="font-mono">₹ {totalAmount.toFixed(2)}</span>
+                  <span className="font-mono">₹ {totalAfterDiscount.toFixed(2)}</span>
                 </div>
+                {roundOffDiff > 0 && (
+                  <div className="flex justify-between text-gray-500 dark:text-slate-400 mt-2 text-xs">
+                    <span>Round Off</span>
+                    <span className="font-mono text-gray-700 dark:text-slate-300">
+                      + ₹ {roundOffDiff.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Payment Methods */}
@@ -758,6 +835,34 @@ const OperatorBilling = () => {
                       </div>
                     ))}
                   </div>
+                  
+                  {selectedPaymentMethod === "Split" && (
+                    <div className="mt-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-3">
+                      <h4 className="font-bold text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Split Amounts</h4>
+                      {Object.keys(splitAmounts).map(method => (
+                        <div key={method} className="flex items-center justify-between">
+                          <label className="text-sm font-bold text-gray-700 dark:text-slate-300 w-20">{method}</label>
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">₹</span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={splitAmounts[method]}
+                              onChange={(e) => setSplitAmounts(prev => ({ ...prev, [method]: e.target.value }))}
+                              className="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-200 dark:border-slate-700">
+                        <span className="text-xs font-bold text-gray-500 dark:text-slate-400">Total Entered:</span>
+                        <span className={`text-sm font-mono font-bold ${Math.abs(Object.values(splitAmounts).reduce((a, b) => a + (parseFloat(b) || 0), 0) - grandTotal) < 0.01 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          ₹{Object.values(splitAmounts).reduce((a, b) => a + (parseFloat(b) || 0), 0).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
