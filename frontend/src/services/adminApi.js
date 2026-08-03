@@ -2,10 +2,10 @@ import api from './api';
 
 export const adminApi = {
     // Reservations
-    getReservations: async (page = 1, pageSize = 100) => {
-        const response = await api.get('/admin/reservations', {
-            params: { page, page_size: pageSize }
-        });
+    getReservations: async (page = 1, pageSize = 100, date = null) => {
+        const params = { page, page_size: pageSize };
+        if (date) params.date = date;
+        const response = await api.get('/admin/reservations', { params });
         return response.data;
     },
     createReservation: async (data) => {

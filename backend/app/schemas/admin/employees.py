@@ -7,6 +7,7 @@ class EmployeeBase(BaseModel):
     first_name: str
     last_name: str
     phone: str
+    gender: Optional[str] = None
     is_active: Optional[bool] = True
     role_id: int
     kitchen_id: Optional[int] = None
@@ -20,6 +21,7 @@ class EmployeeUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+    gender: Optional[str] = None
     employee_code: Optional[str] = None
     is_active: Optional[bool] = None
     role_id: Optional[int] = None

@@ -8,7 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const formatTime = (dateStr) => {
     try {
         const d = new Date(dateStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
     } catch {
         return dateStr;
     }

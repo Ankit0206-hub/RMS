@@ -10,6 +10,7 @@ import ReservationModal from '../../components/ReservationModal';
 
 const OperatorReservations = () => {
     const [leftTab, setLeftTab] = useState('RESERVATION');
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedTable, setSelectedTable] = useState(null);
     const [tables, setTables] = useState([]);
     const [reservations, setReservations] = useState([]);
@@ -30,7 +31,7 @@ const OperatorReservations = () => {
         try {
             const [tablesRes, reservationsRes, settingsRes] = await Promise.all([
                 adminApi.getTables(),
-                adminApi.getReservations(),
+                adminApi.getReservations(1, 100, selectedDate),
                 adminApi.getSettings ? adminApi.getSettings() : api.get('/operator/settings/') // Fallback if adminApi.getSettings is missing
             ]);
             setTables(tablesRes.data || []);
@@ -53,7 +54,7 @@ const OperatorReservations = () => {
             setReservations(prev => [...prev]); 
         }, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [selectedDate]);
 
     const handleNewReservation = () => {
         setEditingReservation(null);
@@ -102,7 +103,7 @@ const OperatorReservations = () => {
     const formatTime = (isoString) => {
         if (!isoString) return '';
         const d = new Date(isoString);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
     };
 
     // Compute active tables
@@ -113,19 +114,20 @@ const OperatorReservations = () => {
     
     const seated = [];
     const upcoming = [];
+    const waitlist = [];
     
     sortedReservations.forEach(res => {
         if (res.status === 'Cancelled' || res.status === 'Completed') return;
         const resTime = new Date(res.reservation_time);
         
-        if (res.status === 'Confirmed') {
+        if (res.status === 'Pending' && !res.table_id) {
+            waitlist.push(res);
+        } else if (res.status === 'Confirmed' || res.status === 'Pending') {
             if (resTime <= currentTime) {
                 seated.push(res);
             } else {
                 upcoming.push(res);
             }
-        } else if (res.status === 'Pending') {
-             upcoming.push(res);
         }
     });
 
@@ -294,7 +296,7 @@ const OperatorReservations = () => {
             />
             
             {/* ---------------- LEFT SIDEBAR (Reservations List) ---------------- */}
-            <div className="w-[300px] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 flex flex-col flex-shrink-0">
+            <div className="w-64 lg:w-[280px] xl:w-[300px] bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 flex flex-col flex-shrink-0 transition-all">
                 
                 {/* Tabs */}
                 <div className="flex p-4 pb-0">
@@ -327,6 +329,53 @@ const OperatorReservations = () => {
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {loading ? (
                         <div className="p-4 flex justify-center text-sm text-gray-500">Loading...</div>
+                    ) : leftTab === 'WAITING' ? (
+                        <div className="px-4 pb-4">
+                            <div className="flex justify-between items-center mb-3 mt-4">
+                                <h3 className="text-[10px] font-bold text-indigo-500 tracking-wider">WAITLIST (NO TABLE)</h3>
+                                <div className="flex items-center text-indigo-500 text-xs font-bold space-x-1">
+                                    <User className="w-3.5 h-3.5" />
+                                    <span>{waitlist.length}</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                {waitlist.length === 0 ? (
+                                    <div className="text-gray-500 dark:text-slate-400 text-xs py-4 text-center">No guests waiting.</div>
+                                ) : (
+                                    waitlist.map((guest, idx) => (
+                                        <div 
+                                            key={guest.id}
+                                            onClick={() => handleGuestClick(guest)}
+                                            className="flex items-start justify-between p-2 rounded-lg cursor-pointer transition-colors border border-transparent hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
+                                        >
+                                            <div className="flex items-start space-x-3">
+                                                <div className="text-right w-14 pt-0.5">
+                                                    <div className="text-gray-900 dark:text-white font-bold text-xs">{formatTime(guest.reservation_time)}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-gray-900 dark:text-white font-bold text-xs">{guest.customer_name}</div>
+                                                    <div className="text-gray-500 dark:text-slate-400 font-medium text-[10px] my-0.5">{guest.contact_number}</div>
+                                                    <div className="text-gray-400 font-semibold text-[9px]">{guest.party_size} Guests</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end space-y-1.5 pt-0.5">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingReservation(guest);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-[9px] font-bold px-3 py-1.5 rounded shadow-sm transition-colors"
+                                                >
+                                                    Assign Table
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
                     ) : (
                         <>
                             {/* Seated List */}
@@ -521,9 +570,15 @@ const OperatorReservations = () => {
                         <div className="h-6 w-px bg-gray-200 dark:bg-slate-700"></div>
 
                         <div className="flex space-x-3">
-                            <button onClick={fetchData} className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                                <Calendar className="w-4 h-4" />
-                            </button>
+                            <div className="relative flex items-center">
+                                <input 
+                                    type="date"
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="pl-3 pr-2 py-2 w-32 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-xs font-bold focus:ring-1 focus:ring-indigo-500 transition-colors shadow-sm cursor-pointer outline-none"
+                                />
+                            </div>
                             
                             <button 
                                 onClick={() => {

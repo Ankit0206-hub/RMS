@@ -7,8 +7,20 @@ from typing import List
 from app.models.restaurant import TableReservation, RestaurantTable
 from app.schemas.admin.reservations import ReservationCreate, ReservationUpdate
 
-async def get_all_reservations(db: AsyncSession, skip: int = 0, limit: int = 100):
-    query = select(TableReservation).options(selectinload(TableReservation.table)).order_by(TableReservation.reservation_time.asc()).offset(skip).limit(limit)
+from datetime import datetime, timedelta
+
+async def get_all_reservations(db: AsyncSession, skip: int = 0, limit: int = 100, date_str: str = None):
+    query = select(TableReservation).options(selectinload(TableReservation.table)).order_by(TableReservation.reservation_time.asc())
+    
+    if date_str:
+        try:
+            start_of_day = datetime.strptime(date_str, "%Y-%m-%d")
+            end_of_day = start_of_day + timedelta(days=1)
+            query = query.where(TableReservation.reservation_time >= start_of_day, TableReservation.reservation_time < end_of_day)
+        except ValueError:
+            pass # ignore invalid dates
+            
+    query = query.offset(skip).limit(limit)
     result = await db.execute(query)
     reservations = result.scalars().all()
     

@@ -6,7 +6,7 @@ import {
     Users, UserCheck, Bell, ClipboardList, Wallet, 
     ChevronRight, Plus, Search, Filter, RotateCcw, Eye, 
     MoreVertical, X, Phone, Mail, MapPin, Clock, Calendar, Star,
-    ChevronLeft, ChevronDown
+    ChevronLeft, ChevronDown, Power
 } from 'lucide-react';
 import { Modal, Input } from '../../components/ui';
 
@@ -16,13 +16,18 @@ const Waiters = () => {
     const [selectedAvailability, setSelectedAvailability] = useState('All');
     const [selectedSection, setSelectedSection] = useState('All Sections');
     const [selectedWaiter, setSelectedWaiter] = useState(null);
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
     const [isAddWaiterModalOpen, setIsAddWaiterModalOpen] = useState(false);
+    const [isEditWaiterModalOpen, setIsEditWaiterModalOpen] = useState(false);
+    const [editingWaiterData, setEditingWaiterData] = useState(null);
     const [newWaiterData, setNewWaiterData] = useState({
         first_name: '',
         last_name: '',
         email: '',
         phone: '',
+        gender: '',
         employee_code: '',
         password: '',
         role_id: 2, // Waiter
@@ -97,6 +102,50 @@ const Waiters = () => {
             toast.error(message);
         }
     });
+
+    const updateWaiterMutation = useMutation({
+        mutationFn: async ({ id, data }) => {
+            const response = await api.put(`/admin/employees/${id}`, data);
+            return response.data;
+        },
+        onSuccess: (data, variables) => {
+            toast.success('Waiter updated successfully');
+            queryClient.invalidateQueries(['adminEmployees']);
+            setIsEditWaiterModalOpen(false);
+            setEditingWaiterData(null);
+            if (selectedWaiter && selectedWaiter.id === variables.id) {
+                // Update the side panel if it's open
+                const updated = { ...selectedWaiter, ...variables.data };
+                if (variables.data.is_active === false) {
+                    setSelectedWaiter(null); // Close panel if deactivated
+                } else {
+                    setSelectedWaiter(updated);
+                }
+            }
+        },
+        onError: (error) => {
+            const message = error.response?.data?.message || 'Failed to update waiter';
+            toast.error(message);
+        }
+    });
+
+    const handleEditWaiterChange = (e) => {
+        let { name, value } = e.target;
+        if (name === 'phone') {
+            value = value.replace(/\D/g, '').slice(0, 10);
+        } else if (name === 'first_name' || name === 'last_name') {
+            value = value.replace(/[^A-Za-z\s]/g, '');
+        }
+        setEditingWaiterData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleEditWaiterSubmit = (e) => {
+        e.preventDefault();
+        if (!editingWaiterData) return;
+        const payload = { ...editingWaiterData };
+        if (!payload.password) delete payload.password; // Don't send empty password
+        updateWaiterMutation.mutate({ id: editingWaiterData.id, data: payload });
+    };
 
     const handleAddWaiterChange = (e) => {
         let { name, value } = e.target;
@@ -249,10 +298,13 @@ const Waiters = () => {
                             </div>
                         </div>
                         <div className="flex flex-col gap-3 md:gap-4 h-full">
-                            <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm rounded-xl md:rounded-2xl text-[13px] font-bold text-gray-700 dark:text-slate-300 w-full min-h-[44px]">
-                                <Calendar size={14} className="mr-2 text-indigo-600" />
-                                May 20, 2025
-                                <ChevronDown size={14} className="ml-2 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
+                            <div className="flex-1 flex items-center justify-center bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-sm rounded-xl md:rounded-2xl text-[13px] font-bold text-gray-700 dark:text-slate-300 w-full min-h-[44px] overflow-hidden">
+                                <input 
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="bg-transparent border-none outline-none w-full h-full px-4 text-center cursor-pointer"
+                                />
                             </div>
                             <button 
                                 onClick={() => setIsAddWaiterModalOpen(true)}
@@ -277,51 +329,59 @@ const Waiters = () => {
                                     className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                 />
                             </div>
-                            <div className="flex items-center gap-3 overflow-x-auto w-full pb-2 scrollbar-hide">
-                                <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Status</span>
-                                    <select 
-                                        className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
-                                        value={selectedStatus}
-                                        onChange={e => setSelectedStatus(e.target.value)}
-                                    >
-                                        <option>All Status</option>
-                                        <option>Serving</option>
-                                        <option>Available</option>
-                                        <option>Break</option>
-                                        <option>Offline</option>
-                                    </select>
+                            <div className="flex flex-col md:flex-row md:items-center gap-3 w-full pb-2">
+                                <div className={`flex-col md:flex-row md:items-center gap-3 w-full ${showMobileFilters ? 'flex' : 'hidden md:flex'}`}>
+                                    <div className="flex flex-col shrink-0">
+                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Status</span>
+                                        <select 
+                                            className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
+                                            value={selectedStatus}
+                                            onChange={e => setSelectedStatus(e.target.value)}
+                                        >
+                                            <option>All Status</option>
+                                            <option>Serving</option>
+                                            <option>Available</option>
+                                            <option>Break</option>
+                                            <option>Offline</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-col shrink-0">
+                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Availability</span>
+                                        <select 
+                                            className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
+                                            value={selectedAvailability}
+                                            onChange={e => setSelectedAvailability(e.target.value)}
+                                        >
+                                            <option>All</option>
+                                            <option>Serving</option>
+                                            <option>Available</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex flex-col shrink-0">
+                                        <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Section</span>
+                                        <select 
+                                            className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
+                                            value={selectedSection}
+                                            onChange={e => setSelectedSection(e.target.value)}
+                                        >
+                                            <option>All Sections</option>
+                                            <option>Main Hall</option>
+                                            <option>Garden Area</option>
+                                            <option>Terrace</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Availability</span>
-                                    <select 
-                                        className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
-                                        value={selectedAvailability}
-                                        onChange={e => setSelectedAvailability(e.target.value)}
+                                <div className="flex items-end h-full pt-4 shrink-0 md:ml-auto">
+                                    <button 
+                                        onClick={() => setShowMobileFilters(!showMobileFilters)}
+                                        className="md:hidden flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 mr-2"
                                     >
-                                        <option>All</option>
-                                        <option>Serving</option>
-                                        <option>Available</option>
-                                    </select>
-                                </div>
-                                <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] font-semibold text-gray-500 dark:text-slate-400 mb-1 ml-1">Section</span>
-                                    <select 
-                                        className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-700 dark:text-slate-300 outline-none"
-                                        value={selectedSection}
-                                        onChange={e => setSelectedSection(e.target.value)}
-                                    >
-                                        <option>All Sections</option>
-                                        <option>Main Hall</option>
-                                        <option>Garden Area</option>
-                                        <option>Terrace</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-end h-full pt-4 shrink-0">
-                                    <button className="flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 mr-2">
                                         <Filter size={14} className="mr-1.5" /> Filters
                                     </button>
-                                    <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50">
+                                    <button 
+                                        onClick={() => queryClient.invalidateQueries(['adminEmployees'])}
+                                        className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
+                                    >
                                         <RotateCcw size={16} />
                                     </button>
                                 </div>
@@ -330,7 +390,7 @@ const Waiters = () => {
 
                         {/* Table */}
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse hidden md:table">
                                 <thead>
                                     <tr className="border-b border-gray-100 dark:border-slate-800">
                                         <th className="py-4 px-6 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Waiter</th>
@@ -372,11 +432,23 @@ const Waiters = () => {
                                             </td>
                                             <td className="py-3 px-6 text-right">
                                                 <div className="flex items-center justify-end space-x-2">
-                                                    <button className="p-1.5 text-indigo-500 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); setSelectedWaiter(waiter); }}
+                                                        className="p-1.5 text-indigo-500 bg-indigo-50 rounded hover:bg-indigo-100 transition-colors"
+                                                    >
                                                         <Eye size={16} />
                                                     </button>
-                                                    <button className="p-1.5 text-gray-400 dark:text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 rounded transition-colors">
-                                                        <MoreVertical size={16} />
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if(window.confirm(`Are you sure you want to deactivate ${waiter.first_name}?`)) {
+                                                                updateWaiterMutation.mutate({ id: waiter.id, data: { ...waiter, is_active: false } });
+                                                            }
+                                                        }}
+                                                        className="p-1.5 text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 rounded transition-colors"
+                                                        title="Deactivate Waiter"
+                                                    >
+                                                        <Power size={16} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -390,6 +462,58 @@ const Waiters = () => {
                                     )}
                                 </tbody>
                             </table>
+                            
+                            {/* Mobile Card Layout */}
+                            <div className="md:hidden flex flex-col divide-y divide-gray-100 dark:divide-slate-800">
+                                {paginatedWaiters.length > 0 ? paginatedWaiters.map((waiter) => (
+                                    <div 
+                                        key={waiter.id}
+                                        onClick={() => setSelectedWaiter(waiter)}
+                                        className="p-4 flex flex-col space-y-3 hover:bg-gray-50 dark:hover:bg-slate-800/50 active:bg-gray-100 transition-colors cursor-pointer"
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center space-x-3">
+                                                <img src={waiter.avatar} alt="Avatar" className="w-10 h-10 rounded-full border border-gray-200 dark:border-slate-700" />
+                                                <div>
+                                                    <h4 className="text-[14px] font-bold text-gray-900 dark:text-white">{waiter.first_name} {waiter.last_name}</h4>
+                                                    <p className="text-[11px] font-semibold text-gray-500 dark:text-slate-400">{waiter.employee_code || `WT00${waiter.id}`}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(waiter.status)}`}>
+                                                    {waiter.status}
+                                                </span>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if(window.confirm(`Are you sure you want to deactivate ${waiter.first_name}?`)) {
+                                                            updateWaiterMutation.mutate({ id: waiter.id, data: { ...waiter, is_active: false } });
+                                                        }
+                                                    }}
+                                                    className="p-1.5 text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 rounded transition-colors"
+                                                >
+                                                    <Power size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                            <div className="bg-gray-50 dark:bg-slate-800/50 p-2 rounded-lg border border-gray-100 dark:border-slate-700/50">
+                                                <p className="text-[10px] font-bold text-gray-500 uppercase">Tables</p>
+                                                <p className="text-[12px] font-black text-gray-900 dark:text-white truncate">{waiter.currentTables}</p>
+                                            </div>
+                                            <div className="bg-gray-50 dark:bg-slate-800/50 p-2 rounded-lg border border-gray-100 dark:border-slate-700/50">
+                                                <p className="text-[10px] font-bold text-gray-500 uppercase">Sales</p>
+                                                <p className="text-[12px] font-black text-gray-900 dark:text-white truncate">₹ {waiter.salesToday > 0 ? waiter.salesToday.toLocaleString() : '0.00'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="p-8 text-center text-[13px] text-gray-500 dark:text-slate-400 font-medium">
+                                        No waiters found.
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Pagination Area */}
@@ -512,12 +636,20 @@ const Waiters = () => {
                             <div>
                                 <h4 className="text-[13px] font-bold text-gray-900 dark:text-white mb-4">Current Assignment</h4>
                                 <div className="space-y-3">
-                                    <div className="flex items-center text-[13px]">
-                                        <span className="font-semibold text-gray-500 dark:text-slate-400 flex-1 flex items-center">
+                                    <div className="flex items-start text-[13px]">
+                                        <span className="font-semibold text-gray-500 dark:text-slate-400 flex-1 flex items-center pt-1 shrink-0">
                                             <div className="w-4 h-4 bg-gray-100 dark:bg-slate-800 rounded mr-2 flex items-center justify-center"><ClipboardList size={10} className="text-gray-500 dark:text-slate-400"/></div>
                                             Table(s)
                                         </span>
-                                        <span className="font-bold text-gray-900 dark:text-white">{selectedWaiter.currentTables}</span>
+                                        <div className="flex flex-wrap gap-1.5 flex-1 justify-end ml-4">
+                                            {selectedWaiter.currentTables && selectedWaiter.currentTables !== '-' 
+                                                ? selectedWaiter.currentTables.split(',').map((t, i) => (
+                                                    <span key={i} className="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold rounded text-[11px] border border-indigo-100 dark:border-indigo-800">
+                                                        {t.trim()}
+                                                    </span>
+                                                )) 
+                                                : <span className="font-bold text-gray-900 dark:text-white">-</span>}
+                                        </div>
                                     </div>
                                     <div className="flex items-center text-[13px]">
                                         <span className="font-semibold text-gray-500 dark:text-slate-400 flex-1 flex items-center">
@@ -565,9 +697,15 @@ const Waiters = () => {
                         </div>
 
                         {/* Footer Action */}
-                        <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/50 shrink-0">
-                            <button className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-100 py-3 rounded-xl text-[13px] font-bold transition-colors">
-                                View Full Profile
+                        <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 shrink-0">
+                            <button 
+                                onClick={() => {
+                                    setEditingWaiterData({ ...selectedWaiter, password: '' });
+                                    setIsEditWaiterModalOpen(true);
+                                }}
+                                className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-100 py-3 rounded-xl text-[13px] font-bold transition-colors"
+                            >
+                                Edit Profile
                             </button>
                         </div>
                     </div>
@@ -634,6 +772,20 @@ const Waiters = () => {
                             required
                             autoComplete="new-password"
                         />
+                        <div className="flex flex-col space-y-1.5">
+                            <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Gender</label>
+                            <select
+                                name="gender"
+                                value={newWaiterData.gender || ''}
+                                onChange={handleAddWaiterChange}
+                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            >
+                                <option value="">Select Gender (Optional)</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
                         <Input
                             label="Password"
                             type="password"
@@ -662,6 +814,103 @@ const Waiters = () => {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Edit Waiter Modal */}
+            <Modal
+                isOpen={isEditWaiterModalOpen}
+                onClose={() => {
+                    setIsEditWaiterModalOpen(false);
+                    setEditingWaiterData(null);
+                }}
+                title="Edit Waiter Profile"
+            >
+                {editingWaiterData && (
+                    <form onSubmit={handleEditWaiterSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                                label="Employee Code"
+                                name="employee_code"
+                                value={editingWaiterData.employee_code}
+                                readOnly
+                                disabled
+                            />
+                            <Input
+                                label="First Name"
+                                name="first_name"
+                                value={editingWaiterData.first_name}
+                                onChange={handleEditWaiterChange}
+                                required
+                            />
+                            <Input
+                                label="Last Name"
+                                name="last_name"
+                                value={editingWaiterData.last_name}
+                                onChange={handleEditWaiterChange}
+                                required
+                            />
+                            <Input
+                                label="Phone Number"
+                                name="phone"
+                                value={editingWaiterData.phone || ''}
+                                onChange={handleEditWaiterChange}
+                                pattern="[0-9]*"
+                                maxLength="10"
+                                required
+                            />
+                            <Input
+                                label="Email Address"
+                                type="email"
+                                name="email"
+                                value={editingWaiterData.email}
+                                onChange={handleEditWaiterChange}
+                                required
+                            />
+                            <div className="flex flex-col space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Gender</label>
+                                <select
+                                    name="gender"
+                                    value={editingWaiterData.gender || ''}
+                                    onChange={handleEditWaiterChange}
+                                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                >
+                                    <option value="">Select Gender (Optional)</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <Input
+                                label="New Password (Optional)"
+                                type="password"
+                                name="password"
+                                value={editingWaiterData.password || ''}
+                                onChange={handleEditWaiterChange}
+                                placeholder="Leave blank to keep current"
+                                autoComplete="new-password"
+                            />
+                        </div>
+                        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-100 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsEditWaiterModalOpen(false);
+                                    setEditingWaiterData(null);
+                                }}
+                                className="px-4 py-2 text-sm font-semibold text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={updateWaiterMutation.isPending}
+                                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                {updateWaiterMutation.isPending ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </Modal>
         </div>
     );

@@ -11,13 +11,14 @@ router = APIRouter()
 
 @router.get("", response_model=StandardResponse[List[ReservationResponse]])
 async def get_reservations(
+    date: str = None,
     page: int = 1,
     page_size: int = 100,
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_admin_or_operator)
 ):
     skip = (page - 1) * page_size
-    reservations = await reservations_service.get_all_reservations(db, skip=skip, limit=page_size)
+    reservations = await reservations_service.get_all_reservations(db, skip=skip, limit=page_size, date_str=date)
     
     meta = PaginationMeta(total=len(reservations), page=page, page_size=page_size)
     return StandardResponse(data=reservations, meta=meta)

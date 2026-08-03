@@ -49,6 +49,7 @@ class Employee(TimestampMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
+    gender: Mapped[Optional[str]] = mapped_column(String(20))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(500))
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"))
