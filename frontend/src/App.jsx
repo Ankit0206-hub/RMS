@@ -54,6 +54,7 @@ import KitchenOrderDetails from './pages/kitchen/OrderDetails';
 import KitchenNotifications from './pages/kitchen/Notifications';
 import KitchenProfile from './pages/kitchen/Profile';
 
+import CustomerDisplay from './pages/customer/CustomerDisplay';
 import CustomerMenu from './pages/customer/Menu';
 import MenuItems from './pages/admin/MenuItems';
 import AddCategoryWithItems from './pages/admin/AddCategoryWithItems';
@@ -122,6 +123,8 @@ const App = () => {
                             <Route path="/" element={<Navigate to="/login" />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/customer/*" element={<AppRoutes />} />
+
+                            <Route path="/customer-display" element={<ProtectedRoute allowedRoles={['admin', 'operator', 'kitchen']}><CustomerDisplay /></ProtectedRoute>} />
 
                             {/* Admin Routes */}
                             <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>

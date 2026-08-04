@@ -179,14 +179,14 @@ const Kitchens = () => {
                         onClick={() => handleOpenEdit(kitchen)}
                         className="text-indigo-600 hover:text-indigo-900 flex items-center gap-1"
                       >
-                        <Edit2 className="w-4 h-4" /> Edit
+                        <Edit2 className="w-4 h-4" /> 
                       </button>
                       <button
                         onClick={() => handleDelete(kitchen.id)}
                         className="text-red-600 hover:text-red-900 flex items-center gap-1"
                         disabled={deleteMutation.isPending}
                       >
-                        <Trash2 className="w-4 h-4" /> Delete
+                        <Trash2 className="w-4 h-4" /> 
                       </button>
                     </div>
                   </td>
