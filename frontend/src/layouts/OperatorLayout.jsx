@@ -195,7 +195,7 @@ const OperatorLayout = () => {
                 )}
 
                 {/* Navigation Links */}
-                <nav className="flex-1 py-4 px-4 space-y-0.5 overflow-y-auto scrollbar-hide">
+                <nav className={`flex-1 py-4 px-4 space-y-0.5 scrollbar-hide ${isSidebarOpen ? 'overflow-y-auto' : 'overflow-visible'}`}>
                     {navItems.map((item, index) => {
                         if (item.type === 'header') {
                             return (
@@ -216,8 +216,7 @@ const OperatorLayout = () => {
                                 <div key={item.label}>
                                     <div
                                         onClick={() => isSidebarOpen && toggleMenu(item.label)}
-                                        className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
-                                        title={!isSidebarOpen ? item.label : undefined}
+                                        className={`group relative flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white ${!isSidebarOpen ? 'justify-center' : ''}`}
                                     >
                                         <Icon className={`h-[18px] w-[18px] shrink-0 transition-colors text-gray-400 dark:text-slate-500 dark:text-slate-400 group-hover:text-gray-600 dark:text-slate-400 ${isSidebarOpen ? 'mr-3.5' : ''}`} />
                                         {isSidebarOpen && (
@@ -225,6 +224,12 @@ const OperatorLayout = () => {
                                                 <span className="whitespace-nowrap flex-1">{item.label}</span>
                                                 {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                             </>
+                                        )}
+                                        {!isSidebarOpen && (
+                                            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3.5 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[13px] font-semibold tracking-wide rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 ease-out shadow-xl whitespace-nowrap z-[100] transform translate-x-[-8px] group-hover:translate-x-0 font-inter">
+                                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2.5 h-2.5 bg-slate-900 dark:bg-slate-100 rotate-45 rounded-sm"></div>
+                                                {item.label}
+                                            </div>
                                         )}
                                     </div>
                                     {isSidebarOpen && isExpanded && (
@@ -253,10 +258,9 @@ const OperatorLayout = () => {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                title={!isSidebarOpen ? item.label : undefined}
                             >
                                 {({ isActive }) => (
-                                    <div className={`group flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer ${isActive
+                                    <div className={`group relative flex items-center px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-205 cursor-pointer ${isActive
                                             ? 'bg-cyan-50/50 text-cyan-700 font-bold'
                                             : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 hover:text-gray-900 dark:text-white'
                                         } ${!isSidebarOpen ? 'justify-center' : ''}`}>
@@ -267,6 +271,12 @@ const OperatorLayout = () => {
                                             <span className="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ml-auto uppercase tracking-wider">
                                                 {item.badge}
                                             </span>
+                                        )}
+                                        {!isSidebarOpen && (
+                                            <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3.5 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-[13px] font-semibold tracking-wide rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 ease-out shadow-xl whitespace-nowrap z-[100] transform translate-x-[-8px] group-hover:translate-x-0 font-inter">
+                                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2.5 h-2.5 bg-slate-900 dark:bg-slate-100 rotate-45 rounded-sm"></div>
+                                                {item.label}
+                                            </div>
                                         )}
                                     </div>
                                 )}
