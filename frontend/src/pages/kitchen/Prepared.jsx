@@ -102,7 +102,7 @@ const Prepared = () => {
             {/* See All Modal */}
             {selectedOrderForModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+                    <div className="bg-white p-3 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-green-50 shrink-0">
                             <div>
                                 <h3 className="font-bold text-lg text-green-800">Order #{selectedOrderForModal.id}</h3>
