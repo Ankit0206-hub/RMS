@@ -11,32 +11,67 @@ const CustomerDisplay = () => {
         return () => clearInterval(timer);
     }, []);
 
-    const { data: ordersData, isLoading, error } = useQuery({
+    const { data: ordersData, isLoading, error, refetch } = useQuery({
         queryKey: ['customer-display-orders'],
         queryFn: async () => {
-            const res = await api.get('/admin/ordering/orders?page_size=100');
+            const res = await api.get('/customer/display/active-orders');
             return res.data.data;
         },
-        refetchInterval: 3000 // Poll every 3 seconds
+        refetchInterval: false // Disabled polling, using WebSockets now
     });
 
-    const activeOrders = ordersData?.filter(order => !['Served', 'Completed', 'Cancelled'].includes(order.status)) || [];
+    // Setup WebSocket and Audio
+    useEffect(() => {
+        const wsUrl = `${import.meta.env.VITE_WS_URL.replace('http', 'ws')}/ws/display`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => console.log("Display WebSocket connected");
+        
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                // When an order is created or updated, fetch fresh data
+                if (data.event === "order.created" || data.event === "order.updated" || data.event === "ORDER_ITEM_UPDATED" || data.event === "ORDER_UPDATED") {
+                    refetch();
+                }
+            } catch (error) {
+                console.error("Error parsing websocket message", error);
+            }
+        };
+
+        return () => ws.close();
+    }, [refetch]);
+
+    // Audio announcement when new orders become ready
+    const [previousReadyCount, setPreviousReadyCount] = useState(0);
+
+    const activeOrders = ordersData || [];
 
     const preparingOrders = [];
     const readyOrders = [];
 
     activeOrders.forEach(order => {
-        // Calculate aggregate status from items
-        const itemStatuses = order.items?.map(i => i.status) || [];
-        const isReady = order.status === 'Cooked' || (itemStatuses.length > 0 && itemStatuses.every(s => s === 'prepared'));
-
-        if (isReady) {
+        if (order.status === "Ready") {
             readyOrders.push(order);
         } else {
-            // Assume preparing if not ready
             preparingOrders.push(order);
         }
     });
+
+    // Play chime/announcement on new ready orders
+    useEffect(() => {
+        if (readyOrders.length > previousReadyCount) {
+            // Find newly ready orders
+            const newlyReady = readyOrders[readyOrders.length - 1]; // simplifying for now
+            if (newlyReady && 'speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(`Order number ${newlyReady.token_number} is ready for collection.`);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        setPreviousReadyCount(readyOrders.length);
+    }, [readyOrders.length, readyOrders]);
 
     return (
         <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-inter overflow-hidden">
@@ -82,7 +117,7 @@ const CustomerDisplay = () => {
                                     <div className="absolute left-0 top-0 bottom-0 w-2 bg-amber-400"></div>
                                     <span className="block text-gray-400 font-bold uppercase tracking-widest text-sm mb-1">Order Number</span>
                                     <span className="text-6xl font-black text-gray-900 tabular-nums tracking-tighter">
-                                        {order.id.toString().padStart(3, '0')}
+                                        {order.token_number}
                                     </span>
                                 </div>
                             ))}
@@ -114,7 +149,7 @@ const CustomerDisplay = () => {
                                     <div className="flex items-center gap-6">
                                         <div className="px-6 py-6 h-24 rounded-2xl bg-white flex flex-col items-center justify-center shadow-inner shrink-0 min-w-[120px]">
                                             <span className="text-gray-400 font-bold text-[10px] uppercase tracking-widest leading-none mb-1">Order</span>
-                                            <span className="text-emerald-600 font-black text-4xl leading-none">{order.id.toString().padStart(3, '0')}</span>
+                                            <span className="text-emerald-600 font-black text-4xl leading-none">{order.token_number}</span>
                                         </div>
                                         <div>
                                             <span className="text-5xl font-black text-white tracking-tight leading-none block">

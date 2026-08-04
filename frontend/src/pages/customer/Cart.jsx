@@ -6,7 +6,9 @@ import {
   Trash2,
   Edit2,
   ChevronDown,
-  ArrowRight
+  ArrowRight,
+  ShoppingBag,
+  UtensilsCrossed
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -81,14 +83,35 @@ export default function Cart() {
       <div className="flex-1 overflow-y-auto px-4 pt-5 pb-8 space-y-6 mx-auto w-full">
 
         {cartItems.length === 0 ? (
-          <div className="h-[50vh] flex flex-col items-center justify-center">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Cart is Empty</h2>
-            <p className="mt-2 text-gray-500 dark:text-slate-400 text-center">
-              Looks like you haven't added anything yet.
+          <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] px-6">
+            
+            {/* Interesting Static Icon Layout */}
+            <div className="relative mb-12 flex justify-center items-center h-32 w-32 mt-[-5vh]">
+              {/* Subtle background layers for depth */}
+              <div className="absolute inset-0 bg-orange-50 dark:bg-orange-900/10 rounded-full scale-[1.4]" />
+              <div className="absolute inset-0 bg-orange-100/60 dark:bg-orange-900/20 rounded-full scale-[1.15]" />
+              
+              {/* Main Icon Card */}
+              <div className="relative z-10 bg-white dark:bg-slate-800 p-7 rounded-3xl shadow-xl shadow-gray-200/40 dark:shadow-slate-900/50 border border-gray-100/80 dark:border-slate-700/80">
+                <ShoppingBag className="w-12 h-12 text-gray-400 dark:text-slate-500" strokeWidth={1.5} />
+                
+                {/* Overlaying icon to make it interesting */}
+                <div className="absolute -bottom-4 -right-4 bg-orange-500 text-white p-3 rounded-2xl shadow-lg border-[3px] border-white dark:border-slate-800">
+                  <UtensilsCrossed className="w-5 h-5" strokeWidth={2.5} />
+                </div>
+              </div>
+            </div>
+
+            <h2 className="text-[22px] font-bold text-gray-800 dark:text-white mb-2 text-center tracking-tight">
+              Your cart is empty
+            </h2>
+            <p className="text-gray-500 dark:text-slate-400 text-center mb-10 max-w-[280px] text-[15px] leading-relaxed">
+              Looks like you haven't added anything yet. Discover our delicious menu and start ordering!
             </p>
+
             <button
               onClick={() => navigate("/customer/home")}
-              className="mt-6 rounded-2xl bg-orange-500 px-8 py-3 font-bold text-white shadow-lg"
+              className="rounded-2xl bg-orange-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 active:scale-95 transition-all w-full max-w-[260px] flex items-center justify-center gap-2"
             >
               Browse Menu
             </button>
