@@ -108,18 +108,19 @@ const CustomerDisplay = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto px-10 pt-8 pb-10 scrollbar-hide bg-emerald-50/30">
-                        <div className="flex flex-col gap-6">
+                        <div className="grid grid-cols-2 gap-6">
                             {readyOrders.map(order => (
-                                <div key={order.id} className="bg-emerald-600 rounded-3xl p-8 shadow-[0_8px_30px_rgba(16,185,129,0.3)] flex justify-between items-center transform transition-all animate-in fade-in slide-in-from-right-8 duration-500">
-                                    <div className="flex items-center gap-8">
-                                        <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-inner">
-                                            <span className="text-emerald-600 font-black text-5xl">#{order.id.toString().padStart(3, '0')}</span>
+                                <div key={order.id} className="bg-emerald-600 rounded-3xl p-6 shadow-[0_8px_30px_rgba(16,185,129,0.3)] flex justify-between items-center transform transition-all animate-in fade-in slide-in-from-right-8 duration-500">
+                                    <div className="flex items-center gap-6">
+                                        <div className="px-6 py-6 h-24 rounded-2xl bg-white flex flex-col items-center justify-center shadow-inner shrink-0 min-w-[120px]">
+                                            <span className="text-gray-400 font-bold text-[10px] uppercase tracking-widest leading-none mb-1">Order</span>
+                                            <span className="text-emerald-600 font-black text-4xl leading-none">{order.id.toString().padStart(3, '0')}</span>
                                         </div>
                                         <div>
-                                            <span className="text-6xl font-black text-white tracking-tight leading-none block">
-                                                Please Collect
+                                            <span className="text-5xl font-black text-white tracking-tight leading-none block">
+                                                Ready to Serve
                                             </span>
-                                            <span className="block text-emerald-100 font-bold uppercase tracking-widest text-lg mt-2">At the counter</span>
+                                            <span className="block text-emerald-100 font-bold uppercase tracking-widest text-sm mt-2">Waiter is on the way</span>
                                         </div>
                                     </div>
                                 </div>
