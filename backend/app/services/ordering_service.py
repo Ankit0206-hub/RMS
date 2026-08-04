@@ -5,7 +5,9 @@ from app.repositories.admin.tables_repository import TablesRepository
 from app.repositories.admin.menu_repository import MenuRepository
 from app.schemas.ordering import CustomerSessionCreate, OrderCreate, OrderStatusUpdate
 from app.core.exceptions import NotFoundException, BusinessRuleException
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import select, func
+from app.models.ordering import Order
 from app.websocket.connection_manager import manager
 
 class OrderingService:
@@ -87,11 +89,18 @@ class OrderingService:
                 "notes": item_in.notes
             })
 
+        # Generate token number
+        today = date.today()
+        stmt = select(func.count(Order.id)).where(func.date(Order.created_at) == today)
+        today_order_count = await db.scalar(stmt)
+        next_token = today_order_count + 1
+        
         order_data = {
             "session_id": session.id,
             "waiter_id": waiter_id,
             "special_instructions": order_in.special_instructions,
-            "status": "Pending"
+            "status": "Pending",
+            "token_number": f"{next_token:03d}"
         }
 
         order = await self.repository.create_order(db, order_data, items_data)

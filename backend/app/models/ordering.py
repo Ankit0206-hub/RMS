@@ -34,6 +34,7 @@ class Order(TimestampMixin, Base):
     waiter_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("employees.id", ondelete="SET NULL"), index=True)
     order_type: Mapped[str] = mapped_column(String(50), default="Dine-in", index=True) # Dine-in, Takeaway, Delivery
     status: Mapped[str] = mapped_column(String(20), default="Pending", index=True) # Pending, Confirmed, Cooked, Served, Completed, Cancelled
+    token_number: Mapped[Optional[str]] = mapped_column(String(20), index=True, nullable=True)
     special_instructions: Mapped[Optional[str]] = mapped_column(Text)
     
     session: Mapped["CustomerSession"] = relationship(back_populates="orders")

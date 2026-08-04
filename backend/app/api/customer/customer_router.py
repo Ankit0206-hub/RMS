@@ -132,6 +132,7 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
             res.append({
                 "id": cat.id,
                 "name": cat.name,
+                "image_url": cat.image_url,
                 "is_spicy_customizable": cat.is_spicy_customizable,
                 "items": [
                     {
@@ -535,3 +536,31 @@ async def call_waiter(
     await manager.broadcast("NEW_NOTIFICATION", {}, ["waiter"])
     
     return {"message": f"Requested {req.request_type}", "request_id": assistance_request.id}
+
+@router.get("/display/active-orders")
+async def get_display_active_orders(db: AsyncSession = Depends(get_db)):
+    from datetime import date
+    from sqlalchemy import func
+    
+    today = date.today()
+    stmt = select(Order).options(selectinload(Order.items)).where(
+        func.date(Order.created_at) == today,
+        Order.status.in_(["Placed", "Pending", "Confirmed", "Preparing", "Cooked"])
+    ).order_by(Order.created_at.asc())
+    
+    result = await db.execute(stmt)
+    orders = result.scalars().all()
+    
+    display_orders = []
+    for order in orders:
+        item_statuses = [item.status for item in order.items]
+        is_ready = order.status == "Cooked" or (len(item_statuses) > 0 and all(s == "prepared" for s in item_statuses))
+        
+        display_orders.append({
+            "id": order.id,
+            "token_number": order.token_number or str(order.id).zfill(3),
+            "status": "Ready" if is_ready else "Preparing",
+            "created_at": order.created_at
+        })
+        
+    return {"status": "success", "data": display_orders}
