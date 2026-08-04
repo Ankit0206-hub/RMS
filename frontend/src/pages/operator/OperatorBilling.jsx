@@ -736,7 +736,7 @@ const OperatorBilling = () => {
         <div className="w-full lg:w-[380px] flex flex-col shrink-0">
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl shadow-gray-200/40 dark:shadow-none flex flex-col h-full overflow-hidden relative">
 
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col overflow-y-auto custom-scrollbar">
               <h2 className="font-black text-gray-900 dark:text-white text-lg mb-6 flex items-center">
                 <FileText className="w-5 h-5 mr-2 text-indigo-500" />
                 Payment Summary
@@ -779,7 +779,19 @@ const OperatorBilling = () => {
                             min="0"
                             max="100"
                             value={discountPercentage || ''}
-                            onChange={e => setDiscountPercentage(parseFloat(e.target.value) || 0)}
+                            onChange={e => {
+                              if (e.target.value === '') {
+                                setDiscountPercentage(0);
+                                return;
+                              }
+                              let val = parseFloat(e.target.value);
+                              if (isNaN(val)) val = 0;
+                              if (val > 100) {
+                                toast.error("Discount cannot exceed 100%", { id: 'discount-error' });
+                                return;
+                              }
+                              setDiscountPercentage(val);
+                            }}
                             placeholder="0"
                             className="w-14 pl-2 pr-4 py-0.5 text-xs text-right bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded outline-none text-rose-600 font-bold"
                           />
@@ -867,7 +879,7 @@ const OperatorBilling = () => {
               )}
 
               {/* Grand Total Banner */}
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 flex justify-between items-center mb-auto shadow-lg relative overflow-hidden">
+              <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 flex justify-between items-center mb-auto shadow-lg relative overflow-hidden shrink-0">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white dark:bg-slate-900/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div className="relative z-10">
                   <span className="block text-gray-400 dark:text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
