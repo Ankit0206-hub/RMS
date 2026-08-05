@@ -86,8 +86,6 @@ const TableAssignment = () => {
         }
     });
 
-    if (tablesLoading || employeesLoading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter text-sm lg:text-[15px] 2xl:text-base font-bold">Loading Floor Data...</div>;
-
     const currentTime = new Date();
     const activeReservations = (reservationsData || []).filter(r => r.status === 'Confirmed' || r.status === 'Pending');
 
@@ -200,6 +198,8 @@ const TableAssignment = () => {
     };
 
 
+
+    if (tablesLoading || employeesLoading) return <div className="p-8 text-center text-gray-500 dark:text-slate-400 font-inter text-sm lg:text-[15px] 2xl:text-base font-bold">Loading Floor Data...</div>;
 
     return (
         <div className="space-y-6 font-inter">

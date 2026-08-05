@@ -9,6 +9,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { DataTable, Pagination } from '../../components/ui';
 import EditTableModal from './EditTableModal';
 import AddTableModal from './AddTableModal';
+import QRCodeModal from './QRCodeModal';
+import { QrCode } from 'lucide-react';
 
 const Tables = () => {
     const navigate = useNavigate();
@@ -19,6 +21,7 @@ const Tables = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
     const [editingTable, setEditingTable] = useState(null);
+    const [qrTable, setQrTable] = useState(null);
 
     const { data: tablesResponse, isLoading } = useQuery({
         queryKey: ['tables'],
@@ -105,6 +108,13 @@ const Tables = () => {
                         className="p-1.5 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
                     >
                         <Edit2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button 
+                        onClick={() => setQrTable(row)}
+                        className="p-1.5 text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                        title="View QR Code"
+                    >
+                        <QrCode className="h-3.5 w-3.5" />
                     </button>
                     <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"><MoreVertical className="h-4 w-4" /></button>
                 </div>
@@ -310,6 +320,12 @@ font-size: 11px !important;
             <AddTableModal 
                 isOpen={isAddModalOpen} 
                 onClose={() => setIsAddModalOpen(false)} 
+            />
+
+            <QRCodeModal 
+                isOpen={!!qrTable}
+                table={qrTable}
+                onClose={() => setQrTable(null)}
             />
         </div>
     );

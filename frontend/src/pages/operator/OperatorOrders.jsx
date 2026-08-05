@@ -15,10 +15,11 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { DataTable, Pagination } from "../../components/ui";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const OperatorOrders = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
+  const [searchTerm, setSearchTerm] = useState(location.state?.searchCustomer || "");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterDate, setFilterDate] = useState("");
@@ -350,6 +351,7 @@ const OperatorOrders = () => {
     const matchesSearch =
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.customerPhone.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.table.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesDate = !filterDate || o.rawDate === filterDate;

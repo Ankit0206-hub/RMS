@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
     Search, Filter, Download, Users, UserCheck, UserPlus, 
     Eye, MoreVertical, ArrowLeft, Phone, Users2, Receipt
@@ -14,6 +15,9 @@ const getInitials = (name) => {
 };
 
 const Customers = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const basePath = location.pathname.startsWith('/operator') ? '/operator' : '/admin';
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null); // When null, show full list
     const [currentPage, setCurrentPage] = useState(1);
@@ -347,13 +351,17 @@ const Customers = () => {
                                     const formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                                     const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                                     return (
-                                    <div key={idx} className="relative flex items-center justify-between">
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => navigate(`${basePath}/orders/${order.id}`)}
+                                        className="relative flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors -ml-2"
+                                    >
                                         {/* Icon & Order ID */}
                                         <div className="w-[90px] flex items-center">
-                                            <div className="w-6 h-6 rounded bg-green-50 dark:bg-green-500/10 text-green-500 dark:text-green-400 flex items-center justify-center shrink-0 z-10 border border-white dark:border-slate-900 shadow-sm absolute -left-[5px]">
+                                            <div className="w-6 h-6 rounded bg-green-50 dark:bg-green-500/10 text-green-500 dark:text-green-400 flex items-center justify-center shrink-0 z-10 border border-white dark:border-slate-900 shadow-sm absolute -left-[5px] ml-2">
                                                 <Receipt className="w-3 h-3" />
                                             </div>
-                                            <span className="font-bold text-gray-900 dark:text-white text-[11px] pl-8">{order.id}</span>
+                                            <span className="font-bold text-gray-900 dark:text-white text-[11px] pl-8 ml-2">{order.id}</span>
                                         </div>
                                         
                                         {/* Date & Time */}
@@ -390,8 +398,11 @@ const Customers = () => {
                         </div>
 
                         {/* View All Button */}
-                        <div className="p-5 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-center transition-colors">
-                            <button className="w-full bg-[#3b82f6] text-white font-bold text-xs px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors shadow-sm">
+                        <div className="p-4 md:p-5 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-center mt-auto shrink-0 transition-colors">
+                            <button 
+                                onClick={() => navigate(`${basePath}/orders`, { state: { searchCustomer: selectedCustomer.phone !== '-' ? selectedCustomer.phone : selectedCustomer.name } })}
+                                className="w-full sm:w-auto min-w-[200px] bg-[#3b82f6] text-white font-bold text-xs md:text-sm px-6 py-3 rounded-xl hover:bg-blue-600 active:scale-95 transition-all shadow-sm flex items-center justify-center"
+                            >
                                 View Full Order History
                             </button>
                         </div>

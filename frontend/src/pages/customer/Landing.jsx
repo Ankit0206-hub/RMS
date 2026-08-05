@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChefHat, Leaf, Clock, HeartHandshake } from "lucide-react";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
@@ -6,6 +6,8 @@ import heroFood from "../../assets/images/banners/hero-food.png";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
   return (
     <PageLayout className="relative bg-black overflow-hidden h-screen w-full">
@@ -78,7 +80,7 @@ export default function Landing() {
         {/* Action Button */}
         <div className="pb-8 pt-10 md:pt-16 w-full max-w-sm md:max-w-md mx-auto">
           <button
-            onClick={() => navigate("/customer/customer")}
+            onClick={() => navigate(`/customer/customer${queryString}`)}
             className="w-full rounded-[1.25rem] md:rounded-3xl bg-gradient-to-r from-orange-500 to-orange-400 py-4 md:py-6 text-[18px] md:text-2xl font-extrabold text-white shadow-2xl shadow-orange-500/40 active:scale-[0.98] transition-transform"
           >
             Get Started &rarr;

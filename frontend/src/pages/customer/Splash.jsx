@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChefHat, Leaf, Timer, Heart } from "lucide-react";
 
 import heroFood from "../../assets/images/banners/hero-food.png";
@@ -8,14 +8,16 @@ import { useApp } from "../../context/AppContext";
 
 export default function Splash() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { customerSession } = useApp();
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
       if (customerSession && customerSession.sessionId) {
-        navigate("/customer/home");
+        navigate(`/customer/home${queryString}`);
       } else {
-        navigate("/customer/landing");
+        navigate(`/customer/landing${queryString}`);
       }
     }, 2000);
 

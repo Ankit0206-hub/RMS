@@ -7,10 +7,12 @@ import {
     ArrowLeft, Printer, MoreHorizontal, User, ClipboardList, CheckCircle2, 
     Clock, IndianRupee, MessageSquare, AlertCircle, RefreshCcw, XCircle, FileText
 } from 'lucide-react';
+import ThermalReceipt from '../../components/ThermalReceipt';
 
 const OperatorOrderDetails = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
     // Use query to fetch order details, using raw ID
     const { data: orderResponse, isLoading } = useQuery({
@@ -136,13 +138,12 @@ const OperatorOrderDetails = () => {
                     Back to Orders
                 </button>
                 <div className="flex items-center space-x-3">
-                    <button className="flex items-center bg-white dark:bg-slate-900 border border-[#5e5ce6] text-[#5e5ce6] px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm">
+                    <button 
+                        onClick={() => setIsReceiptOpen(true)}
+                        className="flex items-center bg-white dark:bg-slate-900 border border-[#5e5ce6] text-[#5e5ce6] px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm"
+                    >
                         <Printer className="w-3.5 h-3.5 mr-2" />
                         Print Bill
-                    </button>
-                    <button className="flex items-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                        <MoreHorizontal className="w-3.5 h-3.5 mr-2" />
-                        More Actions
                     </button>
                 </div>
             </div>
@@ -188,14 +189,18 @@ const OperatorOrderDetails = () => {
                     </div>
                 </div>
 
-                {/* Waiter */}
-                <div className="flex items-start space-x-3 border-l border-gray-100 dark:border-slate-800 pl-8 min-w-[140px]">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="Waiter" className="w-8 h-8 rounded-full" />
-                    <div>
-                        <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Waiter</p>
-                        <p className="text-sm font-black text-gray-900 dark:text-white">Amit Verma</p>
+                {/* Waiter (Conditional) */}
+                {orderData.waiter_id && (
+                    <div className="flex items-start space-x-3 border-l border-gray-100 dark:border-slate-800 pl-8 min-w-[140px]">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                            <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 mb-1">Waiter</p>
+                            <p className="text-sm font-black text-gray-900 dark:text-white">ID: {orderData.waiter_id}</p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Order Time */}
                 <div className="flex items-start space-x-3 border-l border-gray-100 dark:border-slate-800 pl-8 min-w-[140px]">
@@ -277,47 +282,23 @@ const OperatorOrderDetails = () => {
                         </div>
                     )}
 
-                    {/* Internal Notes */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 p-5">
-                        <div className="flex justify-between items-center mb-2">
-                            <p className="text-xs font-bold text-gray-900 dark:text-white">Order Notes (Internal)</p>
-                            <button className="text-[#5e5ce6] hover:bg-indigo-50 p-1.5 rounded-lg transition-colors">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </button>
-                        </div>
-                        <p className="text-[11px] font-medium text-gray-600 dark:text-slate-400">Customer requested to serve fast.</p>
-                    </div>
+
 
                     {/* Payment Info */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden mt-6">
                         <div className="p-5 border-b border-gray-100 dark:border-slate-800 font-bold text-gray-900 dark:text-white text-sm">
                             Payment Information
                         </div>
-                        <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div className="p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Bill Amount</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 mb-1">Bill Amount</p>
                                 <p className="text-xs font-bold text-gray-900 dark:text-white">₹ {grandTotal.toFixed(2)}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Paid Amount</p>
-                                <p className="text-xs font-bold text-green-600">₹ {grandTotal.toFixed(2)}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Payment Method</p>
-                                <p className="text-xs font-bold text-gray-900 dark:text-white">UPI</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Payment Status</p>
-                                <p className="text-xs font-bold text-green-600">Paid</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Paid At</p>
-                                <p className="text-xs font-bold text-gray-900 dark:text-white">10:45 AM</p>
-                                <p className="text-[9px] text-gray-500 dark:text-slate-400">May 20, 2025</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-1">Transaction ID</p>
-                                <p className="text-xs font-bold text-gray-900 dark:text-white">UPI/512312312312</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 mb-1">Payment Status</p>
+                                <p className={`text-xs font-bold ${orderData.status === 'Completed' ? 'text-green-600' : 'text-orange-500'}`}>
+                                    {orderData.status === 'Completed' ? 'Paid' : 'Pending'}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -413,18 +394,28 @@ const OperatorOrderDetails = () => {
                             <div className="pt-2 space-y-3">
                                 <div className="flex justify-between items-center text-[11px]">
                                     <span className="text-gray-500 dark:text-slate-400 font-semibold">Paid Amount</span>
-                                    <span className="font-bold text-green-600">₹ {grandTotal.toFixed(2)}</span>
+                                    <span className={`font-bold ${orderData.status === 'Completed' ? 'text-green-600' : 'text-gray-900 dark:text-white'}`}>
+                                        ₹ {orderData.status === 'Completed' ? grandTotal.toFixed(2) : '0.00'}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between items-center text-[11px]">
                                     <span className="text-gray-500 dark:text-slate-400 font-semibold">Due Amount</span>
-                                    <span className="font-bold text-gray-900 dark:text-white">₹ 0.00</span>
+                                    <span className="font-bold text-orange-500">
+                                        ₹ {orderData.status === 'Completed' ? '0.00' : grandTotal.toFixed(2)}
+                                    </span>
                                 </div>
                             </div>
                             
                             <div className="pt-2">
-                                <span className="inline-flex items-center px-2 py-1 rounded bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
-                                    <CheckCircle2 className="w-3 h-3 mr-1" /> Paid
-                                </span>
+                                {orderData.status === 'Completed' ? (
+                                    <span className="inline-flex items-center px-2 py-1 rounded bg-green-50 text-green-600 text-[10px] font-bold border border-green-100">
+                                        <CheckCircle2 className="w-3 h-3 mr-1" /> Paid
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center px-2 py-1 rounded bg-orange-50 text-orange-500 text-[10px] font-bold border border-orange-100">
+                                        <AlertCircle className="w-3 h-3 mr-1" /> Pending Payment
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -449,10 +440,6 @@ const OperatorOrderDetails = () => {
                                 Mark as Served
                             </button>
                         )}
-                        <button className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-xs font-bold text-[#5e5ce6] hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 transition-colors shadow-sm">
-                            <div className="flex items-center mb-1"><Printer className="w-4 h-4 mr-1.5" /></div>
-                            Reprint Bill
-                        </button>
                         {orderData.status !== 'Completed' && orderData.status !== 'Cancelled' && orderData.status !== 'Served' && (
                             <button onClick={() => statusMutation.mutate('Cancelled')} className="flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-red-200 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-50 transition-colors shadow-sm">
                                 <div className="flex items-center mb-1"><XCircle className="w-4 h-4 mr-1.5" /></div>
@@ -463,6 +450,22 @@ const OperatorOrderDetails = () => {
 
                 </div>
             </div>
+
+            {/* Thermal Receipt Modal */}
+            <ThermalReceipt 
+                isOpen={isReceiptOpen} 
+                onClose={() => setIsReceiptOpen(false)} 
+                data={{
+                    bill_number: `ORD${orderData.id}`,
+                    table: orderData.table_number,
+                    subtotal: subtotal,
+                    service_charge: serviceCharge,
+                    cgst: cgst,
+                    sgst: sgst,
+                    grand_total: grandTotal
+                }}
+                items={orderItems}
+            />
         </div>
     );
 };

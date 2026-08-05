@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 import { 
@@ -10,7 +10,8 @@ import { DataTable, Pagination } from '../../components/ui';
 
 const Orders = () => {
     const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState('');
+    const location = useLocation();
+    const [searchTerm, setSearchTerm] = useState(location.state?.searchCustomer || '');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -125,11 +126,13 @@ const Orders = () => {
     const cancelledOrders = ordersData.filter(o => o.status === 'Cancelled').length;
     const totalRevenue = ordersData.filter(o => o.status !== 'Cancelled').reduce((sum, o) => sum + o.amount, 0);
 
-    const filteredData = ordersData.filter(o => 
-        o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.table.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredData = ordersData.filter(o => {
+        const term = searchTerm.toLowerCase();
+        return o.id.toLowerCase().includes(term) ||
+               o.customerName.toLowerCase().includes(term) ||
+               o.customerPhone.toLowerCase().includes(term) ||
+               o.table.toLowerCase().includes(term);
+    });
 
     return (
         <div className="space-y-2 pb-10 font-inter">

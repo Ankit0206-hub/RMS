@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { User, Phone, Users, Utensils, Minus, Plus, ChefHat } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -9,13 +9,16 @@ import customerApi from "../../services/customerApi";
 
 export default function Customer() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const qrTableId = searchParams.get("table_id");
+  const isTableLocked = !!qrTableId;
   const { setCustomerSession } = useApp();
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: "Rahul Sharma",
-    phone: "+91 98765 43210",
-    persons: 4,
+    name: "",
+    phone: "",
+    persons: 1,
     table: "",
   });
 
@@ -24,7 +27,9 @@ export default function Customer() {
       try {
         const data = await customerApi.getTables();
         setTables(data);
-        if (data.length > 0) {
+        if (qrTableId) {
+          setForm(prev => ({ ...prev, table: qrTableId }));
+        } else if (data.length > 0) {
           setForm(prev => ({ ...prev, table: data[0].id }));
         }
       } catch (err) {
@@ -32,7 +37,7 @@ export default function Customer() {
       }
     };
     fetchTables();
-  }, []);
+  }, [qrTableId]);
 
   const handleDecreasePersons = () => {
     if (form.persons > 1) {
@@ -187,12 +192,19 @@ export default function Customer() {
               <select
                 value={form.table}
                 onChange={(e) => setForm({ ...form, table: e.target.value })}
-                className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none appearance-none cursor-pointer"
+                disabled={isTableLocked}
+                className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {tables.length === 0 && <option value="">No vacant tables</option>}
-                {tables.map(t => (
-                  <option key={t.id} value={t.id}>{t.id} ({t.capacity} Seats)</option>
-                ))}
+                {isTableLocked ? (
+                  <option value={qrTableId}>{qrTableId} (Scanned Table)</option>
+                ) : (
+                  <>
+                    {tables.length === 0 && <option value="">No vacant tables</option>}
+                    {tables.map(t => (
+                      <option key={t.id} value={t.id}>{t.id} ({t.capacity} Seats)</option>
+                    ))}
+                  </>
+                )}
               </select>
             </div>
           </div>

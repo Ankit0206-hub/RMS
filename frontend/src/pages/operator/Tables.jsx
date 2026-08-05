@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
-import { ChevronRight, Search, Filter, RefreshCw, Eye, Edit2, MoreVertical, X, CheckCircle2, Clock, Map, Users, Square, RefreshCcw, Trash } from 'lucide-react';
+import { ChevronRight, Search, Filter, RefreshCw, Eye, Edit2, MoreVertical, X, CheckCircle2, Clock, Map, Users, Square, RefreshCcw, Trash, QrCode } from 'lucide-react';
+import QRCodeModal from '../admin/QRCodeModal';
 
 const Tables = () => {
     const [selectedTable, setSelectedTable] = useState(null);
+    const [qrTable, setQrTable] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
     const { data: tablesResponse, isLoading, refetch } = useQuery({
@@ -206,6 +208,13 @@ const Tables = () => {
                                                     <div className="flex justify-center space-x-2">
                                                         <button onClick={() => setSelectedTable(table)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Eye size={15} /></button>
                                                         <button className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Edit2 size={15} /></button>
+                                                        <button 
+                                                            onClick={() => setQrTable(table)}
+                                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                                            title="View QR Code"
+                                                        >
+                                                            <QrCode size={15} />
+                                                        </button>
                                                         <button className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><MoreVertical size={15} /></button>
                                                     </div>
                                                 </td>
@@ -310,6 +319,12 @@ const Tables = () => {
                     onClick={() => setSelectedTable(null)}
                 />
             )}
+
+            <QRCodeModal 
+                isOpen={!!qrTable}
+                table={qrTable}
+                onClose={() => setQrTable(null)}
+            />
         </div>
     );
 };
