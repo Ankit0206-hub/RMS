@@ -223,8 +223,22 @@ async def update_item_status(
             "order_id": item.order_id,
             "status": item.status
         },
-        target_roles=["waiter", "kitchen"]
+        target_roles=["waiter", "kitchen", "display"]
     )
+    
+    # Notify customer about order update
+    order_query = select(Order).filter(Order.id == item.order_id)
+    order_result = await db.execute(order_query)
+    order = order_result.scalar_one_or_none()
+    if order and order.session_id:
+        await manager.notify_customer(
+            session_id=order.session_id,
+            event="order.updated",
+            payload={
+                "order_id": item.order_id,
+                "status": item.status
+            }
+        )
 
     await check_and_update_order_status(db, item.order_id)
 
@@ -279,7 +293,21 @@ async def update_order_items_status(
                 "order_id": order_id,
                 "status": status_update.status
             },
-            target_roles=["waiter", "kitchen"]
+            target_roles=["waiter", "kitchen", "display"]
+        )
+        
+    order_query = select(Order).filter(Order.id == order_id)
+    order_result = await db.execute(order_query)
+    order = order_result.scalar_one_or_none()
+    if order and order.session_id:
+        # Notify customer about order update
+        await manager.notify_customer(
+            session_id=order.session_id,
+            event="order.updated",
+            payload={
+                "order_id": order_id,
+                "status": status_update.status
+            }
         )
 
     await check_and_update_order_status(db, order_id)

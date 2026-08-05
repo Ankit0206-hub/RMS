@@ -11,7 +11,8 @@ class ConnectionManager:
             "operator": [],
             "waiter": [],
             "kitchen": [],
-            "customer": [] # For customers, we might want to store by session_id in the future, but a flat list works for MVP broadcasts
+            "customer": [], # For customers, we might want to store by session_id in the future, but a flat list works for MVP broadcasts
+            "display": []
         }
         
         # A map of websocket -> specific session_id for targeted customer messages
@@ -33,7 +34,7 @@ class ConnectionManager:
     async def broadcast(self, event: str, payload: Any, target_roles: List[str] = None):
         message = json.dumps({"event": event, "payload": payload})
         
-        roles_to_notify = target_roles if target_roles else ["admin", "operator", "waiter", "kitchen"]
+        roles_to_notify = target_roles if target_roles else ["admin", "operator", "waiter", "kitchen", "display"]
         
         for role in roles_to_notify:
             if role in self.active_connections:

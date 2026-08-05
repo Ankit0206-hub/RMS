@@ -93,3 +93,13 @@ async def websocket_kitchen(websocket: WebSocket, token: str = Query(...)):
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket, "kitchen")
+
+@router.websocket("/ws/display")
+async def websocket_display(websocket: WebSocket):
+    # Public display screen connection
+    await manager.connect(websocket, "display")
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, "display")
