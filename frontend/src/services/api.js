@@ -26,4 +26,9 @@ export const uploadImage = async (file) => {
     return response.data;
 };
 
+export const getWsUrl = () => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}${import.meta.env.VITE_WS_URL || '/api/v1'}`;
+};
+
 export default api;

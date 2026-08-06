@@ -24,7 +24,7 @@ const FloorPlan = () => {
     const { data: tablesResponse, isLoading } = useQuery({
         queryKey: ['operator-tables'],
         queryFn: async () => {
-            const res = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
+            const res = await api.get('/admin/tables/', { params: { page: 1, page_size: 1000 } });
             return res.data;
         }
     });
@@ -40,7 +40,7 @@ const FloorPlan = () => {
     const { data: settingsResponse } = useQuery({
         queryKey: ['operator-settings'],
         queryFn: async () => {
-            const res = await api.get('/operator/settings/');
+            const res = await api.get('/operator/settings');
             return res.data;
         }
     });
@@ -66,6 +66,9 @@ const FloorPlan = () => {
     const outOfService = tables.filter(t => t.status === 'Out of Service' || t.status === 'Out of Order').length;
     const totalTables = tables.length;
     const totalCapacity = tables.reduce((acc, t) => acc + t.capacity, 0);
+    const availableSeats = tables.filter(t => t.status === 'Available').reduce((acc, t) => acc + t.capacity, 0);
+    const occupiedSeats = tables.filter(t => t.status === 'Occupied').reduce((acc, t) => acc + t.capacity, 0);
+    const reservedSeats = tables.filter(t => t.status === 'Reserved').reduce((acc, t) => acc + t.capacity, 0);
 
     const pieData = [
         { name: 'Available', value: available, color: '#10b981' },
@@ -182,7 +185,7 @@ const FloorPlan = () => {
 
     const settingsMutation = useMutation({
         mutationFn: async (updatedSettings) => {
-            return api.put('/operator/settings/', updatedSettings);
+            return api.put('/operator/settings', updatedSettings);
         },
         onSuccess: () => {
             toast.success("Section added successfully!");
@@ -527,9 +530,9 @@ const FloorPlan = () => {
                             </div>
                         </div>
 
-                        {/* Quick Stats */}
+                        {/* Floor Stats */}
                         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex-1">
-                            <h3 className="font-bold text-gray-900 dark:text-white text-[15px] mb-4">Quick Stats</h3>
+                            <h3 className="font-bold text-gray-900 dark:text-white text-[15px] mb-4">Floor Stats</h3>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-gray-50 dark:border-slate-800/50 pb-3">
                                     <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">Total Tables</span>
@@ -539,9 +542,32 @@ const FloorPlan = () => {
                                     <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">Total Capacity</span>
                                     <span className="text-sm font-bold text-gray-900 dark:text-white">{totalCapacity} Seats</span>
                                 </div>
-                                <div className="flex justify-between items-center border-b border-gray-50 dark:border-slate-800/50 pb-3">
-                                    <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">Occupied</span>
-                                    <span className="text-sm font-bold text-gray-900 dark:text-white">{totalTables > 0 ? Math.round((occupied/totalTables)*100) : 0}%</span>
+                                <div className="flex flex-col border-b border-gray-50 dark:border-slate-800/50 pb-3">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-semibold text-emerald-600">Available</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Tables: <strong className="text-emerald-600">{available}</strong></span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Seats: <strong className="text-emerald-600">{availableSeats}</strong></span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col border-b border-gray-50 dark:border-slate-800/50 pb-3">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-semibold text-orange-600">Occupied</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Tables: <strong className="text-orange-600">{occupied}</strong></span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Seats: <strong className="text-orange-600">{occupiedSeats}</strong></span>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col pb-1">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-semibold text-indigo-600">Reserved</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Tables: <strong className="text-indigo-600">{reserved}</strong></span>
+                                        <span className="text-xs text-gray-500 dark:text-slate-400">Seats: <strong className="text-indigo-600">{reservedSeats}</strong></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -620,9 +646,20 @@ const FloorPlan = () => {
                                     type="number" 
                                     min="1"
                                     value={tableForm.capacity}
-                                    onChange={(e) => setTableForm({...tableForm, capacity: parseInt(e.target.value) || 1})}
-                                    className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '') {
+                                            setTableForm({...tableForm, capacity: ''});
+                                        } else {
+                                            const parsed = parseInt(val, 10);
+                                            setTableForm({...tableForm, capacity: isNaN(parsed) ? '' : parsed});
+                                        }
+                                    }}
+                                    className={`w-full border ${tableForm.capacity !== '' && tableForm.capacity <= 0 ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-slate-700 focus:ring-indigo-500'} rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 dark:text-white`}
                                 />
+                                {tableForm.capacity !== '' && tableForm.capacity <= 0 && (
+                                    <p className="text-red-500 text-xs font-bold mt-1.5">Capacity must be greater than zero.</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-700 dark:text-slate-300 mb-2 uppercase tracking-wide">Section / Floor</label>
@@ -646,7 +683,7 @@ const FloorPlan = () => {
                         </div>
                         <div className="flex justify-end space-x-3">
                             <button onClick={() => setTableModalOpen(false)} className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
-                            <button onClick={handleTableSubmit} disabled={!tableForm.table_number || tableMutation.isPending} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
+                            <button onClick={handleTableSubmit} disabled={!tableForm.table_number || tableMutation.isPending || tableForm.capacity === '' || tableForm.capacity <= 0} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
                                 {editingTable ? 'Save Changes' : 'Create Table'}
                             </button>
                         </div>

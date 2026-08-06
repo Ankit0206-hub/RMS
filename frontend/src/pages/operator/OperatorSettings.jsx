@@ -130,7 +130,7 @@ const OperatorSettings = () => {
                 setRestaurantSettings(data);
                 
                 try {
-                    const tablesRes = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
+                    const tablesRes = await api.get('/admin/tables/', { params: { page: 1, page_size: 1000 } });
                     setActualTotalTables(tablesRes.data.data?.length || 0);
                 } catch (e) { console.error(e); }
                 

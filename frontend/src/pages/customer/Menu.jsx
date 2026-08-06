@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
+import { getWsUrl } from "../../services/api";
 import { ShoppingCart, Utensils, CheckCircle, Search } from 'lucide-react';
 import { Button, Card, Modal } from '../../components/ui';
 import { toast, Toaster } from 'react-hot-toast';
@@ -42,7 +43,7 @@ const CustomerMenu = () => {
     // 2. Connect Customer WebSocket when session is ready
     useEffect(() => {
         if (sessionId) {
-            const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/customer?session_id=${sessionId}`);
+            const socket = new WebSocket(`${getWsUrl()}/ws/customer?session_id=${sessionId}`);
             socket.onopen = () => console.log("Customer WebSocket Connected");
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);

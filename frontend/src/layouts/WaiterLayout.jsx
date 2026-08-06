@@ -27,7 +27,7 @@ const WaiterLayout = () => {
 };
 
  return (
- <div className="flex h-screen w-full justify-center bg-slate-50 font-inter">
+ <div className="fixed inset-0 flex w-full justify-center bg-slate-50 font-inter">
  <div className="relative h-full w-full max-w-7xl overflow-hidden bg-slate-50 shadow-sm sm:border-x  border-white/20 flex flex-col">
  
  {/* Main Content Area */}

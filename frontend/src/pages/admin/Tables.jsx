@@ -26,7 +26,7 @@ const Tables = () => {
     const { data: tablesResponse, isLoading } = useQuery({
         queryKey: ['tables'],
         queryFn: async () => {
-            const response = await api.get('/admin/tables', {
+            const response = await api.get('/admin/tables/', {
                 params: { page: 1, page_size: 1000 }
             });
             return response.data;

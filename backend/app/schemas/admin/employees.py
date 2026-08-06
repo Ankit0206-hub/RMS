@@ -12,6 +12,7 @@ class EmployeeBase(BaseModel):
     is_on_break: Optional[bool] = False
     role_id: int
     kitchen_id: Optional[int] = None
+    section: Optional[str] = None
 
 class EmployeeCreate(EmployeeBase):
     password: str
@@ -27,6 +28,7 @@ class EmployeeUpdate(BaseModel):
     is_active: Optional[bool] = None
     role_id: Optional[int] = None
     kitchen_id: Optional[int] = None
+    section: Optional[str] = None
     password: Optional[str] = None
 
 class EmployeeResponse(EmployeeBase):

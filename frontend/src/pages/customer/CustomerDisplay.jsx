@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import api from '../../services/api';
+import api, { getWsUrl } from '../../services/api';
 import { Utensils, CheckCircle2, Clock } from 'lucide-react';
 
 const CustomerDisplay = () => {
@@ -22,7 +22,7 @@ const CustomerDisplay = () => {
 
     // Setup WebSocket and Audio
     useEffect(() => {
-        const wsUrl = `${import.meta.env.VITE_WS_URL.replace('http', 'ws')}/ws/display`;
+        const wsUrl = `${getWsUrl()}/ws/display`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => console.log("Display WebSocket connected");

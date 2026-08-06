@@ -21,7 +21,7 @@ const AddReservationModal = ({ isOpen, onClose }) => {
     const { data: tablesResponse } = useQuery({
         queryKey: ['tables'],
         queryFn: async () => {
-            const response = await api.get('/admin/tables', {
+            const response = await api.get('/admin/tables/', {
                 params: { page: 1, page_size: 1000 }
             });
             return response.data;
@@ -64,6 +64,12 @@ const AddReservationModal = ({ isOpen, onClose }) => {
         
         if (!formData.date || !formData.time) {
             setError('Please select both date and time.');
+            return;
+        }
+
+        const phoneRegex = /^\d{10,15}$/;
+        if (!phoneRegex.test(formData.contact_number)) {
+            setError('Please enter a valid contact number (10 to 15 digits).');
             return;
         }
 
@@ -137,10 +143,10 @@ const AddReservationModal = ({ isOpen, onClose }) => {
                                         className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                         value={formData.contact_number}
                                         onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 15);
                                             setFormData({...formData, contact_number: val});
                                         }}
-                                        maxLength="10"
+                                        maxLength="15"
                                         pattern="[0-9]*"
                                         placeholder="e.g. 9876543210"
                                     />

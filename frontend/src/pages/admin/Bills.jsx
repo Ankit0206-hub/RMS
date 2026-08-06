@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { DataTable, Pagination } from '../../components/ui';
-import api from '../../services/api';
+import api, { getWsUrl } from '../../services/api';
 import InvoiceModal from './InvoiceModal';
 
 const Bills = () => {
@@ -37,7 +37,7 @@ const Bills = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/admin?token=${token}`;
+        const wsUrl = `${getWsUrl()}/ws/admin?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {

@@ -48,8 +48,8 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
         const { name, value } = e.target;
         
         if (name === 'contact_number') {
-            // Strip any character that is not a digit
-            const numericValue = value.replace(/[^0-9]/g, '');
+            // Strip any character that is not a digit and limit to 15 chars
+            const numericValue = value.replace(/[^0-9]/g, '').slice(0, 15);
             setFormData(prev => ({ ...prev, [name]: numericValue }));
             return;
         }
@@ -160,6 +160,7 @@ const ReservationModal = ({ isOpen, onClose, onSuccess, tables, reservation = nu
                             required
                             className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-white"
                             placeholder="+1 234 567 890"
+                            maxLength="15"
                         />
                     </div>
 

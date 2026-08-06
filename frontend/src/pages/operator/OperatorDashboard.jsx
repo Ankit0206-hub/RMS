@@ -22,7 +22,7 @@ const OperatorDashboard = () => {
 
     // --- DATA FETCHING ---
     const { data: operatorData } = useQuery({ queryKey: ['operator_me'], queryFn: async () => (await api.get('/operator/me')).data });
-    const { data: tablesResponse } = useQuery({ queryKey: ['tables'], queryFn: async () => (await api.get('/admin/tables')).data });
+    const { data: tablesResponse } = useQuery({ queryKey: ['tables'], queryFn: async () => (await api.get('/admin/tables/')).data });
     const { data: sessions } = useQuery({ queryKey: ['sessions'], queryFn: async () => (await api.get('/admin/ordering/sessions')).data.data });
     const { data: bills } = useQuery({ queryKey: ['bills'], queryFn: async () => (await api.get('/admin/billing/bills')).data.data });
     const { data: analyticsData } = useQuery({ queryKey: ['analytics_dashboard', 'today'], queryFn: async () => (await api.get('/admin/analytics/dashboard?timeframe=today')).data.data });

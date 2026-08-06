@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useEffect, useState } from "react";
 import customerApi from "../../services/customerApi";
+import { getWsUrl } from "../../services/api";
 import { useApp } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
@@ -23,7 +24,7 @@ export default function OrderTracking() {
       fetchDetails();
 
       // Connect WebSocket for real-time order tracking
-      const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/customer?session_id=${customerSession.sessionId}`;
+      const wsUrl = `${getWsUrl()}/ws/customer?session_id=${customerSession.sessionId}`;
       const ws = new WebSocket(wsUrl);
       
       ws.onopen = () => console.log("Customer WebSocket connected");

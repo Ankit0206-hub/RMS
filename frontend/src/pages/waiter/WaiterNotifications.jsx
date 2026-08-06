@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {ArrowLeft, CheckCircle2, UserPlus, BellRing, ClipboardList, Receipt, Loader2} from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
+import { getWsUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export default function WaiterNotifications() {
@@ -26,7 +27,7 @@ export default function WaiterNotifications() {
         fetchNotifications();
 
         const token = localStorage.getItem('token');
-        const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/waiter?token=${token}`;
+        const wsUrl = `${getWsUrl()}/ws/waiter?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {

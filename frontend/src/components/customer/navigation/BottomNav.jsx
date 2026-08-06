@@ -9,7 +9,8 @@ import {
   Clock,
   ChefHat
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { getWsUrl } from '../../../services/api';
 import { useApp } from "../../../context/AppContext";
 import { useEffect, useState } from "react";
 import customerApi from "../../../services/customerApi";
@@ -38,7 +39,7 @@ export default function BottomNav({ active = "home" }) {
       
       fetchDetails();
 
-      const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/customer?session_id=${customerSession.sessionId}`;
+      const wsUrl = `${getWsUrl()}/ws/customer?session_id=${customerSession.sessionId}`;
       const ws = new WebSocket(wsUrl);
       
       ws.onmessage = (event) => {

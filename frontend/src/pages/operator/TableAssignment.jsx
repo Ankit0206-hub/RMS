@@ -4,7 +4,7 @@ import api from '../../services/api';
 import { adminApi } from '../../services/adminApi';
 import { 
     Calendar, Clock, User, Users, Info, Plus, ChevronDown, 
-    MoreVertical, Search, Filter, Trash2, Printer, Download, Eye, AlertTriangle
+    MoreVertical, Search, Filter, Trash2, Printer, Download, Eye, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
 
@@ -28,11 +28,10 @@ const TableAssignment = () => {
         }
     });
 
-    // Fetch Waiters
     const { data: employeesData, isLoading: employeesLoading } = useQuery({
         queryKey: ['adminEmployees'],
         queryFn: async () => {
-            const res = await api.get('/admin/employees', { params: { page: 1, page_size: 100 } });
+            const res = await api.get('/admin/employees/', { params: { page: 1, page_size: 100 } });
             return res.data.data;
         }
     });
@@ -127,9 +126,9 @@ const TableAssignment = () => {
     const filteredWaiters = waiterWorkload.filter(w => w.full_name.toLowerCase().includes(searchWaiter.toLowerCase()));
 
     // Metrics
-    const totalTables = tables.length;
-    const assignedTables = tables.filter(t => t.assigned_waiter_id).length;
-    const unassignedTables = tables.filter(t => !t.assigned_waiter_id).length;
+    const totalTables = filteredTablesByFloor.length;
+    const assignedTables = filteredTablesByFloor.filter(t => t.assigned_waiter_id).length;
+    const unassignedTables = filteredTablesByFloor.filter(t => !t.assigned_waiter_id).length;
     const assignedPercentage = totalTables > 0 ? Math.round((assignedTables / totalTables) * 100) : 0;
     const unassignedPercentage = totalTables > 0 ? Math.round((unassignedTables / totalTables) * 100) : 0;
 
@@ -256,16 +255,25 @@ const TableAssignment = () => {
             </div>
 
             {/* MAIN CONTENT (3 COLUMNS) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-240px)] lg:min-h-[500px]">
                 
                 {/* LEFT: RESTAURANT FLOOR */}
-                <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col">
+                <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col h-[500px] lg:h-full min-h-0">
                     <div className="p-5 border-b border-gray-100 dark:border-slate-800 shrink-0">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
                                 <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mr-3">
                                     Restaurant Floor
                                 </h3>
+                                <button 
+                                    onClick={() => queryClient.invalidateQueries({ queryKey: ['adminTables'] })}
+                                    className="group relative p-1.5 mr-3 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors"
+                                >
+                                    <RefreshCw size={14} className={tablesLoading ? "animate-spin" : ""} />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white text-[10px] font-bold rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                                        Refresh Floor
+                                    </div>
+                                </button>
                                 <select 
                                     className="bg-gray-50 dark:bg-slate-800/50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-700 dark:text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
                                     value={selectedFloor}
@@ -290,9 +298,12 @@ const TableAssignment = () => {
                                 )}
                                 <button 
                                     onClick={() => setIsConfirmClearOpen(true)}
-                                    className="flex items-center px-3 py-1.5 border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
+                                    className="group relative flex items-center px-3 py-1.5 border border-red-100 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-[11px] lg:text-xs 2xl:text-sm font-bold transition-colors"
                                 >
-                                    <Trash2 size={14} className="mr-1.5" /> Clear All Assignments
+                                    <Trash2 size={14} className="mr-1" />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white text-[10px] font-bold rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                                        Clear All Assignments
+                                    </div>
                                 </button>
                             </div>
                         </div>
@@ -305,7 +316,7 @@ const TableAssignment = () => {
                         </div>
                     </div>
                     
-                    <div className="p-5">
+                    <div className="p-5 overflow-y-auto flex-1">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-x-4 gap-y-8">
                             {[...filteredTablesByFloor].sort((a, b) => a.capacity - b.capacity).map(table => {
                                 const renderChairs = (seats, status) => {
@@ -402,11 +413,22 @@ const TableAssignment = () => {
                 </div>
 
                 {/* MIDDLE: WAITERS & ASSIGN */}
-                <div className="lg:col-span-3 flex flex-col space-y-6">
+                <div className="lg:col-span-3 flex flex-col space-y-6 h-[600px] lg:h-full min-h-0">
                     {/* Waiters List */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col flex-1 min-h-0">
                         <div className="p-5 border-b border-gray-100 dark:border-slate-800 shrink-0">
-                            <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mb-4">Waiters ({waiters.length})</h3>
+                            <div className="flex items-center mb-4">
+                                <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mr-3">Waiters ({waiters.length})</h3>
+                                <button 
+                                    onClick={() => queryClient.invalidateQueries({ queryKey: ['adminEmployees'] })}
+                                    className="group relative p-1.5 text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-gray-50 dark:bg-slate-800 rounded-lg transition-colors"
+                                >
+                                    <RefreshCw size={14} className={employeesLoading ? "animate-spin" : ""} />
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white text-[10px] font-bold rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                                        Refresh Waiters
+                                    </div>
+                                </button>
+                            </div>
                             <div className="flex items-center space-x-2">
                                 <div className="relative flex-1">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500 dark:text-slate-400" />
@@ -418,11 +440,10 @@ const TableAssignment = () => {
                                         className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-xs lg:text-[13px] 2xl:text-sm focus:outline-none focus:border-indigo-500"
                                     />
                                 </div>
-                                <button className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50"><Filter size={16}/></button>
                             </div>
                         </div>
                         
-                        <div className="p-2 overflow-y-auto flex-1 h-[250px]">
+                        <div className="p-2 overflow-y-auto flex-1">
                             {filteredWaiters.map(waiter => {
                                 const workload = waiterWorkload.find(w => w.id === waiter.id)?.assignedCount || 0;
                                 const isBusy = workload > 3; // mock logic
@@ -524,7 +545,7 @@ const TableAssignment = () => {
                                     Transfer Table
                                 </button>
                             )}
-                            <button className="w-full flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-indigo-600 font-semibold text-[10px] lg:text-[11px] 2xl:text-xs py-2">
+                            <button className="w-full flex items-center justify-center text-gray-500 dark:text-slate-400 hover:text-indigo-600 font-semibold text-[10px] lg:text-[11px] 2xl:text-xs py-2 shrink-0">
                                 <Eye size={14} className="mr-1.5" /> View Table Details
                             </button>
                         </div>
@@ -532,12 +553,12 @@ const TableAssignment = () => {
                 </div>
 
                 {/* RIGHT: SUMMARY & WORKLOAD */}
-                <div className="lg:col-span-3 space-y-6">
+                <div className="lg:col-span-3 flex flex-col space-y-6 h-[600px] lg:h-full min-h-0">
                     {/* Floor Summary */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-                        <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mb-4">Floor Summary</h3>
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 flex flex-col min-h-0 flex-1">
+                        <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white mb-4 shrink-0">Floor Summary</h3>
                         
-                        <div className="flex items-center mb-6">
+                        <div className="flex items-center mb-6 shrink-0">
                             {/* Simple CSS Donut Chart */}
                             <div className="relative w-24 h-24 rounded-full flex items-center justify-center shrink-0 mr-4" style={{
                                 background: `conic-gradient(#10b981 ${assignedPercentage}%, #e5e7eb ${assignedPercentage}%)`
@@ -556,14 +577,14 @@ const TableAssignment = () => {
                             </div>
                         </div>
 
-                        <div className="pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <div className="flex justify-between items-center mb-3">
+                        <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex flex-col flex-1 min-h-0">
+                            <div className="flex justify-between items-center mb-3 shrink-0">
                                 <h4 className="text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-800 dark:text-slate-200">Unassigned Tables ({unassignedTables})</h4>
                                 <button className="text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold text-indigo-600 hover:underline">View All</button>
                             </div>
-                            <div className="space-y-2 max-h-[120px] overflow-y-auto pr-1">
-                                {tables.filter(t => !t.assigned_waiter_id).slice(0, 6).map(table => (
-                                    <div key={table.id} className="flex justify-between items-center text-[10px] lg:text-[11px] 2xl:text-xs">
+                            <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+                                {filteredTablesByFloor.filter(t => !t.assigned_waiter_id).map(table => (
+                                    <div key={table.id} className="flex justify-between items-center text-[10px] lg:text-[11px] 2xl:text-xs shrink-0">
                                         <span className="font-bold text-gray-900 dark:text-white w-12">{table.table_number}</span>
                                         <span className="text-gray-500 dark:text-slate-400 font-medium">{table.capacity} Seats</span>
                                         <span className="bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-2 py-0.5 rounded text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold">Unassigned</span>
@@ -572,34 +593,6 @@ const TableAssignment = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Waiter Workload */}
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-sm lg:text-[15px] 2xl:text-base font-bold text-gray-900 dark:text-white">Waiter Workload</h3>
-                            <button className="text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold text-indigo-600 hover:underline">View All</button>
-                        </div>
-                        <div className="space-y-4 max-h-[160px] overflow-y-auto pr-2">
-                            {waiterWorkload.slice(0, 5).map(waiter => {
-                                const maxTables = 10; // arbitrary max for visual scale
-                                const widthPct = Math.min((waiter.assignedCount / maxTables) * 100, 100);
-                                return (
-                                    <div key={waiter.id}>
-                                        <div className="flex justify-between items-center text-[10px] lg:text-[11px] 2xl:text-xs font-bold text-gray-700 dark:text-slate-300 mb-1">
-                                            <span>{waiter.full_name}</span>
-                                            <span>{waiter.assignedCount} Tables</span>
-                                        </div>
-                                        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${widthPct}%` }}></div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-
-
                 </div>
             </div>
 

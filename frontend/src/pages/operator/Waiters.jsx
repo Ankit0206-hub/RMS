@@ -33,21 +33,23 @@ const Waiters = () => {
         employee_code: '',
         password: '',
         role_id: 2, // Waiter
+        section: 'Main Hall',
+        kitchen_id: '',
         is_active: true
     });
 
     const { data: employeesData, isLoading: employeesLoading } = useQuery({
         queryKey: ['adminEmployees'],
         queryFn: async () => {
-            const res = await api.get('/admin/employees', { params: { page: 1, page_size: 100 } });
+            const res = await api.get('/admin/employees/', { params: { page: 1, page_size: 100 } });
             return res.data.data || [];
         }
     });
 
     const { data: nextCodeResponse } = useQuery({
-        queryKey: ['nextEmployeeCode', 2],
+        queryKey: ['nextEmployeeCode', newWaiterData.role_id],
         queryFn: async () => {
-            const res = await api.get('/admin/employees/next-code', { params: { role_id: 2 } });
+            const res = await api.get('/admin/employees/next-code', { params: { role_id: newWaiterData.role_id } });
             return res.data;
         },
         enabled: isAddWaiterModalOpen
@@ -68,16 +70,38 @@ const Waiters = () => {
     const { data: tablesData, isLoading: tablesLoading } = useQuery({
         queryKey: ['adminTables'],
         queryFn: async () => {
-            const res = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
+            const res = await api.get('/admin/tables/', { params: { page: 1, page_size: 1000 } });
             return res.data.data || [];
         }
     });
+
+    const { data: settingsResponse } = useQuery({
+        queryKey: ['adminSettings'],
+        queryFn: async () => {
+            const res = await api.get('/operator/settings');
+            return res.data;
+        }
+    });
+    const settings = settingsResponse?.data || {};
+    const uniqueTableFloors = [...new Set((tablesData || []).map(t => t.floor).filter(Boolean).filter(f => f !== 'Main Hall'))];
+    const floorsOrAreas = settings.floors_or_areas && settings.floors_or_areas.length > 0 
+        ? ['Main Hall', ...settings.floors_or_areas.filter(f => f !== 'Main Hall')]
+        : ['Main Hall', ...uniqueTableFloors];
+
+    const { data: kitchensData } = useQuery({
+        queryKey: ['adminKitchens'],
+        queryFn: async () => {
+            const res = await api.get('/admin/kitchen/list');
+            return res.data.data || [];
+        }
+    });
+    const kitchens = kitchensData || [];
 
     useEffect(() => {
         if (nextCode && !newWaiterData.employee_code) {
             setNewWaiterData(prev => ({ ...prev, employee_code: nextCode }));
         }
-    }, [nextCode, newWaiterData.employee_code]);
+    }, [nextCode]);
 
     const addWaiterMutation = useMutation({
         mutationFn: async (newWaiter) => {
@@ -86,7 +110,8 @@ const Waiters = () => {
         },
         onSuccess: () => {
             toast.success('Waiter added successfully');
-            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
+            queryClient.invalidateQueries({ queryKey: ['nextEmployeeCode', newWaiterData.role_id] });
             setIsAddWaiterModalOpen(false);
             setNewWaiterData({
                 first_name: '',
@@ -97,6 +122,8 @@ const Waiters = () => {
                 employee_code: '',
                 password: '',
                 role_id: 2,
+                section: 'Main Hall',
+                kitchen_id: '',
                 is_active: true
             });
         },
@@ -198,6 +225,14 @@ const Waiters = () => {
     const handleAddWaiterChange = (e) => {
         let { name, value } = e.target;
         
+        if (name === 'role_id' || name === 'kitchen_id') {
+            value = value ? parseInt(value, 10) : '';
+            if (name === 'role_id') {
+                setNewWaiterData(prev => ({ ...prev, role_id: value, employee_code: '' }));
+                return;
+            }
+        }
+        
         if (name === 'phone') {
             value = value.replace(/\D/g, '').slice(0, 10);
         } else if (name === 'first_name' || name === 'last_name') {
@@ -235,14 +270,11 @@ const Waiters = () => {
                 if (attendanceStatus === 'Absent') status = 'Absent';
                 if (!e.is_active) status = 'Offline';
 
-                const sections = ['Main Hall', 'Garden Area', 'Terrace'];
-                const mockSection = sections[e.id % sections.length];
-
                 return {
                     ...e,
                     avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(e.first_name + ' ' + e.last_name)}&background=random`,
                     status,
-                    section: mockSection,
+                    section: e.section || 'Unassigned',
                     currentTables: assignedTables.map(t => t.table_number).join(', ') || '-',
                     currentTablesCount: assignedTables.length,
                     ordersToday: isServing ? assignedTables.length : 0, // proxy for orders today
@@ -844,13 +876,25 @@ const Waiters = () => {
             >
                 <form onSubmit={handleAddWaiterSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col space-y-1.5 md:col-span-2">
+                            <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Role</label>
+                            <select
+                                name="role_id"
+                                value={newWaiterData.role_id}
+                                onChange={handleAddWaiterChange}
+                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                            >
+                                <option value={2}>Waiter / Serving Staff</option>
+                                <option value={3}>Kitchen Staff / Chef</option>
+                            </select>
+                        </div>
                         <Input
                             label="Employee Code"
                             name="employee_code"
                             value={newWaiterData.employee_code}
+                            onChange={handleAddWaiterChange}
                             placeholder="Auto-generated"
-                            readOnly
-                            disabled
+                            required
                         />
                         <Input
                             label="First Name"
@@ -902,6 +946,38 @@ const Waiters = () => {
                                 <option value="Other">Other</option>
                             </select>
                         </div>
+                        {newWaiterData.role_id === 2 ? (
+                            <div className="flex flex-col space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Assigned Section</label>
+                                <select
+                                    name="section"
+                                    value={newWaiterData.section || ''}
+                                    onChange={handleAddWaiterChange}
+                                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                >
+                                    <option value="">Select Section (Optional)</option>
+                                    {floorsOrAreas.map(floor => (
+                                        <option key={floor} value={floor}>{floor}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col space-y-1.5">
+                                <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Assigned Kitchen</label>
+                                <select
+                                    name="kitchen_id"
+                                    value={newWaiterData.kitchen_id || ''}
+                                    onChange={handleAddWaiterChange}
+                                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    required
+                                >
+                                    <option value="">Select Kitchen</option>
+                                    {kitchens.map(kitchen => (
+                                        <option key={kitchen.id} value={kitchen.id}>{kitchen.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                         <Input
                             label="Password"
                             type="password"
@@ -996,6 +1072,38 @@ const Waiters = () => {
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
+                            {editingWaiterData.role_id === 2 ? (
+                                <div className="flex flex-col space-y-1.5">
+                                    <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Assigned Section</label>
+                                    <select
+                                        name="section"
+                                        value={editingWaiterData.section || ''}
+                                        onChange={handleEditWaiterChange}
+                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    >
+                                        <option value="">Select Section (Optional)</option>
+                                        {floorsOrAreas.map(floor => (
+                                            <option key={floor} value={floor}>{floor}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col space-y-1.5">
+                                    <label className="text-[13px] font-bold text-gray-700 dark:text-slate-300">Assigned Kitchen</label>
+                                    <select
+                                        name="kitchen_id"
+                                        value={editingWaiterData.kitchen_id || ''}
+                                        onChange={handleEditWaiterChange}
+                                        className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-xl text-[13px] font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                        required
+                                    >
+                                        <option value="">Select Kitchen</option>
+                                        {kitchens.map(kitchen => (
+                                            <option key={kitchen.id} value={kitchen.id}>{kitchen.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                             <Input
                                 label="New Password (Optional)"
                                 type="password"

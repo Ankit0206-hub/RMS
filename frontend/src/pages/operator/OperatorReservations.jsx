@@ -32,7 +32,7 @@ const OperatorReservations = () => {
             const [tablesRes, reservationsRes, settingsRes] = await Promise.all([
                 adminApi.getTables(),
                 adminApi.getReservations(1, 100, selectedDate),
-                adminApi.getSettings ? adminApi.getSettings() : api.get('/operator/settings/') // Fallback if adminApi.getSettings is missing
+                adminApi.getSettings ? adminApi.getSettings() : api.get('/operator/settings') // Fallback if adminApi.getSettings is missing
             ]);
             setTables(tablesRes.data || []);
             setReservations(reservationsRes.data || []);
@@ -245,7 +245,6 @@ const OperatorReservations = () => {
             });
         } else {
             setSelectedTable(table.id);
-            toast(`Table ${table.id} Selected`, { icon: '🍽️' });
         }
     };
 
@@ -702,10 +701,12 @@ const OperatorReservations = () => {
                                             </div>
                                             <button
                                                 onClick={(e) => handleUnmerge(e, table.id)}
-                                                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
-                                                title="Split Table"
+                                                className="group absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white/50 dark:bg-slate-900/50 rounded-md transition-colors shadow-sm"
                                             >
                                                 <Unlink className="w-3 h-3" />
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block px-2 py-1 bg-gray-900 dark:bg-slate-700 text-white text-[10px] font-bold rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                                                    Split Table
+                                                </div>
                                             </button>
                                         </div>
                                     ))}

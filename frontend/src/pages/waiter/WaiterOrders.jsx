@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Clock } from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
+import { getWsUrl } from '../../services/api';
 import OrderTimeline from '../../components/waiter/OrderTimeline';
 
 export default function WaiterOrders() {
@@ -29,7 +30,7 @@ export default function WaiterOrders() {
         const token = localStorage.getItem('token');
         if (!token) return;
         
-        const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/waiter?token=${token}`;
+        const wsUrl = `${getWsUrl()}/ws/waiter?token=${token}`;
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => console.log("Waiter WebSocket connected");

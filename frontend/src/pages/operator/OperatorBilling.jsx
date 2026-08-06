@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../../services/api";
+import api, { getWsUrl } from "../../services/api";
 import {
   Search,
   ChevronDown,
@@ -185,7 +185,7 @@ const OperatorBilling = () => {
   // WebSocket Listener
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/operator?token=${token}`;
+    const wsUrl = `${getWsUrl()}/ws/operator?token=${token}`;
     const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {

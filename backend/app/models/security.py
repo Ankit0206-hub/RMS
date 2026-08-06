@@ -56,6 +56,7 @@ class Employee(TimestampMixin, Base):
     image_url: Mapped[Optional[str]] = mapped_column(String(500))
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("roles.id", ondelete="RESTRICT"))
     kitchen_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("kitchens.id", ondelete="SET NULL"), index=True)
+    section: Mapped[Optional[str]] = mapped_column(String(100))
     
     role: Mapped["Role"] = relationship(back_populates="employees")
     # Backpopulates for other relationships to be added later

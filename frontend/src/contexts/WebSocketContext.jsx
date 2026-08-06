@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
+import { getWsUrl } from '../services/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
@@ -22,7 +23,7 @@ export const WebSocketProvider = ({ children }) => {
         // Determine correct channel based on role
         let channel = user.role;
         // Connect to websocket
-        const wsUrl = `${import.meta.env.VITE_WS_URL}/ws/${channel}?token=${token}`;
+        const wsUrl = `${getWsUrl()}/ws/${channel}?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
@@ -40,6 +41,8 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminReservations'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                 } else if (data.event === 'order.updated') {
                     toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
@@ -48,6 +51,8 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminReservations'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                 } else if (data.event === 'bill.created') {
                     toast.success(`Bill generated for Table ${data.payload.table_number || data.payload.session_id}`);
@@ -55,6 +60,8 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminReservations'] });
                 } else if (data.event === 'ORDER_ITEM_UPDATED') {
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });

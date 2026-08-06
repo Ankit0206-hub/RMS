@@ -205,7 +205,8 @@ class TablesService:
             name=combined_name,
             capacity=combined_capacity,
             status="Available",
-            is_virtual=True
+            is_virtual=True,
+            floor=tables[0].floor
         )
         db.add(virtual_table)
         await db.commit()

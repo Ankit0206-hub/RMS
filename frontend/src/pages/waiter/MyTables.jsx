@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Clock, Users, ArrowRight, CheckCircle, Utensils, AlertCircle, Bell } from 'lucide-react';
 import waiterApi from '../../services/waiterApi';
+import { getWsUrl } from '../../services/api';
 import toast from 'react-hot-toast';
 const TableGraphic = ({status, capacity = 4, guests = 0}) => {
  const getChairClass = (index) => {
@@ -99,7 +100,7 @@ export default function MyTables() {
         
         // Connect to WebSocket for real-time updates
         const token = localStorage.getItem('token');
-        const wsUrl = `${import.meta.env.VITE_API_URL.replace('http', 'ws')}/ws/waiter?token=${token}`;
+        const wsUrl = `${getWsUrl()}/ws/waiter?token=${token}`;
         const ws = new WebSocket(wsUrl);
 
         ws.onmessage = (event) => {

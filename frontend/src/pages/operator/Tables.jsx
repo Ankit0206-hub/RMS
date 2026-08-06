@@ -12,7 +12,7 @@ const Tables = () => {
     const { data: tablesResponse, isLoading, refetch } = useQuery({
         queryKey: ['operator-tables'],
         queryFn: async () => {
-            const res = await api.get('/admin/tables', { params: { page: 1, page_size: 1000 } });
+            const res = await api.get('/admin/tables/', { params: { page: 1, page_size: 1000 } });
             return res.data;
         }
     });
