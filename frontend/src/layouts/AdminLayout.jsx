@@ -533,7 +533,6 @@ const AdminLayout = () => {
                                                 <p className="text-sm font-bold text-gray-900">Admin User</p>
                                                 <p className="text-xs text-gray-500">Super Admin</p>
                                             </div>
-                                            <ChevronDown className="w-4 h-4 text-gray-400 hidden md:block" />
                                         </div>
                                         <button
                                             onClick={handleLogout}

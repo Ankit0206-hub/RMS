@@ -78,7 +78,7 @@ async def delete_employee(
     current_admin = Depends(get_current_admin_or_operator)
 ):
     deleted = await employee_service.delete_employee(db, employee_id)
-    return StandardResponse(data={"deleted": deleted})
+    return StandardResponse(data=deleted)
 
 @router.post("/{employee_id}/toggle-break", response_model=StandardResponse[EmployeeResponse])
 async def toggle_employee_break(
