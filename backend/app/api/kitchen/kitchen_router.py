@@ -25,14 +25,29 @@ async def check_and_update_order_status(db: AsyncSession, order_id: int):
     if not all_items:
         return
         
+    order_query = select(Order).filter(Order.id == order_id)
+    order_result = await db.execute(order_query)
+    order = order_result.scalar_one_or_none()
+    
+    if not order:
+        return
+        
+    from app.services.ordering_service import OrderingService
+    from app.schemas.ordering import OrderStatusUpdate
+    service = OrderingService()
+    
     if all(item.status in ["prepared", "served"] for item in all_items):
-        from app.services.ordering_service import OrderingService
-        from app.schemas.ordering import OrderStatusUpdate
-        service = OrderingService()
-        try:
-            await service.update_order_status(db, order_id, OrderStatusUpdate(status="Cooked"))
-        except Exception as e:
-            print(f"Failed to automatically update order status to Cooked: {e}")
+        if order.status != "Cooked":
+            try:
+                await service.update_order_status(db, order_id, OrderStatusUpdate(status="Cooked"))
+            except Exception as e:
+                print(f"Failed to automatically update order status to Cooked: {e}")
+    else:
+        if order.status == "Cooked":
+            try:
+                await service.update_order_status(db, order_id, OrderStatusUpdate(status="Preparing"))
+            except Exception as e:
+                print(f"Failed to automatically update order status to Preparing: {e}")
 
 @router.get("/stats", response_model=Dict[str, Any])
 async def get_kitchen_stats(
@@ -212,6 +227,9 @@ async def update_item_status(
     item.status = status_update.status
     item.updated_at = datetime.utcnow()
     
+    order_id = item.order_id
+    updated_status = item.status
+    
     await db.commit()
 
     # Emit websocket notification for the waiter
@@ -219,15 +237,15 @@ async def update_item_status(
     await manager.broadcast(
         event="ORDER_ITEM_UPDATED",
         payload={
-            "item_id": item.id,
-            "order_id": item.order_id,
-            "status": item.status
+            "item_id": item_id,
+            "order_id": order_id,
+            "status": updated_status
         },
         target_roles=["waiter", "kitchen", "display"]
     )
     
     # Notify customer about order update
-    order_query = select(Order).filter(Order.id == item.order_id)
+    order_query = select(Order).filter(Order.id == order_id)
     order_result = await db.execute(order_query)
     order = order_result.scalar_one_or_none()
     if order and order.session_id:
@@ -235,14 +253,14 @@ async def update_item_status(
             session_id=order.session_id,
             event="order.updated",
             payload={
-                "order_id": item.order_id,
-                "status": item.status
+                "order_id": order_id,
+                "status": updated_status
             }
         )
 
-    await check_and_update_order_status(db, item.order_id)
+    await check_and_update_order_status(db, order_id)
 
-    return {"message": "Status updated successfully", "status": item.status}
+    return {"message": "Status updated successfully", "status": updated_status}
 
 @router.patch("/orders/{order_id}/status", response_model=Dict[str, Any])
 async def update_order_items_status(

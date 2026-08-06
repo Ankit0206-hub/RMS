@@ -110,7 +110,7 @@ class OrderingService:
             "id": order.id,
             "session_id": order.session_id,
             "status": order.status
-        }, target_roles=["operator", "waiter", "admin", "kitchen"])
+        }, target_roles=["operator", "waiter", "admin", "kitchen", "display"])
         
         # Notify specific customer who placed the order
         await manager.notify_customer(order.session_id, "order.created", {
@@ -216,7 +216,7 @@ class OrderingService:
             "id": order.id,
             "session_id": order.session_id,
             "status": order.status
-        }, target_roles=["operator", "waiter", "admin", "kitchen"])
+        }, target_roles=["operator", "waiter", "admin", "kitchen", "display"])
         
         await manager.notify_customer(order.session_id, "order.updated", {
             "id": order.id,
