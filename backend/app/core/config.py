@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     MYSQL_PORT: str
     MYSQL_DB: str
     CORS_ORIGINS: str
+    PORT: int = 8000
 
     @property
     def DATABASE_URL(self) -> str:
