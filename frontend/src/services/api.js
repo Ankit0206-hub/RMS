@@ -23,7 +23,7 @@ export const uploadImage = async (file) => {
             'Content-Type': 'multipart/form-data',
         },
     });
-    return response.data;
+    return response.data.data.image_url;
 };
 
 export const getWsUrl = () => {

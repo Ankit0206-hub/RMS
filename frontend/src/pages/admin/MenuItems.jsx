@@ -128,8 +128,12 @@ const MenuItems = () => {
             header: "Item Details", 
             cell: (row) => (
                 <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800/50 rounded-lg shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500">
-                        <Utensils className="w-5 h-5" />
+                    <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800/50 rounded-lg shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 overflow-hidden shrink-0">
+                        {row.image_url ? (
+                            <img src={row.image_url} alt={row.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <Utensils className="w-5 h-5" />
+                        )}
                     </div>
                     <div>
                         <div className="font-bold text-gray-900 dark:text-white text-sm">{row.name}</div>

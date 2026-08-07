@@ -57,8 +57,18 @@ export default function WaiterMenu() {
             }
         };
         fetchMenu();
+        
+        const handleMenuUpdate = () => {
+            console.log("Menu updated event received, refetching menu...");
+            fetchMenu();
+        };
+        
+        window.addEventListener('menuUpdated', handleMenuUpdate);
+        
+        return () => {
+            window.removeEventListener('menuUpdated', handleMenuUpdate);
+        };
     }, [location.state]);
-    
     const [searchQuery, setSearchQuery] = useState('');
     const [customizingItem, setCustomizingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
