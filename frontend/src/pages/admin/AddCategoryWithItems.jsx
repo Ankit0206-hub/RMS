@@ -4,7 +4,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import api, { uploadImage } from '../../services/api';
 import toast from 'react-hot-toast';
 import { 
-    ArrowLeft, Plus, Trash2, Save, Image as ImageIcon, Info, ChevronRight, X, Clock
+    ArrowLeft, Plus, Trash2, Save, Image as ImageIcon, Info, ChevronRight, X, Clock, Edit2
 } from 'lucide-react';
 
 const AddCategoryWithItems = () => {
@@ -16,6 +16,10 @@ const AddCategoryWithItems = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [newCategoryImage, setNewCategoryImage] = useState(null);
+    const [isEditingCategory, setIsEditingCategory] = useState(false);
+    const [editingCategoryName, setEditingCategoryName] = useState('');
+    const [editingCategoryImage, setEditingCategoryImage] = useState(null);
     
     // Add Item Form State
     const [isAddingItem, setIsAddingItem] = useState(false);
@@ -72,9 +76,27 @@ const AddCategoryWithItems = () => {
         onSuccess: (newCat) => {
             queryClient.invalidateQueries(['categoriesList']);
             setNewCategoryName('');
+            setNewCategoryImage(null);
             setIsAddingCategory(false);
             setSelectedCategoryId(newCat.id);
             toast.success("Category created!");
+        }
+    });
+
+    const updateCategoryMutation = useMutation({
+        mutationFn: async ({ id, data }) => {
+            const res = await api.put(`/admin/categories/${id}`, data);
+            return res.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['categoriesList']);
+            setIsEditingCategory(false);
+            setEditingCategoryName('');
+            setEditingCategoryImage(null);
+            toast.success("Category updated!");
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.detail || "Failed to update category");
         }
     });
 
@@ -94,9 +116,29 @@ const AddCategoryWithItems = () => {
         }
     });
 
-    const handleAddCategory = () => {
+    const handleAddCategory = async () => {
         if (!newCategoryName.trim()) return;
-        createCategoryMutation.mutate({ name: newCategoryName, is_active: true });
+        
+        let imageUrl = null;
+        if (newCategoryImage) {
+            imageUrl = await uploadImage(newCategoryImage);
+        }
+
+        createCategoryMutation.mutate({ name: newCategoryName, is_active: true, image_url: imageUrl });
+    };
+
+    const handleUpdateCategory = async () => {
+        if (!editingCategoryName.trim()) return;
+        
+        let imageUrl = selectedCategory?.image_url;
+        if (editingCategoryImage) {
+            imageUrl = await uploadImage(editingCategoryImage);
+        }
+
+        updateCategoryMutation.mutate({ 
+            id: selectedCategoryId, 
+            data: { name: editingCategoryName, image_url: imageUrl } 
+        });
     };
 
     const resetItemForm = () => {
@@ -234,26 +276,59 @@ const AddCategoryWithItems = () => {
 
                 <div className="p-4 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/50">
                     {isAddingCategory ? (
-                        <div className="flex gap-2">
-                            <input
-                                autoFocus
-                                type="text"
-                                placeholder="Category Name"
-                                value={newCategoryName}
-                                onChange={e => setNewCategoryName(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
-                                className="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                            />
-                            <button 
-                                onClick={handleAddCategory}
-                                disabled={createCategoryMutation.isPending}
-                                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                            >
-                                <Save className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => setIsAddingCategory(false)} className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg">
-                                <X className="w-4 h-4" />
-                            </button>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="Category Name"
+                                    value={newCategoryName}
+                                    onChange={e => setNewCategoryName(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                                    className="flex-1 px-3 py-2 text-sm bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                />
+                                <button 
+                                    onClick={handleAddCategory}
+                                    disabled={createCategoryMutation.isPending}
+                                    className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center shrink-0"
+                                >
+                                    {createCategoryMutation.isPending ? '...' : <Save className="w-4 h-4" />}
+                                </button>
+                                <button 
+                                    onClick={() => { setIsAddingCategory(false); setNewCategoryName(''); setNewCategoryImage(null); }}
+                                    className="px-3 py-2 bg-gray-200 text-gray-700 dark:bg-slate-700 dark:text-slate-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 flex items-center justify-center shrink-0"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <input 
+                                    type="file"
+                                    accept="image/*"
+                                    id="categoryImageInput"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setNewCategoryImage(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+                                <label 
+                                    htmlFor="categoryImageInput"
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-500 cursor-pointer transition-colors"
+                                >
+                                    <ImageIcon className="w-4 h-4" />
+                                    {newCategoryImage ? newCategoryImage.name : 'Upload Category Image'}
+                                </label>
+                                {newCategoryImage && (
+                                    <button 
+                                        onClick={() => setNewCategoryImage(null)}
+                                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <button 
@@ -291,14 +366,90 @@ const AddCategoryWithItems = () => {
                     </div>
                 ) : !isAddingItem ? (
                     <div className="flex-1 flex flex-col items-center justify-center">
-                        <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{selectedCategory?.name}</h3>
-                        <p className="text-gray-500 mb-6">You can now add items to this category.</p>
-                        <button 
-                            onClick={() => setIsAddingItem(true)}
-                            className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 flex items-center"
-                        >
-                            <Plus className="w-5 h-5 mr-2" /> Add an Item
-                        </button>
+                        {isEditingCategory ? (
+                            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-slate-800 w-full max-w-md">
+                                <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Edit Category</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Category Name</label>
+                                        <input
+                                            type="text"
+                                            value={editingCategoryName}
+                                            onChange={e => setEditingCategoryName(e.target.value)}
+                                            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1">Category Image</label>
+                                        <div className="flex items-center gap-2">
+                                            {selectedCategory?.image_url && !editingCategoryImage && (
+                                                <img src={selectedCategory.image_url} alt="Current" className="w-10 h-10 rounded-lg object-cover" />
+                                            )}
+                                            <input 
+                                                type="file"
+                                                accept="image/*"
+                                                id="editCategoryImageInput"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        setEditingCategoryImage(e.target.files[0]);
+                                                    }
+                                                }}
+                                            />
+                                            <label 
+                                                htmlFor="editCategoryImageInput"
+                                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-500 hover:border-indigo-400 hover:text-indigo-500 cursor-pointer transition-colors"
+                                            >
+                                                <ImageIcon className="w-4 h-4" />
+                                                {editingCategoryImage ? editingCategoryImage.name : 'Update Image'}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end mt-4">
+                                        <button 
+                                            onClick={() => setIsEditingCategory(false)}
+                                            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={handleUpdateCategory}
+                                            disabled={updateCategoryMutation.isPending}
+                                            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                        >
+                                            {updateCategoryMutation.isPending ? 'Saving...' : 'Save Changes'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                {selectedCategory?.image_url && (
+                                    <img src={selectedCategory.image_url} alt={selectedCategory.name} className="w-24 h-24 rounded-2xl object-cover mb-4 shadow-sm" />
+                                )}
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h3 className="text-2xl font-black text-gray-900 dark:text-white">{selectedCategory?.name}</h3>
+                                    <button 
+                                        onClick={() => {
+                                            setEditingCategoryName(selectedCategory?.name);
+                                            setEditingCategoryImage(null);
+                                            setIsEditingCategory(true);
+                                        }}
+                                        className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                        title="Edit Category"
+                                    >
+                                        <Edit2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <p className="text-gray-500 mb-6">You can now add items to this category.</p>
+                                <button 
+                                    onClick={() => setIsAddingItem(true)}
+                                    className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 flex items-center"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" /> Add an Item
+                                </button>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-slate-900/50">

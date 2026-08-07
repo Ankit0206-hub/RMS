@@ -16,11 +16,17 @@ export default function Categories({ categories = [] }) {
     isAll: true,
   };
 
-  const dynamicCategories = categories.map((cat, idx) => ({
-    title: cat.name,
-    image: defaultImages[idx % defaultImages.length],
-    isAll: false,
-  }));
+  const dynamicCategories = categories.map((cat, idx) => {
+    let img_url = cat.image_url;
+    if (img_url && img_url.startsWith('/')) {
+      img_url = `${img_url}`; // or prefix with backend URL if needed, but usually it works if it's a full URL
+    }
+    return {
+      title: cat.name,
+      image: img_url || defaultImages[idx % defaultImages.length],
+      isAll: false,
+    };
+  });
 
   const displayCategories = [allCategory, ...dynamicCategories];
 
