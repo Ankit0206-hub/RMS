@@ -39,6 +39,12 @@ class MenuItem(TimestampMixin, Base):
     variant_groups: Mapped[List["VariantGroup"]] = relationship(back_populates="menu_item", cascade="all, delete-orphan")
     addon_groups: Mapped[List["AddonGroup"]] = relationship(back_populates="menu_item", cascade="all, delete-orphan")
 
+    @property
+    def image_url(self) -> Optional[str]:
+        if self.images and len(self.images) > 0:
+            return self.images[0].image_url
+        return None
+
 class FoodImage(TimestampMixin, Base):
     __tablename__ = "food_images"
 

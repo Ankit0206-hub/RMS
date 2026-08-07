@@ -66,6 +66,9 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                     queryClient.invalidateQueries({ queryKey: ['prepared_items'] });
+                } else if (data.event === 'menu.updated') {
+                    window.dispatchEvent(new Event('menuUpdated'));
+                    queryClient.invalidateQueries({ queryKey: ['admin_menu'] }); // If admin uses it
                 }
             } catch (err) {
                 console.error("Failed to parse websocket message", err);

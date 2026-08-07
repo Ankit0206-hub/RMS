@@ -6,6 +6,8 @@ from app.repositories.admin.menu_repository import menu_repo
 from app.services.admin.categories_service import category_service
 from app.models.menu import MenuItem
 from app.core.exceptions import BusinessException
+from app.websocket.connection_manager import manager
+from datetime import datetime
 
 class MenuService:
     async def get_kpis(self, db: AsyncSession) -> dict:
@@ -28,7 +30,9 @@ class MenuService:
         if existing:
             raise BusinessException(detail="Menu item code already exists", status_code=409)
             
-        return await menu_repo.create(db, obj_in)
+        result = await menu_repo.create(db, obj_in)
+        await manager.broadcast("menu.updated", {"timestamp": datetime.utcnow().isoformat()}, target_roles=["waiter", "customer", "admin", "display"])
+        return result
 
     async def create_items_bulk(self, db: AsyncSession, objs_in: List[MenuItemCreate]) -> List[MenuItem]:
         if not objs_in:
@@ -63,14 +67,19 @@ class MenuService:
             if existing:
                 raise BusinessException(detail="Menu item code already exists", status_code=409)
                 
-        return await menu_repo.update(db, item, obj_in)
+        result = await menu_repo.update(db, item, obj_in)
+        await manager.broadcast("menu.updated", {"timestamp": datetime.utcnow().isoformat()}, target_roles=["waiter", "customer", "admin", "display"])
+        return result
 
     async def update_availability(self, db: AsyncSession, item_id: int, is_available: bool) -> MenuItem:
         item = await self.get_item(db, item_id)
-        return await menu_repo.update_availability(db, item, is_available)
+        result = await menu_repo.update_availability(db, item, is_available)
+        await manager.broadcast("menu.updated", {"timestamp": datetime.utcnow().isoformat()}, target_roles=["waiter", "customer", "admin", "display"])
+        return result
 
     async def delete_item(self, db: AsyncSession, item_id: int) -> None:
         item = await self.get_item(db, item_id)
         await menu_repo.delete(db, item)
+        await manager.broadcast("menu.updated", {"timestamp": datetime.utcnow().isoformat()}, target_roles=["waiter", "customer", "admin", "display"])
 
 menu_service = MenuService()

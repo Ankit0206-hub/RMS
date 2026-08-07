@@ -40,6 +40,7 @@ class MenuRepository:
     async def get_all(self, db: AsyncSession, skip: int = 0, limit: int = 100, category_id: Optional[int] = None) -> List[MenuItem]:
         query = select(MenuItem).options(
             selectinload(MenuItem.category),
+            selectinload(MenuItem.images),
             selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
             selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
         )
@@ -53,6 +54,7 @@ class MenuRepository:
         result = await db.execute(
             select(MenuItem).options(
                 selectinload(MenuItem.category),
+                selectinload(MenuItem.images),
                 selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
                 selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
             ).filter(MenuItem.id == item_id)

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
@@ -14,6 +14,7 @@ const CustomerMenu = () => {
     const tableId = location.state?.tableId || searchParams.get('table') || 1;
     
     const [sessionId, setSessionId] = useState(location.state?.sessionId || null);
+    const queryClient = useQueryClient();
     const [cart, setCart] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [orderStatus, setOrderStatus] = useState(null);
@@ -51,6 +52,8 @@ const CustomerMenu = () => {
                 if (data.event === 'order.updated' || data.event === 'order.created') {
                     setOrderStatus(data.payload.status);
                     toast(`Your order is now: ${data.payload.status}`, { icon: '🔔' });
+                } else if (data.event === 'menu.updated') {
+                    queryClient.invalidateQueries({ queryKey: ['customerMenu'] });
                 }
             };
             setWs(socket);

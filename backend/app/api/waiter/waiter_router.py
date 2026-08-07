@@ -166,6 +166,7 @@ async def get_menu(
     current_user: Employee = Depends(get_current_waiter)
 ):
     query = select(MenuCategory).where(MenuCategory.is_active == True).options(
+        selectinload(MenuCategory.items).selectinload(MenuItem.images),
         selectinload(MenuCategory.items).selectinload(MenuItem.variant_groups).selectinload(VariantGroup.variants),
         selectinload(MenuCategory.items).selectinload(MenuItem.addon_groups).selectinload(AddonGroup.addons)
     )
