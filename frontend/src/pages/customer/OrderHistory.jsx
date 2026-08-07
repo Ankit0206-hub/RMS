@@ -143,8 +143,8 @@ export default function OrderHistory() {
                       <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 dark:bg-slate-800 overflow-hidden shadow-sm relative z-[4] flex items-center justify-center" style={{ zIndex: 10 - i }}>
                         {item.image ? (
                           <img 
-                            src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
-                            alt="" 
+                            src={item.image.startsWith('/') ? `${item.image}` : item.image} 
+                            alt={item.name} 
                             className="w-full h-full object-cover" 
                           />
                         ) : (

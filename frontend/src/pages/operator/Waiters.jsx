@@ -162,14 +162,14 @@ const Waiters = () => {
     const { data: attendanceData } = useQuery({
         queryKey: ['adminAttendance', selectedDate],
         queryFn: async () => {
-            const res = await api.get('/admin/attendance', { params: { date: selectedDate } });
+            const res = await api.get('/admin/attendance/', { params: { date: selectedDate } });
             return res.data.data || [];
         }
     });
 
     const toggleAttendanceMutation = useMutation({
         mutationFn: async ({ employee_id, date, status }) => {
-            const response = await api.post('/admin/attendance', { employee_id, date, status });
+            const response = await api.post('/admin/attendance/', { employee_id, date, status });
             return response.data;
         },
         onSuccess: () => {
@@ -219,6 +219,9 @@ const Waiters = () => {
         if (!editingWaiterData) return;
         const payload = { ...editingWaiterData };
         if (!payload.password) delete payload.password; // Don't send empty password
+        if (payload.kitchen_id === '') payload.kitchen_id = null;
+        if (payload.role_id === 2) payload.kitchen_id = null;
+        if (payload.role_id === 3) payload.section = null;
         updateWaiterMutation.mutate({ id: editingWaiterData.id, data: payload });
     };
 
@@ -244,7 +247,11 @@ const Waiters = () => {
 
     const handleAddWaiterSubmit = (e) => {
         e.preventDefault();
-        addWaiterMutation.mutate(newWaiterData);
+        const payload = { ...newWaiterData };
+        if (payload.kitchen_id === '') payload.kitchen_id = null;
+        if (payload.role_id === 2) payload.kitchen_id = null;
+        if (payload.role_id === 3) payload.section = null;
+        addWaiterMutation.mutate(payload);
     };
 
     // Process Waiters Data

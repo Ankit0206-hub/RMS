@@ -28,7 +28,7 @@ export default function FoodList() {
         const mappedItems = catData.items.map(dish => {
           let img_url = dish.image_url;
           if (img_url && img_url.startsWith('/')) {
-            img_url = `http://localhost:8000${img_url}`;
+            img_url = `${img_url}`;
           }
           return {
           id: dish.id,

@@ -105,7 +105,7 @@ export default function OrderDetails() {
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-slate-800/50 flex-shrink-0 overflow-hidden shadow-sm">
                   {item.image ? (
                     <img 
-                      src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
+                      src={item.image.startsWith('/') ? `${item.image}` : item.image} 
                       alt={item.name} 
                       className="w-full h-full object-cover" 
                     />

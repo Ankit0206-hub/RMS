@@ -30,7 +30,7 @@ export default function WaiterMenu() {
                     c.items.forEach(i => {
                         let img_url = i.image_url;
                         if (img_url && img_url.startsWith('/')) {
-                            img_url = `http://localhost:8000${img_url}`;
+                            img_url = `${img_url}`;
                         }
                         allItems.push({
                             ...i,

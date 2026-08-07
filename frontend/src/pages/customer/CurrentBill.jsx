@@ -73,7 +73,7 @@ export default function CurrentBill() {
                   <div className="h-20 w-20 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 dark:text-slate-400 overflow-hidden shrink-0">
                     {item.image ? (
                       <img 
-                        src={item.image.startsWith('/') ? `http://localhost:8000${item.image}` : item.image} 
+                        src={item.image.startsWith('/') ? `${item.image}` : item.image} 
                         alt={item.name} 
                         className="h-full w-full object-cover" 
                       />

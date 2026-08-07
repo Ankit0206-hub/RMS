@@ -79,7 +79,7 @@ export default function Categories() {
             {filteredCategories.map((cat, index) => {
               let img_url = cat.image_url;
               if (img_url && img_url.startsWith('/')) {
-                img_url = `http://localhost:8000${img_url}`;
+                img_url = `${img_url}`;
               }
               return (
               <div
