@@ -157,7 +157,12 @@ export default function Customer() {
               <input
                 type="tel"
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    if (val.length <= 10) setForm({ ...form, phone: val });
+                }}
+                maxLength={10}
+                pattern="[0-9]*"
                 className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none"
               />
             </div>

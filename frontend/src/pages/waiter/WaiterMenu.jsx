@@ -41,9 +41,19 @@ export default function WaiterMenu() {
                     });
                 });
                 
+                let savedCart = null;
                 if (location.state?.cartItems) {
+                    savedCart = location.state.cartItems;
+                } else if (location.state?.sessionId || (location.state && location.state.tableId)) {
+                    // Assuming sessionId is passed in state, or we can use tableId as a fallback
+                    const sid = location.state?.sessionId || 'table_' + location.state?.tableId;
+                    const stored = sessionStorage.getItem(`waiter_cart_${sid}`);
+                    if (stored) savedCart = JSON.parse(stored);
+                }
+
+                if (savedCart) {
                     allItems = allItems.map(item => {
-                        const existing = location.state.cartItems.find(i => i.id === item.id);
+                        const existing = savedCart.find(i => i.id === item.id);
                         if (existing) return { ...item, ...existing };
                         return item;
                     });
@@ -69,6 +79,19 @@ export default function WaiterMenu() {
             window.removeEventListener('menuUpdated', handleMenuUpdate);
         };
     }, [location.state]);
+
+    useEffect(() => {
+        const sid = location.state?.sessionId || (location.state?.tableId ? 'table_' + location.state.tableId : null);
+        if (sid && items.length > 0) {
+            const cartItems = items.filter(i => i.qty > 0);
+            if (cartItems.length > 0) {
+                sessionStorage.setItem(`waiter_cart_${sid}`, JSON.stringify(cartItems));
+            } else {
+                sessionStorage.removeItem(`waiter_cart_${sid}`);
+            }
+        }
+    }, [items, location.state]);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [customizingItem, setCustomizingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
@@ -157,7 +180,7 @@ export default function WaiterMenu() {
             <div className="relative z-10 flex flex-col min-h-screen">
                 <div className="bg-white/10 backdrop-blur-xl px-4 md:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20 border-b border-white/20 shrink-0 w-full">
                     <div className="flex items-center w-full max-w-7xl mx-auto justify-between relative">
-                        <button onClick={() => navigate('/waiter/tables')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm z-10">
+                        <button onClick={() => navigate(tableId ? `/waiter/tables/${tableId}` : '/waiter/tables')} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm z-10">
                             <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                         </button>
                         <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight absolute left-1/2 -translate-x-1/2">
@@ -275,7 +298,7 @@ export default function WaiterMenu() {
                                         <span className="font-black text-white text-[13px] sm:text-[15px] md:text-[17px] tracking-wide ml-2 drop-shadow-md whitespace-nowrap truncate">View Cart</span>
                                     </div>
                                     <div className="flex items-center shrink-0 ml-1">
-                                        <span className="font-black text-white text-[14px] sm:text-[15px] md:text-[17px] drop-shadow-md whitespace-nowrap">₹ {cartTotal}</span>
+                                        <span className="font-black text-white text-[14px] sm:text-[15px] md:text-[17px] drop-shadow-md whitespace-nowrap">₹ {cartTotal.toFixed(2)}</span>
                                         <div className="bg-white/30 p-1 md:p-1.5 rounded-xl ml-2 md:ml-3 border border-white/40 backdrop-blur-md shadow-sm shrink-0">
                                             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 text-white rotate-180 drop-shadow-sm" strokeWidth={3} />
                                         </div>

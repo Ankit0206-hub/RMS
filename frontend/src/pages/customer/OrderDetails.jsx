@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock, CheckCircle2, ChefHat, FileText, Download, Star, Utensils } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle2, ChefHat, FileText, Download, Star, Utensils, ReceiptText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
@@ -171,26 +171,35 @@ export default function OrderDetails() {
         </div>
         
         {/* Extra spacing at bottom for the floating button */}
-        <div className="h-20"></div>
+        <div className="h-36 md:h-40"></div>
       </div>
 
       {/* Floating Action Button */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-50 dark:from-slate-950 via-gray-50 dark:via-slate-950 to-transparent flex flex-col gap-3 pt-12 pointer-events-none">
-        <div className={`pointer-events-auto flex ${step >= 4 ? 'flex-row' : 'flex-col'} gap-3`}>
+        <div className={`pointer-events-auto flex ${step >= 4 ? 'flex-row flex-wrap' : 'flex-col'} gap-2 sm:gap-3 justify-center`}>
           {step >= 4 && (
             <button
               onClick={() => navigate("/customer/review")}
-              className="flex-1 flex items-center justify-center gap-2 bg-orange-500 text-white rounded-2xl py-4 font-bold shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 bg-orange-500 text-white rounded-2xl py-3 sm:py-4 font-bold shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform text-[13px] sm:text-base"
             >
-              <Star size={20} className="fill-white" />
+              <Star size={16} className="fill-white" />
               Rate Order
+            </button>
+          )}
+          {step >= 4 && (
+            <button
+              onClick={() => navigate("/customer/request-final-bill")}
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 bg-indigo-500 text-white rounded-2xl py-3 sm:py-4 font-bold shadow-xl shadow-indigo-500/30 active:scale-[0.98] transition-transform text-[13px] sm:text-base"
+            >
+              <ReceiptText size={16} />
+              Request Bill
             </button>
           )}
           <button
             onClick={() => navigate("/customer/invoice", { state: { order } })}
-            className={`${step >= 4 ? 'flex-1' : 'w-full'} flex items-center justify-center gap-2 rounded-2xl py-4 font-bold active:scale-[0.98] transition-transform ${step >= 4 ? "bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 shadow-sm" : "bg-gray-900 dark:bg-slate-800 text-white shadow-xl shadow-gray-200 dark:shadow-slate-900/50"}`}
+            className={`${step >= 4 ? 'w-full' : 'w-full'} flex items-center justify-center gap-2 rounded-2xl py-3 sm:py-4 font-bold active:scale-[0.98] transition-transform ${step >= 4 ? "bg-white dark:bg-slate-800 border-2 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 shadow-sm" : "bg-gray-900 dark:bg-slate-800 text-white shadow-xl shadow-gray-200 dark:shadow-slate-900/50"} text-[13px] sm:text-base`}
           >
-            <Download size={20} />
+            <Download size={16} />
             Download Invoice
           </button>
         </div>

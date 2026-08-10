@@ -25,8 +25,10 @@ class OrderingRepository:
     async def get_session_by_id(self, db: AsyncSession, session_id: int) -> Optional[CustomerSession]:
         stmt = select(CustomerSession).options(
             selectinload(CustomerSession.table),
-            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
-            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images)
+            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).options(
+                selectinload(MenuItem.category),
+                selectinload(MenuItem.images)
+            )
         ).where(CustomerSession.id == session_id)
         result = await db.execute(stmt)
         return result.scalars().first()
@@ -34,8 +36,10 @@ class OrderingRepository:
     async def get_sessions(self, db: AsyncSession, page: int, page_size: int, status: Optional[str] = None) -> Tuple[List[CustomerSession], int]:
         stmt = select(CustomerSession).options(
             selectinload(CustomerSession.table),
-            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
-            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images)
+            selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).options(
+                selectinload(MenuItem.category),
+                selectinload(MenuItem.images)
+            )
         )
         count_stmt = select(func.count(CustomerSession.id))
         

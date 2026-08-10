@@ -131,9 +131,14 @@ export default function WaiterStartSession() {
  <label className="text-[11px] md:text-xs font-bold text-gray-700 mb-1.5 block">Contact Number <span className="text-rose-500">*</span></label>
  <input 
  type="tel"
- placeholder="+91 98765 43210"
+ placeholder="9876543210"
  value={phone} 
- onChange={e => setPhone(e.target.value)} 
+ onChange={e => {
+     const val = e.target.value.replace(/\D/g, '');
+     if (val.length <= 10) setPhone(val);
+ }} 
+ maxLength={10}
+ pattern="[0-9]*"
  className="w-full bg-white/40 backdrop-blur-md border border-white/50 rounded-2xl px-3.5 py-2.5 md:py-3 md:text-base text-sm font-medium text-gray-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-gray-500"
  />
  </div>

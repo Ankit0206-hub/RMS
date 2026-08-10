@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Clock, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, ShoppingBag, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import waiterApi from '../../services/waiterApi';
 import { getWsUrl } from '../../services/api';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function WaiterOrderDetails() {
     const navigate = useNavigate();
     const { orderId } = useParams();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [billRequested, setBillRequested] = useState(false);
+    const queryClient = useQueryClient();
 
     const fetchOrderDetails = async () => {
         try {
@@ -65,6 +68,19 @@ export default function WaiterOrderDetails() {
         } catch (error) {
             console.error("Failed to accept order", error);
             toast.error("Failed to accept order");
+        }
+    };
+
+    const handleRequestBill = async () => {
+        if (!order || !order.session_id || billRequested) return;
+        try {
+            await waiterApi.requestBill(order.session_id);
+            toast.success('Bill requested successfully');
+            setBillRequested(true);
+            queryClient.invalidateQueries({ queryKey: ['tables'] });
+            fetchOrderDetails();
+        } catch (error) {
+            toast.error('Failed to request bill');
         }
     };
 
@@ -170,16 +186,30 @@ export default function WaiterOrderDetails() {
                             ))}
                         </div>
 
-                        <div className="mt-5 pt-5 border-t border-white/30 flex justify-between items-center bg-white/10 p-4 rounded-2xl border border-white/20">
+                        <div className="mt-5 pt-5 pb-5 mb-5 border-t border-white/30 flex justify-between items-center bg-white/10 p-4 rounded-2xl border border-white/20 flex-wrap gap-4">
                             <div className="flex flex-col">
                                 <span className="text-sm md:text-base font-bold text-gray-600 uppercase tracking-wider">Sub Total</span>
                                 <span className="text-[10px] md:text-xs font-semibold text-gray-400 mt-0.5">Exclusive of charges & taxes</span>
+                                <span className="text-xl md:text-2xl font-black text-gray-900 mt-1">₹{order.total_amount}</span>
                             </div>
-                            <span className="text-xl md:text-2xl font-black text-gray-900">₹{order.total_amount}</span>
+                            
+                            {order.status === "Served" && (
+                                <button 
+                                    onClick={handleRequestBill} 
+                                    disabled={billRequested}
+                                    className={`flex-1 min-w-[140px] max-w-[200px] bg-gradient-to-br ${billRequested ? 'from-gray-400 to-gray-500 cursor-not-allowed opacity-80' : 'from-indigo-500 to-indigo-600 active:scale-95 border-indigo-400/50'} text-white rounded-[18px] py-3 md:py-4 font-bold text-[14px] md:text-base shadow-sm transition-all flex items-center justify-center border`}
+                                >
+                                    <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                                    {billRequested ? "Requested" : "Request Bill"}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Spacer for bottom fixed action buttons */}
+            <div className="h-32 md:h-40"></div>
 
             {order.status === "Pending" && (
                 <div className="fixed bottom-16 md:bottom-20 left-0 right-0 p-4 md:p-6 bg-white/10 backdrop-blur-xl z-40 border-t border-white/20 shadow-[0_-8px_30px_rgba(0,0,0,0.02)] flex justify-center">
