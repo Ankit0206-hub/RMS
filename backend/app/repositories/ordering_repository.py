@@ -74,7 +74,8 @@ class OrderingRepository:
         stmt = select(Order).options(
             selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
             selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
-            selectinload(Order.session).selectinload(CustomerSession.table)
+            selectinload(Order.session).selectinload(CustomerSession.table),
+            selectinload(Order.waiter)
         )
         count_stmt = select(func.count(Order.id))
         
@@ -92,7 +93,8 @@ class OrderingRepository:
         stmt = select(Order).options(
             selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.category),
             selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
-            selectinload(Order.session).selectinload(CustomerSession.table)
+            selectinload(Order.session).selectinload(CustomerSession.table),
+            selectinload(Order.waiter)
         ).where(Order.id == order_id)
         result = await db.execute(stmt)
         return result.scalars().first()

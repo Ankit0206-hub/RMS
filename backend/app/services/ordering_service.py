@@ -134,6 +134,9 @@ class OrderingService:
                 else:
                     order.order_type = "Take Away" # We could also add logic for "Walk-in"
             
+            if order.waiter:
+                order.waiter_name = f"{order.waiter.first_name} {order.waiter.last_name}"
+            
             # Calculate total amount
             order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
             
@@ -163,6 +166,9 @@ class OrderingService:
                 order.order_type = "Dine In"
             else:
                 order.order_type = "Take Away"
+                
+        if order.waiter:
+            order.waiter_name = f"{order.waiter.first_name} {order.waiter.last_name}"
                 
         order.total_amount = sum(float(item.price_at_order) * item.quantity for item in order.items)
         

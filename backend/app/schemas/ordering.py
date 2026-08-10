@@ -32,6 +32,7 @@ class OrderStatusUpdate(BaseModel):
 class OrderResponse(OrderBase):
     id: int
     waiter_id: Optional[int]
+    waiter_name: Optional[str] = None
     status: str
     items: List[OrderItemResponse]
     customer_name: Optional[str] = None

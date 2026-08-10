@@ -12,6 +12,8 @@ const Orders = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchTerm, setSearchTerm] = useState(location.state?.searchCustomer || '');
+    const [statusFilter, setStatusFilter] = useState('All Status');
+    const [orderTypeFilter, setOrderTypeFilter] = useState('All Order Type');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -128,17 +130,25 @@ const Orders = () => {
 
     const filteredData = ordersData.filter(o => {
         const term = searchTerm.toLowerCase();
-        return o.id.toLowerCase().includes(term) ||
+        const matchesSearch = o.id.toLowerCase().includes(term) ||
                o.customerName.toLowerCase().includes(term) ||
                o.customerPhone.toLowerCase().includes(term) ||
                o.table.toLowerCase().includes(term);
+               
+        const matchesStatus = statusFilter === 'All Status' || o.status === statusFilter;
+        const matchesType = orderTypeFilter === 'All Order Type' || o.type === orderTypeFilter;
+        
+        return matchesSearch && matchesStatus && matchesType;
     });
 
     return (
         <div className="space-y-2 pb-10 font-inter">
             {/* KPI Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'All Status' ? 'border-indigo-400 ring-2 ring-indigo-50' : 'border-gray-100 hover:border-gray-300'}`}
+                    onClick={() => { setStatusFilter('All Status'); setCurrentPage(1); }}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-indigo-50 rounded-xl text-indigo-500">
                             <ClipboardList className="w-5 h-5" />
@@ -150,7 +160,10 @@ const Orders = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Completed' ? 'border-green-400 ring-2 ring-green-50' : 'border-gray-100 hover:border-gray-300'}`}
+                    onClick={() => { setStatusFilter('Completed'); setCurrentPage(1); }}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-green-50 rounded-xl text-green-500">
                             <CheckCircle2 className="w-5 h-5" />
@@ -162,7 +175,10 @@ const Orders = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Preparing' ? 'border-orange-400 ring-2 ring-orange-50' : 'border-gray-100 hover:border-gray-300'}`}
+                    onClick={() => { setStatusFilter('Preparing'); setCurrentPage(1); }}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-orange-50 rounded-xl text-orange-500">
                             <Clock className="w-5 h-5" />
@@ -174,7 +190,10 @@ const Orders = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Cancelled' ? 'border-red-400 ring-2 ring-red-50' : 'border-gray-100 hover:border-gray-300'}`}
+                    onClick={() => { setStatusFilter('Cancelled'); setCurrentPage(1); }}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-red-50 rounded-xl text-red-500">
                             <XCircle className="w-5 h-5" />
@@ -216,19 +235,28 @@ const Orders = () => {
                     </div>
                     
                     <div className="flex items-center space-x-3">
-                        <select className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg px-4 py-2 outline-none">
-                            <option>All Status</option>
-                            <option>Completed</option>
-                            <option>Preparing</option>
-                            <option>Confirmed</option>
-                            <option>Cancelled</option>
+                        <select 
+                            className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                            value={statusFilter}
+                            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="All Status">All Status</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Preparing">Preparing</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="Served">Served</option>
                         </select>
                         
-                        <select className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg px-4 py-2 outline-none">
-                            <option>All Order Type</option>
-                            <option>Dine In</option>
-                            <option>Walk-in</option>
-                            <option>Take Away</option>
+                        <select 
+                            className="bg-white border border-gray-200 text-gray-700 text-xs font-semibold rounded-lg px-4 py-2 outline-none"
+                            value={orderTypeFilter}
+                            onChange={(e) => { setOrderTypeFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="All Order Type">All Order Type</option>
+                            <option value="Dine In">Dine In</option>
+                            <option value="Walk-in">Walk-in</option>
+                            <option value="Take Away">Take Away</option>
                         </select>
                         
                         <button className="flex items-center bg-white border border-gray-200 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">

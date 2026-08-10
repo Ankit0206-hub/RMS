@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.schemas.admin.employees import EmployeeCreate, EmployeeResponse, EmployeeUpdate, EmployeeBreakToggle
@@ -8,8 +8,29 @@ from typing import Any
 from app.services.admin.employee_service import employee_service
 from app.models.security import Admin
 from app.api.deps import get_current_admin, get_current_admin_or_operator
+from app.utils.storage import upload_file_to_r2_or_local
 
 router = APIRouter()
+
+@router.post("/upload-image", response_model=StandardResponse[dict])
+async def upload_employee_image(
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File provided is not an image")
+    
+    image_url = await upload_file_to_r2_or_local(file, directory="profiles")
+    return StandardResponse(data={"image_url": image_url})
+
+@router.post("/upload-document", response_model=StandardResponse[dict])
+async def upload_employee_document(
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_admin_or_operator)
+):
+    # Allow pdf, images, etc.
+    document_url = await upload_file_to_r2_or_local(file, directory="documents")
+    return StandardResponse(data={"document_url": document_url})
 
 @router.post("/", response_model=StandardResponse[EmployeeResponse])
 async def create_employee(
