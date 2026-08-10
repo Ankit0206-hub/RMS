@@ -4,6 +4,7 @@ from app.repositories.ordering_repository import OrderingRepository
 from app.repositories.admin.menu_repository import MenuRepository
 from app.schemas.billing import BillCreate, PaymentCreate
 from app.core.exceptions import NotFoundException, BusinessRuleException
+from app.services.admin.settings_service import settings_service
 import uuid
 
 class BillingService:
@@ -40,9 +41,14 @@ class BillingService:
                     })
 
         import math
-        # Calculate taxes and totals (hardcoded for simplicity right now, ideally loaded from config)
-        total_tax = subtotal * 0.10 # 10% tax
-        service_charge = subtotal * 0.05 # 5% service charge
+        # Load settings for taxes and fees
+        settings = await settings_service.get_settings(db)
+        cgst = settings.cgst_percentage / 100.0
+        sgst = settings.sgst_percentage / 100.0
+        service_charge_pct = settings.service_charge_percentage / 100.0
+
+        total_tax = subtotal * (cgst + sgst)
+        service_charge = subtotal * service_charge_pct
         
         pre_discount_total = subtotal + total_tax + service_charge
         total_discount = pre_discount_total * (discount_percentage / 100.0) if discount_percentage else 0.0

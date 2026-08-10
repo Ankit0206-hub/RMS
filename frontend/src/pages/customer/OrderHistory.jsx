@@ -172,7 +172,7 @@ export default function OrderHistory() {
                 {/* Footer */}
                 <div className="mt-4 flex justify-between items-center">
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-0.5">Total Amount</p>
+                    <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 dark:text-slate-400 mb-0.5">Sub Total <span className="text-[10px] font-medium opacity-80">(Exclusive of charges & taxes)</span></p>
                     <span className="font-black text-gray-900 dark:text-white text-lg">₹{order.total.toFixed(2)}</span>
                   </div>
                   

@@ -90,8 +90,8 @@ class OrderingService:
             })
 
         # Generate token number
-        today = date.today()
-        stmt = select(func.count(Order.id)).where(func.date(Order.created_at) == today)
+        today_start = datetime.combine(datetime.utcnow().date(), datetime.min.time())
+        stmt = select(func.count(Order.id)).where(Order.created_at >= today_start)
         today_order_count = await db.scalar(stmt)
         next_token = today_order_count + 1
         

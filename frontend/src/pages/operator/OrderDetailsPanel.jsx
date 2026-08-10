@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, User, Users, ClipboardList, CheckCircle2, Copy } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -20,10 +20,22 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
         { id: 5, name: 'Gulab Jamun', qty: 1, price: 60.00, amount: 60.00, img: 'https://images.unsplash.com/photo-1596568212629-9e2c608f60dc?w=100&h=100&fit=crop' },
     ];
 
+    const { data: settingsResponse } = useQuery({
+        queryKey: ['operator-settings'],
+        queryFn: async () => {
+            const res = await api.get('/operator/settings');
+            return res.data;
+        }
+    });
+    const settings = settingsResponse?.data || {};
+    const cgstPercentage = settings.cgst_percentage !== undefined ? settings.cgst_percentage : 2.5;
+    const sgstPercentage = settings.sgst_percentage !== undefined ? settings.sgst_percentage : 2.5;
+    const serviceChargePercentage = settings.service_charge_percentage !== undefined ? settings.service_charge_percentage : 5;
+
     const subtotal = amount;
-    const serviceCharge = (subtotal * 0.05);
-    const cgst = (subtotal * 0.025);
-    const sgst = (subtotal * 0.025);
+    const serviceCharge = (subtotal * (serviceChargePercentage / 100));
+    const cgst = (subtotal * (cgstPercentage / 100));
+    const sgst = (subtotal * (sgstPercentage / 100));
     const grandTotal = subtotal + serviceCharge + cgst + sgst;
 
     const updateStatusMutation = useMutation({
@@ -143,16 +155,16 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
                             <span className="text-gray-500 dark:text-slate-400 font-semibold">Subtotal</span>
                             <span className="font-bold text-gray-900 dark:text-white">₹ {subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-[11px]">
-                            <span className="text-gray-500 dark:text-slate-400 font-semibold">Service Charge (5%)</span>
+                        <div className="flex justify-between items-center text-sm mb-2">
+                            <span className="text-gray-500 dark:text-slate-400 font-semibold">Service Charge ({serviceChargePercentage}%)</span>
                             <span className="font-bold text-gray-900 dark:text-white">₹ {serviceCharge.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-[11px]">
-                            <span className="text-gray-500 dark:text-slate-400 font-semibold">CGST (2.5%)</span>
+                        <div className="flex justify-between items-center text-[11px] mb-1">
+                            <span className="text-gray-500 dark:text-slate-400 font-semibold">CGST ({cgstPercentage}%)</span>
                             <span className="font-bold text-gray-900 dark:text-white">₹ {cgst.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-[11px]">
-                            <span className="text-gray-500 dark:text-slate-400 font-semibold">SGST (2.5%)</span>
+                        <div className="flex justify-between items-center text-[11px] mb-4">
+                            <span className="text-gray-500 dark:text-slate-400 font-semibold">SGST ({sgstPercentage}%)</span>
                             <span className="font-bold text-gray-900 dark:text-white">₹ {sgst.toFixed(2)}</span>
                         </div>
                         <div className="pt-2.5 mt-2.5 border-t border-gray-100 dark:border-slate-800 flex justify-between">

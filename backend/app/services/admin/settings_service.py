@@ -45,6 +45,8 @@ class SettingsService:
             contact_phone=settings_dict.get("contact_phone", ""),
             currency=settings_dict.get("currency", "USD"),
             gst_percentage=float(settings_dict.get("gst_percentage", 0.0)),
+            cgst_percentage=float(settings_dict.get("cgst_percentage", 0.0)),
+            sgst_percentage=float(settings_dict.get("sgst_percentage", 0.0)),
             service_charge_percentage=float(settings_dict.get("service_charge_percentage", 0.0)),
             business_hours=settings_dict.get("business_hours", ""),
             opening_time=settings_dict.get("opening_time"),

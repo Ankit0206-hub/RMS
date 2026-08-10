@@ -23,6 +23,18 @@ const OperatorOrderDetails = () => {
         }
     });
 
+    const { data: settingsResponse } = useQuery({
+        queryKey: ['operator-settings'],
+        queryFn: async () => {
+            const res = await api.get('/operator/settings');
+            return res.data;
+        }
+    });
+    const settings = settingsResponse?.data || {};
+    const cgstPercentage = settings.cgst_percentage !== undefined ? settings.cgst_percentage : 2.5;
+    const sgstPercentage = settings.sgst_percentage !== undefined ? settings.sgst_percentage : 2.5;
+    const serviceChargePercentage = settings.service_charge_percentage !== undefined ? settings.service_charge_percentage : 5;
+
     const queryClient = useQueryClient();
     const statusMutation = useMutation({
         mutationFn: async (newStatus) => {
@@ -108,9 +120,9 @@ const OperatorOrderDetails = () => {
     })();
 
     const subtotal = orderData.total_amount || 0;
-    const serviceCharge = subtotal * 0.05;
-    const cgst = subtotal * 0.025;
-    const sgst = subtotal * 0.025;
+    const serviceCharge = subtotal * (serviceChargePercentage / 100);
+    const cgst = subtotal * (cgstPercentage / 100);
+    const sgst = subtotal * (sgstPercentage / 100);
     const grandTotal = subtotal + serviceCharge + cgst + sgst;
 
     return (
@@ -377,12 +389,12 @@ const OperatorOrderDetails = () => {
                                 </span>
                                 <span className="font-bold text-gray-900 dark:text-white">₹ {serviceCharge.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 dark:text-slate-400 font-semibold">CGST (2.5%)</span>
+                            <div className="flex justify-between items-center text-sm mb-2">
+                                <span className="text-gray-500 dark:text-slate-400 font-semibold">CGST ({cgstPercentage}%)</span>
                                 <span className="font-bold text-gray-900 dark:text-white">₹ {cgst.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 dark:text-slate-400 font-semibold">SGST (2.5%)</span>
+                            <div className="flex justify-between items-center text-sm mb-4">
+                                <span className="text-gray-500 dark:text-slate-400 font-semibold">SGST ({sgstPercentage}%)</span>
                                 <span className="font-bold text-gray-900 dark:text-white">₹ {sgst.toFixed(2)}</span>
                             </div>
                             

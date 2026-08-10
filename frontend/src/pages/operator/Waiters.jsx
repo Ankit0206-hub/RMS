@@ -97,6 +97,11 @@ const Waiters = () => {
     });
     const kitchens = kitchensData || [];
 
+    const getKitchenName = (kitchenId) => {
+        const kitchen = kitchens.find(k => k.id === kitchenId);
+        return kitchen ? kitchen.name : 'Unknown Kitchen';
+    };
+
     useEffect(() => {
         if (nextCode && !newWaiterData.employee_code) {
             setNewWaiterData(prev => ({ ...prev, employee_code: nextCode }));
@@ -140,7 +145,7 @@ const Waiters = () => {
         },
         onSuccess: (data, variables) => {
             toast.success('Waiter updated successfully');
-            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
             setIsEditWaiterModalOpen(false);
             setEditingWaiterData(null);
             if (selectedWaiter && selectedWaiter.id === variables.id) {
@@ -173,7 +178,7 @@ const Waiters = () => {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['adminAttendance']);
+            queryClient.invalidateQueries({ queryKey: ['adminAttendance'] });
             toast.success('Attendance updated successfully');
         },
         onError: (error) => {
@@ -191,8 +196,8 @@ const Waiters = () => {
             return response.data;
         },
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries(['adminEmployees']);
-            queryClient.invalidateQueries(['adminTables']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
+            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
             setIsTakeBreakModalOpen(false);
             setBreakWaiter(null);
             setCoverWaiterId('');
@@ -473,7 +478,12 @@ const Waiters = () => {
                                         <Filter size={14} className="mr-1.5" /> Filters
                                     </button>
                                     <button 
-                                        onClick={() => queryClient.invalidateQueries(['adminEmployees'])}
+                                        onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
+                                            queryClient.invalidateQueries({ queryKey: ['adminAttendance'] });
+                                            queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                                            queryClient.invalidateQueries({ queryKey: ['operator-analytics-today'] });
+                                        }}
                                         className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50"
                                     >
                                         <RotateCcw size={16} />
@@ -490,7 +500,7 @@ const Waiters = () => {
                                         <th className="py-4 px-6 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Waiter</th>
                                         <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Employee ID</th>
                                         <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Phone</th>
-                                        <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Section</th>
+                                        <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Section / Kitchen</th>
                                         <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                                         <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Current Table(s)</th>
                                         <th className="py-4 px-4 text-[11px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider text-center">Orders Today</th>
@@ -513,7 +523,9 @@ const Waiters = () => {
                                             </td>
                                             <td className="py-3 px-4 text-[13px] font-semibold text-gray-600 dark:text-slate-400">{waiter.employee_code || `WT00${waiter.id}`}</td>
                                             <td className="py-3 px-4 text-[13px] font-medium text-gray-600 dark:text-slate-400">{waiter.phone || '-'}</td>
-                                            <td className="py-3 px-4 text-[13px] font-medium text-gray-600 dark:text-slate-400">{waiter.section}</td>
+                                            <td className="py-3 px-4 text-[13px] font-medium text-gray-600 dark:text-slate-400">
+                                                {waiter.role_id === 3 ? (waiter.kitchen_id ? getKitchenName(waiter.kitchen_id) : 'Unassigned') : waiter.section}
+                                            </td>
                                             <td className="py-3 px-4">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(waiter.status)}`}>
                                                     {waiter.status}
@@ -770,8 +782,10 @@ const Waiters = () => {
                                 </div>
                                 <div className="flex items-center text-[13px]">
                                     <MapPin size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />
-                                    <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Section</span>
-                                    <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">{selectedWaiter.section}</span>
+                                    <span className="font-semibold text-gray-500 dark:text-slate-400 w-24">Section / Kitchen</span>
+                                    <span className="font-bold text-gray-900 dark:text-white flex-1 text-right">
+                                        {selectedWaiter.role_id === 3 ? (selectedWaiter.kitchen_id ? getKitchenName(selectedWaiter.kitchen_id) : 'Unassigned') : selectedWaiter.section}
+                                    </span>
                                 </div>
                                 <div className="flex items-center text-[13px]">
                                     <Clock size={16} className="text-gray-400 dark:text-slate-500 dark:text-slate-400 mr-3 shrink-0" />

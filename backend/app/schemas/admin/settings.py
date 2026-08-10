@@ -12,7 +12,9 @@ class RestaurantSettingsUpdate(BaseModel):
     contact_email: str
     contact_phone: str
     currency: str
-    gst_percentage: float = Field(..., ge=0, le=100)
+    gst_percentage: Optional[float] = 0
+    cgst_percentage: float = Field(0, ge=0, le=100)
+    sgst_percentage: float = Field(0, ge=0, le=100)
     service_charge_percentage: float = Field(..., ge=0, le=100)
     business_hours: str
     opening_time: Optional[str] = None

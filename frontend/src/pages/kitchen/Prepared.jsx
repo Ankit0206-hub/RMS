@@ -73,8 +73,8 @@ const Prepared = () => {
                                             )}
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end">
-                                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded mb-2">
-                                                PREPARED
+                                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded mb-2 uppercase">
+                                                {item.status || "PREPARED"}
                                             </span>
                                             <button 
                                                 onClick={() => handleRevertStatus(item.id)}
@@ -131,8 +131,8 @@ const Prepared = () => {
                                             )}
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end">
-                                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded mb-2">
-                                                PREPARED
+                                            <span className="text-xs font-semibold bg-green-100 text-green-800 px-2 py-1 rounded mb-2 uppercase">
+                                                {item.status || "PREPARED"}
                                             </span>
                                             <button 
                                                 onClick={() => {

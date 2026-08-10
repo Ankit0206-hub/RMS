@@ -580,7 +580,6 @@ const TableAssignment = () => {
                         <div className="pt-4 border-t border-gray-100 dark:border-slate-800 flex flex-col flex-1 min-h-0">
                             <div className="flex justify-between items-center mb-3 shrink-0">
                                 <h4 className="text-xs lg:text-[13px] 2xl:text-sm font-bold text-gray-800 dark:text-slate-200">Unassigned Tables ({unassignedTables})</h4>
-                                <button className="text-[9px] lg:text-[10px] 2xl:text-[11px] font-bold text-indigo-600 hover:underline">View All</button>
                             </div>
                             <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                                 {filteredTablesByFloor.filter(t => !t.assigned_waiter_id).map(table => (

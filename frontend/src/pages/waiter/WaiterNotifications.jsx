@@ -33,7 +33,7 @@ export default function WaiterNotifications() {
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'NEW_NOTIFICATION') {
+                if (data.event === 'NEW_NOTIFICATION') {
                     fetchNotifications();
                     toast.success('New Notification received!');
                 }
