@@ -58,8 +58,6 @@ async def get_kitchen_stats(
     Get dashboard statistics for the current kitchen user's assigned kitchen.
     """
     kitchen_id = current_user.kitchen_id
-    if not kitchen_id:
-        return {"totalOrders": 0, "preparing": 0, "ready": 0, "completed": 0}
 
     from sqlalchemy import func
 
@@ -67,9 +65,11 @@ async def get_kitchen_stats(
     query = (
         select(OrderItem.status, func.count(OrderItem.id))
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
-        .filter(MenuItem.kitchen_id == kitchen_id)
-        .group_by(OrderItem.status)
     )
+    if kitchen_id:
+        query = query.filter(MenuItem.kitchen_id == kitchen_id)
+    
+    query = query.group_by(OrderItem.status)
     result = await db.execute(query)
     status_counts = dict(result.all())
 
@@ -78,11 +78,11 @@ async def get_kitchen_stats(
         select(func.count(func.distinct(OrderItem.order_id)))
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
         .join(Order, OrderItem.order_id == Order.id)
-        .filter(
-            MenuItem.kitchen_id == kitchen_id,
-            Order.status.notin_(["Completed", "Cancelled", "Served"])
-        )
+        .filter(Order.status.notin_(["Completed", "Cancelled", "Served"]))
     )
+    if kitchen_id:
+        from sqlalchemy import or_
+        active_orders_query = active_orders_query.filter(or_(MenuItem.kitchen_id == kitchen_id, MenuItem.kitchen_id.is_(None)))
     active_orders_result = await db.execute(active_orders_query)
     total_active_orders = active_orders_result.scalar() or 0
 
@@ -103,8 +103,6 @@ async def get_kitchen_orders(
     Returns items grouped by order.
     """
     kitchen_id = current_user.kitchen_id
-    if not kitchen_id:
-        return {"data": []}
 
     # Fetch order items for this kitchen that are not prepared
     query = (
@@ -116,12 +114,16 @@ async def get_kitchen_orders(
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
         .join(Order, OrderItem.order_id == Order.id)
         .filter(
-            MenuItem.kitchen_id == kitchen_id,
             OrderItem.status.in_(["received", "preparing"]),
             Order.status.notin_(["Completed", "Cancelled"])
         )
-        .order_by(OrderItem.created_at.asc())
     )
+    
+    if kitchen_id:
+        from sqlalchemy import or_
+        query = query.filter(or_(MenuItem.kitchen_id == kitchen_id, MenuItem.kitchen_id.is_(None)))
+        
+    query = query.order_by(OrderItem.created_at.asc())
     result = await db.execute(query)
     items = result.scalars().all()
 
@@ -162,8 +164,6 @@ async def get_kitchen_prepared_items(
     Get prepared orders for the current kitchen user's assigned kitchen.
     """
     kitchen_id = current_user.kitchen_id
-    if not kitchen_id:
-        return {"data": []}
 
     query = (
         select(OrderItem)
@@ -174,12 +174,16 @@ async def get_kitchen_prepared_items(
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
         .join(Order, OrderItem.order_id == Order.id)
         .filter(
-            MenuItem.kitchen_id == kitchen_id,
             OrderItem.status.in_(["prepared", "served"]),
             Order.status.notin_(["Completed", "Cancelled"])
         )
-        .order_by(OrderItem.updated_at.desc())
     )
+    
+    if kitchen_id:
+        from sqlalchemy import or_
+        query = query.filter(or_(MenuItem.kitchen_id == kitchen_id, MenuItem.kitchen_id.is_(None)))
+        
+    query = query.order_by(OrderItem.updated_at.desc())
     result = await db.execute(query)
     items = result.scalars().all()
 
@@ -274,17 +278,18 @@ async def update_order_items_status(
         raise HTTPException(status_code=400, detail="Invalid status")
         
     kitchen_id = current_user.kitchen_id
-    if not kitchen_id:
-        raise HTTPException(status_code=400, detail="No kitchen assigned")
 
     query = (
         select(OrderItem)
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
         .filter(
-            OrderItem.order_id == order_id,
-            MenuItem.kitchen_id == kitchen_id
+            OrderItem.order_id == order_id
         )
     )
+    
+    if kitchen_id:
+        from sqlalchemy import or_
+        query = query.filter(or_(MenuItem.kitchen_id == kitchen_id, MenuItem.kitchen_id.is_(None)))
     result = await db.execute(query)
     items = result.scalars().all()
 

@@ -4,6 +4,7 @@ import { useSearchParams, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
 import { getWsUrl } from "../../services/api";
+import { playNotificationSound } from "../../utils/audio";
 import { ShoppingCart, Utensils, CheckCircle, Search } from 'lucide-react';
 import { Button, Card, Modal } from '../../components/ui';
 import { toast, Toaster } from 'react-hot-toast';
@@ -50,6 +51,7 @@ const CustomerMenu = () => {
                 const data = JSON.parse(event.data);
                 console.log("Customer received event:", data);
                 if (data.event === 'order.updated' || data.event === 'order.created') {
+                    playNotificationSound();
                     setOrderStatus(data.payload.status);
                     toast(`Your order is now: ${data.payload.status}`, { icon: '🔔' });
                 } else if (data.event === 'menu.updated') {

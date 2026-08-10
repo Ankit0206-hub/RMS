@@ -4,6 +4,8 @@ import { getWsUrl } from '../services/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
+import { playNotificationSound } from '../utils/audio';
+
 const WebSocketContext = createContext();
 
 export const WebSocketProvider = ({ children }) => {
@@ -36,6 +38,7 @@ export const WebSocketProvider = ({ children }) => {
                 console.log("WebSocket event received:", data);
 
                 if (data.event === 'order.created') {
+                    playNotificationSound();
                     toast.success(`New order #${data.payload.id} received!`);
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -45,6 +48,7 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['adminReservations'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
                 } else if (data.event === 'order.updated') {
+                    playNotificationSound();
                     toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
                         icon: 'ℹ️',
                     });

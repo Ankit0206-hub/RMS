@@ -26,8 +26,8 @@ export default function OrderTimeline({ status }) {
             'Pending': 'Pending',
             'Preparing': 'Preparing',
             'Cooked': 'Cooked',
-            'Served': 'Served',
-            'Completed': 'Served' // If completed, Served is treated as completed, but we mark it as active or completed?
+            'Served': null,
+            'Completed': null 
         };
 
         if (status === 'Completed' || status === 'Cancelled') {

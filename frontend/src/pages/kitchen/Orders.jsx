@@ -7,6 +7,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 const Orders = () => {
     const queryClient = useQueryClient();
     const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const isUpdatingRef = React.useRef(false);
 
     const { data: orders = [], isLoading } = useQuery({
         queryKey: ['orders'],
@@ -24,14 +26,46 @@ const Orders = () => {
     }, [orders, selectedOrderId]);
 
     const handleOrderStatusChange = async (orderId, newStatus) => {
+        if (isUpdatingRef.current) return;
+        isUpdatingRef.current = true;
+        setIsUpdating(true);
+        
+        // Optimistic update
+        const previousOrders = queryClient.getQueryData(['orders']);
+        queryClient.setQueryData(['orders'], (old) => {
+            if (!old) return old;
+            
+            if (newStatus === 'prepared') {
+                // If it's fully prepared, it leaves this screen
+                return old.filter(order => order.id !== orderId);
+            }
+            
+            // Otherwise, update the statuses of all items in the order
+            return old.map(order => {
+                if (order.id === orderId) {
+                    return {
+                        ...order,
+                        items: order.items.map(item => ({ ...item, status: newStatus }))
+                    };
+                }
+                return order;
+            });
+        });
+
         try {
             await kitchenApi.updateOrderItemsStatus(orderId, newStatus);
-            toast.success(`Order items marked as ${newStatus}`);
+            toast.success(`Order items marked as ${newStatus}`, { id: 'order-status-toast' });
+        } catch (error) {
+            // Revert on error
+            queryClient.setQueryData(['orders'], previousOrders);
+            toast.error('Failed to update status', { id: 'order-status-error-toast' });
+        } finally {
+            isUpdatingRef.current = false;
+            setIsUpdating(false);
+            // Still invalidate to ensure synchronization
             queryClient.invalidateQueries({ queryKey: ['orders'] });
             queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
             queryClient.invalidateQueries({ queryKey: ['prepared_items'] });
-        } catch (error) {
-            toast.error('Failed to update status');
         }
     };
 
@@ -130,7 +164,8 @@ const Orders = () => {
                                         return (
                                             <button 
                                                 onClick={() => handleOrderStatusChange(selectedOrder.id, 'preparing')}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
+                                                disabled={isUpdating}
+                                                className={`bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center justify-center gap-2 w-full sm:w-auto ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
                                                 <Play size={18} /> Start Preparing
                                             </button>
@@ -139,7 +174,8 @@ const Orders = () => {
                                         return (
                                             <button 
                                                 onClick={() => handleOrderStatusChange(selectedOrder.id, 'prepared')}
-                                                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
+                                                disabled={isUpdating}
+                                                className={`bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition-colors flex items-center justify-center gap-2 w-full sm:w-auto ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
                                                 <CheckCircle size={18} /> Mark as Prepared
                                             </button>

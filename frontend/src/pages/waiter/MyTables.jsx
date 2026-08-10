@@ -243,7 +243,7 @@ export default function MyTables() {
  </div>
  <div className="flex justify-between items-center pt-3 border-t border-white/30">
  <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Bill</span>
- <span className="text-[16px] font-black text-gray-800 transition-colors">₹{table.currentBill}</span>
+ <span className="text-[16px] font-black text-gray-800 transition-colors">₹{Number(table.currentBill || 0).toFixed(2)}</span>
  </div>
  </div>
  ) : (

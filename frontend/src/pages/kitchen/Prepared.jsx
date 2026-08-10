@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 const Prepared = () => {
     const queryClient = useQueryClient();
     const [selectedOrderForModal, setSelectedOrderForModal] = useState(null);
+    const isUpdatingRef = React.useRef(false);
 
     const { data: orders = [], isLoading } = useQuery({
         queryKey: ['prepared_items'],
@@ -17,14 +18,30 @@ const Prepared = () => {
     });
 
     const handleRevertStatus = async (itemId) => {
+        if (isUpdatingRef.current) return;
+        isUpdatingRef.current = true;
+        
+        // Optimistic update
+        const previousPrepared = queryClient.getQueryData(['prepared_items']);
+        queryClient.setQueryData(['prepared_items'], (old) => {
+            if (!old) return old;
+            return old.map(order => ({
+                ...order,
+                items: order.items.filter(item => item.id !== itemId)
+            })).filter(order => order.items.length > 0);
+        });
+
         try {
             await kitchenApi.updateItemStatus(itemId, 'preparing');
-            toast.success('Item moved back to Preparing');
+            toast.success('Item moved back to Preparing', { id: 'item-revert-toast' });
+        } catch (error) {
+            queryClient.setQueryData(['prepared_items'], previousPrepared);
+            toast.error('Failed to update status', { id: 'item-revert-error-toast' });
+        } finally {
+            isUpdatingRef.current = false;
             queryClient.invalidateQueries({ queryKey: ['prepared_items'] });
             queryClient.invalidateQueries({ queryKey: ['orders'] });
             queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
-        } catch (error) {
-            toast.error('Failed to update status');
         }
     };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api, { getWsUrl } from '../../services/api';
 import { Utensils, CheckCircle2, Clock } from 'lucide-react';
+import { playNotificationSound } from '../../utils/audio';
 
 const CustomerDisplay = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -12,7 +13,7 @@ const CustomerDisplay = () => {
     }, []);
 
     const { data: ordersData, isLoading, error, refetch } = useQuery({
-        queryKey: ['customer-display-orders'],
+        queryKey: ['customer-display-orders', sessionId],
         queryFn: async () => {
             const res = await api.get('/customer/display/active-orders');
             return res.data.data;
@@ -32,6 +33,7 @@ const CustomerDisplay = () => {
                 const data = JSON.parse(event.data);
                 // When an order is created or updated, fetch fresh data
                 if (data.event === "order.created" || data.event === "order.updated" || data.event === "ORDER_ITEM_UPDATED" || data.event === "ORDER_UPDATED") {
+                    playNotificationSound();
                     refetch();
                 }
             } catch (error) {
