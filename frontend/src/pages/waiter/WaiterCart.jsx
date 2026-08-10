@@ -183,6 +183,8 @@ export default function WaiterCart() {
                                 };
                                 await waiterApi.createOrder(sessionId, orderData);
                                 toast.success('Order placed successfully!');
+                                const sid = sessionId || 'table_' + tableId;
+                                sessionStorage.removeItem(`waiter_cart_${sid}`);
                                 navigate('/waiter/tables');
                             } catch (err) {
                                 toast.error("Failed to place order");

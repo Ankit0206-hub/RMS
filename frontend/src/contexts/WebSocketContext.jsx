@@ -73,6 +73,23 @@ export const WebSocketProvider = ({ children }) => {
                 } else if (data.event === 'menu.updated') {
                     window.dispatchEvent(new Event('menuUpdated'));
                     queryClient.invalidateQueries({ queryKey: ['admin_menu'] }); // If admin uses it
+                } else if (data.event === 'CUSTOMER_REQUESTED_BILL' || data.event === 'WAITER_REQUESTED_BILL') {
+                    playNotificationSound();
+                    toast(`Table ${data.payload.table_id} requested the bill!`, {
+                        icon: '📝',
+                    });
+                    queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                } else if (data.event === 'NEW_NOTIFICATION') {
+                    queryClient.invalidateQueries({ queryKey: ['waiter_notifications'] });
+                } else if (data.event === 'BILL_PAID') {
+                    queryClient.invalidateQueries({ queryKey: ['orders'] });
+                    queryClient.invalidateQueries({ queryKey: ['tables'] });
+                    queryClient.invalidateQueries({ queryKey: ['adminTables'] });
+                    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+                    queryClient.invalidateQueries({ queryKey: ['bills'] });
+                    queryClient.invalidateQueries({ queryKey: ['analytics_dashboard'] });
                 }
             } catch (err) {
                 console.error("Failed to parse websocket message", err);
@@ -86,7 +103,14 @@ export const WebSocketProvider = ({ children }) => {
         setSocket(ws);
 
         return () => {
-            ws.close();
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.close();
+            } else if (ws.readyState === WebSocket.CONNECTING) {
+                // Wait for the connection to establish before closing to prevent the "closed before connection established" error
+                ws.onopen = () => ws.close();
+            } else {
+                ws.close();
+            }
         };
     }, [user, queryClient]);
 

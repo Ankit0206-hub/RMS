@@ -9,9 +9,34 @@ from app.services.billing_service import BillingService
 router = APIRouter(prefix="/billing", tags=["Admin - Billing"], dependencies=[Depends(get_current_admin_or_operator)])
 service = BillingService()
 
+from app.api.websocket_router import manager
+from sqlalchemy import select
+from app.models.ordering import Order
+
 @router.post("/bills", response_model=StandardResponse[BillResponse], dependencies=[Depends(get_strict_operator)])
 async def create_bill(bill_in: BillCreate, db: AsyncSession = Depends(get_db)):
     bill = await service.generate_bill(db, session_id=bill_in.session_id, employee_id=None, discount_percentage=bill_in.discount_percentage)
+    
+    # Mark orders in this session as Completed
+    stmt = select(Order).where(Order.session_id == bill_in.session_id)
+    result = await db.execute(stmt)
+    orders = result.scalars().all()
+    for o in orders:
+        if o.status not in ["Cancelled"]:
+            o.status = "Completed"
+    await db.commit()
+
+    # Broadcast events so clients update instantly
+    await manager.broadcast("bill.created", {
+        "session_id": bill.session_id,
+        "bill_id": bill.id
+    }, ["operator", "waiter", "customer"])
+    
+    await manager.broadcast("order.updated", {
+        "id": bill.session_id,
+        "status": "Completed"
+    }, ["customer", "waiter", "operator"])
+    
     return StandardResponse(success=True, message="Bill generated successfully", data=bill)
 
 @router.get("/bills", response_model=StandardResponse[list[BillResponse]])

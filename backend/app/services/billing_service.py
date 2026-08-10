@@ -105,10 +105,15 @@ class BillingService:
         if total_paid >= float(bill.grand_total):
             await self.repository.update_bill_status(db, bill_id, "Paid")
             
-            # Close the session
+                # Close the session
             session = await self.ordering_repository.get_session_by_id(db, bill.session_id)
             if session:
                 session.status = "Completed"
+                
+                # Update all orders to Completed
+                for order in session.orders:
+                    if order.status not in ["Cancelled"]:
+                        order.status = "Completed"
                 
                 # Also free up the table
                 from app.models.restaurant import RestaurantTable
