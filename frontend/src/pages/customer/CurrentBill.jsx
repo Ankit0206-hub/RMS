@@ -113,20 +113,20 @@ export default function CurrentBill() {
               <div className="space-y-3 text-sm font-medium text-gray-500 dark:text-slate-400">
                 <div className="flex justify-between">
                   <span>Item Total</span>
-                  <span className="text-gray-900 dark:text-white">₹{subtotal}</span>
+                  <span className="text-gray-900 dark:text-white">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span className="text-gray-900 dark:text-white">₹{tax}</span>
+                  <span className="text-gray-900 dark:text-white">₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Service Charge</span>
-                  <span className="text-gray-900 dark:text-white">₹{serviceCharge}</span>
+                  <span className="text-gray-900 dark:text-white">₹{serviceCharge.toFixed(2)}</span>
                 </div>
                 <div className="my-3 border-t border-gray-100 dark:border-slate-800 border-dashed" />
                 <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white">
                   <span>Estimated Total</span>
-                  <span className="text-orange-500">₹{total}</span>
+                  <span className="text-orange-500">₹{total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

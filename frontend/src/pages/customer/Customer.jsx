@@ -83,7 +83,7 @@ export default function Customer() {
   };
 
   return (
-    <PageLayout className="relative h-screen w-full overflow-hidden bg-white dark:bg-slate-900">
+    <PageLayout className="relative h-[100dvh] w-full overflow-hidden bg-white dark:bg-slate-900">
       {/* Background Image & Glass Overlay */}
       <div className="absolute inset-0 z-0">
         <img
@@ -94,7 +94,7 @@ export default function Customer() {
         <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-white/95 backdrop-blur-[6px] md:backdrop-blur-md" />
       </div>
 
-      <div className="relative z-10 flex h-full flex-col px-6 pt-12 pb-6 md:px-12 md:pt-20 md:pb-12 overflow-y-auto">
+      <div className="relative z-10 flex h-full flex-col px-6 pt-8 pb-6 md:px-12 md:pt-16 md:pb-8 overflow-hidden">
         
         {/* Top Header / Cancel & Skip */}
         <div className="absolute top-6 right-6 md:top-10 md:right-10 z-20 flex items-center gap-4 md:gap-6">
@@ -113,9 +113,9 @@ export default function Customer() {
         </div>
 
         {/* Branding */}
-        <div className="flex flex-col items-center justify-center mb-5 md:mb-10">
-          <ChefHat className="text-orange-500 mb-1 w-10 h-10 md:w-16 md:h-16" strokeWidth={2.5} />
-          <h1 className="text-[28px] md:text-5xl font-extrabold tracking-tight leading-tight">
+        <div className="flex flex-col items-center justify-center mt-6 md:mt-0 mb-4 md:mb-8">
+          <ChefHat className="text-orange-500 mb-1 w-8 h-8 md:w-16 md:h-16" strokeWidth={2.5} />
+          <h1 className="text-[24px] md:text-5xl font-extrabold tracking-tight leading-tight">
             <span className="text-[#0f172a]">Dine</span>
             <span className="text-orange-500">Ops</span>
           </h1>
@@ -125,7 +125,7 @@ export default function Customer() {
         </div>
 
         {/* Header Section */}
-        <div className="text-center mb-6 md:mb-12">
+        <div className="text-center mb-4 md:mb-10">
           <h2 className="text-[24px] md:text-4xl font-bold text-[#0f172a] tracking-tight leading-tight">
             Let's Get You Started
           </h2>
@@ -134,7 +134,7 @@ export default function Customer() {
           </p>
         </div>
 
-        <div className="flex-1 space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full">
+        <div className="flex-1 flex flex-col justify-center space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full">
           {/* Your Name */}
           <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
             <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Your Name</label>
@@ -213,7 +213,7 @@ export default function Customer() {
         <div className="flex-1 min-h-[16px] md:min-h-[32px]"></div>
 
         {/* Continue Button */}
-        <div className="pb-2 pt-4 md:pt-8 max-w-sm md:max-w-lg mx-auto w-full">
+        <div className="pb-2 pt-4 md:pt-8 mt-auto max-w-sm md:max-w-lg mx-auto w-full">
           <button
             onClick={handleContinue}
             disabled={loading}
