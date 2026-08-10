@@ -60,6 +60,16 @@ const AddCategoryWithItems = () => {
         return kitchens.length > 0 ? kitchens[0].id.toString() : '';
     }, [kitchens]);
 
+    const { data: menuItemsData } = useQuery({
+        queryKey: ['menuItemsList'],
+        queryFn: async () => {
+            const response = await api.get('/admin/menu/');
+            return response.data.data;
+        }
+    });
+
+    const existingItems = menuItemsData?.filter(item => item.category_id === selectedCategoryId) || [];
+
     React.useEffect(() => {
         if (defaultKitchenId && !itemForm.kitchen_id) {
             setItemForm(prev => ({ ...prev, kitchen_id: defaultKitchenId }));
@@ -448,6 +458,39 @@ const AddCategoryWithItems = () => {
                                 >
                                     <Plus className="w-5 h-5 mr-2" /> Add an Item
                                 </button>
+                                
+                                {existingItems.length > 0 && (
+                                    <div className="mt-10 w-full max-w-3xl">
+                                        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Existing Items</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                                            {existingItems.map(item => (
+                                                <div key={item.id} className="flex items-center gap-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                                                    {item.image_url ? (
+                                                        <img src={item.image_url} alt={item.name} className="w-16 h-16 rounded-xl object-cover" />
+                                                    ) : (
+                                                        <div className="w-16 h-16 rounded-xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center">
+                                                            <ImageIcon className="w-6 h-6 text-gray-300 dark:text-slate-600" />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h5 className="font-bold text-gray-900 dark:text-white truncate">{item.name}</h5>
+                                                        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">₹{item.price}</p>
+                                                        <div className="flex gap-2 mt-1">
+                                                            {item.is_veg ? (
+                                                                <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 rounded border border-green-200 dark:border-green-500/20 font-medium">Veg</span>
+                                                            ) : (
+                                                                <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 rounded border border-red-200 dark:border-red-500/20 font-medium">Non-Veg</span>
+                                                            )}
+                                                            {!item.is_active && (
+                                                                <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400 rounded font-medium">Inactive</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
