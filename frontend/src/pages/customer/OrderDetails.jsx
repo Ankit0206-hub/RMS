@@ -128,7 +128,7 @@ export default function OrderDetails() {
 
         {/* Receipt Section */}
         <div>
-          <h2 className="text-sm font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Bill Summary</h2>
+          <h2 className="text-sm font-bold text-gray-400 dark:text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-2">Order Summary</h2>
           <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 shadow-sm border border-gray-100 dark:border-slate-800 relative">
             
             {/* Scalloped edge effect at the top */}
@@ -139,24 +139,12 @@ export default function OrderDetails() {
             </div>
 
             <div className="pt-2 space-y-3">
-              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
-                <span>Item Total</span>
-                <span>₹{subtotal}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
-                <span>GST (5%)</span>
-                <span>₹{gst}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm font-medium text-gray-500 dark:text-slate-400">
-                <span>Service Charge</span>
-                <span>₹{serviceCharge}</span>
-              </div>
-              
-              <div className="border-t-2 border-dashed border-gray-200 dark:border-slate-700 my-4"></div>
-              
               <div className="flex justify-between items-center">
-                <span className="text-base font-bold text-gray-900 dark:text-white">Grand Total</span>
-                <span className="text-2xl font-black text-orange-500">₹{total}</span>
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-gray-900 dark:text-white">Sub Total</span>
+                  <span className="text-[10px] md:text-xs font-semibold text-gray-400 dark:text-slate-500 mt-0.5">Exclusive of charges & taxes</span>
+                </div>
+                <span className="text-2xl font-black text-orange-500">₹{subtotal}</span>
               </div>
             </div>
             

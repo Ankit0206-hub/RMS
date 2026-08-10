@@ -171,7 +171,10 @@ export default function WaiterOrderDetails() {
                         </div>
 
                         <div className="mt-5 pt-5 border-t border-white/30 flex justify-between items-center bg-white/10 p-4 rounded-2xl border border-white/20">
-                            <span className="text-sm md:text-base font-bold text-gray-600 uppercase tracking-wider">Total</span>
+                            <div className="flex flex-col">
+                                <span className="text-sm md:text-base font-bold text-gray-600 uppercase tracking-wider">Sub Total</span>
+                                <span className="text-[10px] md:text-xs font-semibold text-gray-400 mt-0.5">Exclusive of charges & taxes</span>
+                            </div>
                             <span className="text-xl md:text-2xl font-black text-gray-900">₹{order.total_amount}</span>
                         </div>
                     </div>

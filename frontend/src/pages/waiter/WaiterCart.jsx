@@ -15,7 +15,7 @@ export default function WaiterCart() {
 
     const [editingItem, setEditingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
-    const [spiceLevel, setSpiceLevel] = useState('Medium');
+    const [spiceLevel, setSpiceLevel] = useState('');
     const [selectedVariants, setSelectedVariants] = useState({});
     const [selectedAddons, setSelectedAddons] = useState({});
 
@@ -102,7 +102,7 @@ export default function WaiterCart() {
                                             <button onClick={() => {
                                                 setEditingItem(item);
                                                 setPrepType(item.prepType || 'Full Plate');
-                                                setSpiceLevel(item.spiceLevel || 'Medium');
+                                                setSpiceLevel(item.spiceLevel || '');
                                                 setSelectedVariants(item.selectedVariants || {});
                                                 setSelectedAddons(item.selectedAddons || {});
                                             }} className="flex items-center gap-1.5 mt-1.5 bg-white/40 border border-white/50 px-2.5 py-1 rounded-lg shadow-sm active:scale-95 transition-transform text-left">

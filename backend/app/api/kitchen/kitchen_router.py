@@ -43,7 +43,7 @@ async def check_and_update_order_status(db: AsyncSession, order_id: int):
             except Exception as e:
                 print(f"Failed to automatically update order status to Cooked: {e}")
     else:
-        if order.status == "Cooked":
+        if order.status in ["Cooked", "Served"]:
             try:
                 await service.update_order_status(db, order_id, OrderStatusUpdate(status="Preparing"))
             except Exception as e:
@@ -118,7 +118,7 @@ async def get_kitchen_orders(
         .filter(
             MenuItem.kitchen_id == kitchen_id,
             OrderItem.status.in_(["received", "preparing"]),
-            Order.status.notin_(["Completed", "Cancelled", "Served"])
+            Order.status.notin_(["Completed", "Cancelled"])
         )
         .order_by(OrderItem.created_at.asc())
     )
@@ -175,8 +175,8 @@ async def get_kitchen_prepared_items(
         .join(Order, OrderItem.order_id == Order.id)
         .filter(
             MenuItem.kitchen_id == kitchen_id,
-            OrderItem.status == "prepared",
-            Order.status.notin_(["Completed", "Cancelled", "Served"])
+            OrderItem.status.in_(["prepared", "served"]),
+            Order.status.notin_(["Completed", "Cancelled"])
         )
         .order_by(OrderItem.updated_at.desc())
     )

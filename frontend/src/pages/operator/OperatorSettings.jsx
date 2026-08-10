@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, CheckCircle2, Shield } from 'lucide-react';
+import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, CheckCircle2, Shield, Receipt } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
@@ -121,7 +121,7 @@ const OperatorSettings = () => {
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await api.get('/operator/settings/');
+                const response = await api.get('/operator/settings');
                 const data = response.data.data;
                 if (!data.holidays) data.holidays = [];
                 if (!data.floors_or_areas) data.floors_or_areas = [];
@@ -213,7 +213,7 @@ const OperatorSettings = () => {
                 updateUser(profileData);
                 setStatus({ ...status, saving: false, successMessage: 'Profile updated successfully!' });
             } else {
-                await api.put('/operator/settings/', restaurantSettings);
+                await api.put('/operator/settings', restaurantSettings);
                 setStatus({ ...status, saving: false, successMessage: 'Settings updated successfully!' });
             }
             
@@ -393,6 +393,38 @@ const OperatorSettings = () => {
                                                     value={restaurantSettings.closing_time || ''} 
                                                     onChange={handleSettingsChange} 
                                                 />
+                                            </div>
+                                        </div>
+
+                                        <hr className="border-gray-100 dark:border-slate-800" />
+
+                                        {/* Financial Timings */}
+                                        <div>
+                                            <h4 className="text-xs font-bold text-gray-800 dark:text-white mb-4 flex items-center">
+                                                <Receipt className="w-4 h-4 mr-2 text-cyan-500" /> Taxes & Fees
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">CGST Tax (%)</label>
+                                                    <input 
+                                                        type="number" min="0" max="100" step="0.1" name="cgst_percentage" value={restaurantSettings.cgst_percentage || 0} onChange={handleSettingsChange}
+                                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">SGST Tax (%)</label>
+                                                    <input 
+                                                        type="number" min="0" max="100" step="0.1" name="sgst_percentage" value={restaurantSettings.sgst_percentage || 0} onChange={handleSettingsChange}
+                                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Service Charge (%)</label>
+                                                    <input 
+                                                        type="number" min="0" max="100" step="0.1" name="service_charge_percentage" value={restaurantSettings.service_charge_percentage || 0} onChange={handleSettingsChange}
+                                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 

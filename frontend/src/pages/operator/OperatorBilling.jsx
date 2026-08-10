@@ -67,6 +67,17 @@ const OperatorBilling = () => {
       return res.data.data;
     },
   });
+  const { data: settingsResponse } = useQuery({
+    queryKey: ["operator-settings"],
+    queryFn: async () => {
+      const res = await api.get('/operator/settings');
+      return res.data;
+    }
+  });
+  const settings = settingsResponse?.data || {};
+  const cgstPercentage = settings.cgst_percentage !== undefined ? settings.cgst_percentage : 2.5;
+  const sgstPercentage = settings.sgst_percentage !== undefined ? settings.sgst_percentage : 2.5;
+  const serviceChargePercentage = settings.service_charge_percentage !== undefined ? settings.service_charge_percentage : 5;
 
   // Process Active Items
   const activeItems = useMemo(() => {
@@ -109,7 +120,7 @@ const OperatorBilling = () => {
               );
             }
           });
-          total = total * 1.1; // approx tax
+          total = total * (1 + (cgstPercentage + sgstPercentage) / 100); // approx tax
         }
 
         return {
@@ -265,9 +276,9 @@ const OperatorBilling = () => {
     : currentOrderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
   const serviceCharge = matchingBill
     ? matchingBill.service_charge
-    : subtotal * 0.05;
-  const cgst = matchingBill ? matchingBill.total_tax / 2 : subtotal * 0.025;
-  const sgst = matchingBill ? matchingBill.total_tax / 2 : subtotal * 0.025;
+    : subtotal * (serviceChargePercentage / 100);
+  const cgst = matchingBill ? matchingBill.total_tax / 2 : subtotal * (cgstPercentage / 100);
+  const sgst = matchingBill ? matchingBill.total_tax / 2 : subtotal * (sgstPercentage / 100);
   const totalAmount = matchingBill
     ? matchingBill.subtotal +
       matchingBill.service_charge +
@@ -751,20 +762,20 @@ const OperatorBilling = () => {
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-slate-400">
-                  <span>Service Charge (5%)</span>
-                  <span className="text-gray-900 dark:text-white font-mono">
+                  <span>Service Charge ({serviceChargePercentage}%)</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
                     ₹ {serviceCharge.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-slate-400">
-                  <span>CGST (2.5%)</span>
-                  <span className="text-gray-900 dark:text-white font-mono">
+                  <span>CGST ({cgstPercentage}%)</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
                     ₹ {cgst.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500 dark:text-slate-400">
-                  <span>SGST (2.5%)</span>
-                  <span className="text-gray-900 dark:text-white font-mono">
+                  <span>SGST ({sgstPercentage}%)</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
                     ₹ {sgst.toFixed(2)}
                   </span>
                 </div>

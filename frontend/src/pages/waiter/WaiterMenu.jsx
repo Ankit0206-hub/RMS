@@ -79,7 +79,7 @@ export default function WaiterMenu() {
     const handleFirstAdd = (item) => {
         setCustomizingItem(item);
         setPrepType('Full Plate');
-        setSpiceLevel('Medium');
+        setSpiceLevel('');
         const defaultVars = {};
         if (item.variant_groups) {
             item.variant_groups.forEach(vg => {

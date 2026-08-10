@@ -34,9 +34,9 @@ export default function WaiterRequests() {
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'CUSTOMER_NEEDS_ASSISTANCE' || data.type === 'CUSTOMER_REQUESTED_BILL' || data.type === 'WAITER_REQUESTED_BILL') {
+                if (data.event === 'CUSTOMER_NEEDS_ASSISTANCE' || data.event === 'CUSTOMER_REQUESTED_BILL' || data.event === 'WAITER_REQUESTED_BILL') {
                     fetchRequests();
-                    toast.success(`New request from Table ${data.data.table_id || 'Unknown'}`);
+                    toast.success(`New request from Table ${data.payload?.table_id || 'Unknown'}`);
                 }
             } catch (error) {
                 console.error("Error parsing websocket message", error);
