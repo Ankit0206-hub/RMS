@@ -107,6 +107,7 @@ const AdminLayout = () => {
             children: [
                 { name: 'Table Add and Overview', path: '/admin/tables' },
                 { name: 'Table Reservations', path: '/admin/tables/reservations' },
+                { name: 'Floor Plan', path: '/admin/tables/floor-plan' }
             ]
         },
         {

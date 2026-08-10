@@ -159,6 +159,7 @@ const App = () => {
                                 <Route path="tables" element={<Tables />} />
                                 <Route path="tables/add" element={<AddTable />} />
                                 <Route path="tables/reservations" element={<TableReservations />} />
+                                <Route path="tables/floor-plan" element={<OperatorFloorPlan />} />
                             </Route>
 
                             {/* Operator Routes */}

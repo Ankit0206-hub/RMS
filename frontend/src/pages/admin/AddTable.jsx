@@ -21,7 +21,7 @@ const AddTable = () => {
 
     const addTableMutation = useMutation({
         mutationFn: async (data) => {
-            const response = await api.post('/admin/tables', data);
+            const response = await api.post('/admin/tables/', data);
             return response.data;
         },
         onSuccess: () => {

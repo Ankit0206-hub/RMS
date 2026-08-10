@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 
 const AddTableModal = ({ isOpen, onClose }) => {
@@ -8,11 +8,22 @@ const AddTableModal = ({ isOpen, onClose }) => {
     
     const [formData, setFormData] = useState({
         table_number: '',
-        name: '',
-        floor: '',
+        floor: 'Main Hall',
         capacity: 2,
         status: 'Available'
     });
+
+    const { data: settingsResponse } = useQuery({
+        queryKey: ['operator-settings'],
+        queryFn: async () => {
+            const res = await api.get('/operator/settings');
+            return res.data;
+        }
+    });
+
+    const settings = settingsResponse?.data || {};
+    const customFloors = settings.floors_or_areas || [];
+    const floorsOrAreas = ['Main Hall', ...customFloors.filter(f => f !== 'Main Hall')];
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -21,8 +32,7 @@ const AddTableModal = ({ isOpen, onClose }) => {
         if (isOpen) {
             setFormData({
                 table_number: '',
-                name: '',
-                floor: '',
+                floor: 'Main Hall',
                 capacity: 2,
                 status: 'Available'
             });
@@ -33,7 +43,7 @@ const AddTableModal = ({ isOpen, onClose }) => {
 
     const addTableMutation = useMutation({
         mutationFn: async (data) => {
-            const response = await api.post('/admin/tables', data);
+            const response = await api.post('/admin/tables/', data);
             return response.data;
         },
         onSuccess: () => {
@@ -56,7 +66,6 @@ const AddTableModal = ({ isOpen, onClose }) => {
         
         const payload = {
             table_number: formData.table_number,
-            name: formData.name,
             floor: formData.floor,
             capacity: parseInt(formData.capacity, 10),
             status: formData.status
@@ -124,28 +133,19 @@ const AddTableModal = ({ isOpen, onClose }) => {
                                 />
                             </div>
                         </div>
-
-                        <div>
-                            <label className="block text-[11px] font-bold text-gray-700 mb-2 uppercase tracking-wider">Table Name</label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                                value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                placeholder="e.g. Balcony VIP"
-                            />
-                        </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-[11px] font-bold text-gray-700 mb-2 uppercase tracking-wider">Floor</label>
-                                <input
-                                    type="text"
+                                <label className="block text-[11px] font-bold text-gray-700 mb-2 uppercase tracking-wider">Section</label>
+                                <select
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                                     value={formData.floor}
                                     onChange={(e) => setFormData({...formData, floor: e.target.value})}
-                                    placeholder="e.g. Ground Floor"
-                                />
+                                >
+                                    {floorsOrAreas.map(floor => (
+                                        <option key={floor} value={floor}>{floor}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-[11px] font-bold text-gray-700 mb-2 uppercase tracking-wider">Initial Status</label>

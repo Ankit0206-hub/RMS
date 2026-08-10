@@ -373,8 +373,8 @@ const MenuItems = () => {
                     {(() => {
                         const filteredItems = menuItemsData?.filter(item => {
                             const matchesSearch = !searchTerm || 
-                                item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                item.item_code?.toLowerCase().includes(searchTerm.toLowerCase());
+                                (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+                                (item.item_code && item.item_code.toLowerCase().includes(searchTerm.toLowerCase()));
                             const matchesCategory = categoryFilter === 'Category' || item.category?.name === categoryFilter;
                             const matchesStatus = statusFilter === 'Status' || (statusFilter === 'Active' ? item.is_active : !item.is_active);
                             const matchesKitchen = kitchenFilter === 'Kitchen' || (kitchenFilter === 'Unassigned' ? !item.kitchen_id : item.kitchen_id?.toString() === kitchenFilter.toString());
@@ -504,9 +504,19 @@ font-size: 11px !important;
                             </button>
                             {/* Badges */}
                             <div className="absolute top-4 left-4 flex gap-2">
-                                <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-md border ${viewingItem.is_veg ? 'bg-green-500/20 text-green-100 border-green-500/30' : 'bg-red-500/20 text-red-100 border-red-500/30'}`}>
-                                    {viewingItem.is_veg ? '🟢 VEG' : '🔴 NON-VEG'}
-                                </span>
+                                {viewingItem.item_type === 'veg' || (viewingItem.item_type == null && viewingItem.is_veg) ? (
+                                    <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-md border bg-green-500/20 text-green-100 border-green-500/30">
+                                        🟢 VEG
+                                    </span>
+                                ) : viewingItem.item_type === 'non-veg' || (viewingItem.item_type == null && !viewingItem.is_veg) ? (
+                                    <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-md border bg-red-500/20 text-red-100 border-red-500/30">
+                                        🔴 NON-VEG
+                                    </span>
+                                ) : viewingItem.item_type === 'egg' ? (
+                                    <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-md border bg-yellow-500/20 text-yellow-100 border-yellow-500/30">
+                                        🟡 EGG
+                                    </span>
+                                ) : null}
                                 {!viewingItem.is_active && (
                                     <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-gray-900/50 text-gray-200 border border-gray-700/50 backdrop-blur-md">
                                         INACTIVE
