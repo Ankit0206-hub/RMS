@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Plus, Minus, Edit3, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Plus, Minus, Edit3, ShoppingBag, User, Phone, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import waiterApi from '../../services/waiterApi';
 
@@ -9,9 +9,27 @@ export default function WaiterCart() {
     const location = useLocation();
 
     const [items, setItems] = useState(location.state?.cartItems || []);
-    const tableId = location.state?.tableId || 'T01';
+    const tableId = location.state?.tableId || '';
     const sessionId = location.state?.sessionId;
     const [specialInstructions, setSpecialInstructions] = useState('');
+
+    const isDirectOrder = !sessionId;
+    const [tables, setTables] = useState([]);
+    const [selectedTableId, setSelectedTableId] = useState(tableId);
+    const [customerName, setCustomerName] = useState('');
+    const [customerPhone, setCustomerPhone] = useState('');
+    const [guests, setGuests] = useState(1);
+
+    useEffect(() => {
+        if (isDirectOrder) {
+            waiterApi.getTables().then(data => {
+                setTables(data.filter(t => t.status === 'Empty' || t.status === 'Reserved'));
+            }).catch(err => {
+                console.error(err);
+                toast.error("Failed to load tables");
+            });
+        }
+    }, [isDirectOrder]);
 
     const [editingItem, setEditingItem] = useState(null);
     const [prepType, setPrepType] = useState('Full Plate');
@@ -77,7 +95,7 @@ export default function WaiterCart() {
                             <button onClick={() => navigate('/waiter/menu', { state: { cartItems: items, tableId, sessionId } })} className="p-2 text-gray-700 bg-white/20 rounded-full border border-white/40 transition-colors mr-3 shadow-sm">
                                 <ArrowLeft className="h-5 w-5" strokeWidth={2.5} />
                             </button>
-                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Confirm Order <span className="text-gray-500 font-bold">({tableId})</span></h1>
+                            <h1 className="text-lg md:text-xl font-black text-gray-800 tracking-tight">Confirm Order <span className="text-gray-500 font-bold">({isDirectOrder ? 'New Table' : tableId})</span></h1>
                         </div>
                         <div className="w-10"></div>
                     </div>
@@ -85,6 +103,81 @@ export default function WaiterCart() {
 
                 <div className="px-4 md:px-8 py-6 w-full space-y-4 pb-32 max-w-4xl mx-auto flex-1">
                     <div className="bg-white/20 backdrop-blur-xl rounded-[24px] p-5 shadow-sm border border-white/40">
+                        {isDirectOrder && (
+                            <div className="mb-6 space-y-4 border-b border-white/30 pb-6">
+                                <h2 className="font-black text-gray-800 text-lg mb-3 flex items-center">
+                                    <User className="h-5 w-5 mr-2 text-rose-500" />
+                                    Customer Details
+                                </h2>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[11px] md:text-xs font-bold text-gray-700 block mb-1.5">Select Table *</label>
+                                        <select 
+                                            value={selectedTableId}
+                                            onChange={e => setSelectedTableId(e.target.value)}
+                                            className="w-full bg-white/40 backdrop-blur-md border border-white/50 rounded-xl px-3.5 py-2.5 md:py-3 text-sm font-bold text-gray-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all appearance-none"
+                                        >
+                                            <option value="" disabled>-- Select Available Table --</option>
+                                            {tables.map(t => (
+                                                <option key={t.id} value={t.id}>Table {t.table_number}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="text-[11px] md:text-xs font-bold text-gray-700 block mb-1.5">Customer Name *</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Rahul Sharma"
+                                            value={customerName}
+                                            onChange={e => setCustomerName(e.target.value)}
+                                            className="w-full bg-white/40 backdrop-blur-md border border-white/50 rounded-xl px-3.5 py-2.5 md:py-3 text-sm font-bold text-gray-800 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-gray-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] md:text-xs font-bold text-gray-700 block mb-1.5">Contact Number *</label>
+                                        <div className="flex items-center bg-white/40 backdrop-blur-md border border-white/50 rounded-xl px-3.5 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-400/20 transition-all">
+                                            <Phone className="h-4 w-4 text-gray-500 mr-2" />
+                                            <input 
+                                                type="tel" 
+                                                placeholder="9876543210"
+                                                value={customerPhone}
+                                                onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    if (val.length <= 10) setCustomerPhone(val);
+                                                }}
+                                                maxLength={10}
+                                                className="w-full bg-transparent py-2.5 md:py-3 text-sm font-bold text-gray-800 focus:outline-none placeholder:text-gray-500"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="text-[11px] md:text-xs font-bold text-gray-700 block mb-1.5">Guests *</label>
+                                        <div className="flex items-center max-w-[120px] justify-between border border-white/50 rounded-xl p-1 bg-white/40 backdrop-blur-md">
+                                            <button 
+                                                type="button"
+                                                onClick={() => setGuests(Math.max(1, guests - 1))} 
+                                                className={`p-2 rounded-lg transition-all ${guests <= 1 ? 'opacity-50 text-gray-400 cursor-not-allowed' : 'text-gray-600 active:scale-95'}`}
+                                            >
+                                                <Minus size={16} strokeWidth={2} />
+                                            </button>
+                                            <span className="font-black text-base w-8 text-center text-gray-800">{guests}</span>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setGuests(guests + 1)} 
+                                                className="p-2 rounded-lg transition-all text-gray-600 active:scale-95"
+                                            >
+                                                <Plus size={16} strokeWidth={2} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex items-center mb-5">
                             <div className="bg-white/30 text-gray-700 p-2 rounded-xl mr-3 border border-white/40 backdrop-blur-md">
                                 <ShoppingBag className="h-5 w-5" />
@@ -145,12 +238,36 @@ export default function WaiterCart() {
                         </div>
                         <button onClick={async () => {
                             try {
-                                if (!sessionId) {
+                                let targetSessionId = sessionId;
+                                if (isDirectOrder) {
+                                    if (!selectedTableId || !customerName || !customerPhone || !guests) {
+                                        toast.error("Please fill all customer details and select a table");
+                                        return;
+                                    }
+                                    if (customerPhone.length !== 10) {
+                                        toast.error("Please enter a valid 10-digit contact number");
+                                        return;
+                                    }
+                                    const sessionData = {
+                                        customer_name: customerName,
+                                        customer_phone: customerPhone,
+                                        guests: guests,
+                                        special_notes: specialInstructions
+                                    };
+                                    try {
+                                        const res = await waiterApi.startSession(selectedTableId, sessionData);
+                                        targetSessionId = res.session_id;
+                                    } catch (err) {
+                                        toast.error(err.response?.data?.detail || "Failed to start session on this table");
+                                        return;
+                                    }
+                                } else if (!targetSessionId) {
                                     toast.error("No active session found for this table.");
                                     return;
                                 }
+
                                 const orderData = {
-                                    session_id: sessionId,
+                                    session_id: targetSessionId,
                                     special_instructions: specialInstructions,
                                     items: items.map(item => {
                                         const notesParts = [];
@@ -181,11 +298,11 @@ export default function WaiterCart() {
                                         };
                                     })
                                 };
-                                await waiterApi.createOrder(sessionId, orderData);
+                                await waiterApi.createOrder(targetSessionId, orderData);
                                 toast.success('Order placed successfully!');
-                                const sid = sessionId || 'table_' + tableId;
+                                const sid = sessionId || 'table_' + (selectedTableId || tableId);
                                 sessionStorage.removeItem(`waiter_cart_${sid}`);
-                                navigate('/waiter/tables');
+                                navigate(isDirectOrder ? `/waiter/tables/${selectedTableId}` : '/waiter/tables');
                             } catch (err) {
                                 toast.error("Failed to place order");
                                 console.error(err);
