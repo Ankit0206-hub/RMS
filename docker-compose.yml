@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB:-dineops}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=/api/v1
+        - VITE_WS_URL=/api/v1
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

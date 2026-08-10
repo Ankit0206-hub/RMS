@@ -27,8 +27,11 @@ export const uploadImage = async (file) => {
 };
 
 export const getWsUrl = () => {
+    if (import.meta.env.VITE_WS_URL) {
+        return import.meta.env.VITE_WS_URL;
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.host}${import.meta.env.VITE_WS_URL || '/api/v1'}`;
+    return `${protocol}//${window.location.host}/api/v1`;
 };
 
 export default api;

@@ -1,0 +1,13 @@
+.venv/
+.venvl/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+! .env.example
+dummy_data_log.json
