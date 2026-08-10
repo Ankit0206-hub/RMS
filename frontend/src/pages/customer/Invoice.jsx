@@ -1,12 +1,15 @@
+import React, { useState } from 'react';
 import { ArrowLeft, ReceiptText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import ThermalReceipt from "../../components/ThermalReceipt";
 
 export default function Invoice() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { cartItems } = useApp();
+  const { cartItems, customerSession } = useApp();
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   // For UI mockup purposes, fallback to cartItems if no order is passed
   const orderItems = location.state?.order?.items || cartItems;
@@ -37,7 +40,11 @@ export default function Invoice() {
   const serviceCharge = 30;
   // Apply any mock discount if needed
   const discount = 0; 
-  const total = subtotal + tax + serviceCharge - discount;
+  const total = Number(subtotal + tax + serviceCharge - discount).toFixed(2);
+  const formattedSubtotal = Number(subtotal).toFixed(2);
+  const formattedTax = Number(tax).toFixed(2);
+  const formattedServiceCharge = Number(serviceCharge).toFixed(2);
+  const formattedDiscount = Number(discount).toFixed(2);
 
   return (
     <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col">
@@ -49,9 +56,6 @@ export default function Invoice() {
           </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Invoice</h1>
         </div>
-        <button className="text-orange-500 font-bold text-sm">
-          Download
-        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-6">
@@ -92,7 +96,7 @@ export default function Invoice() {
                     <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mt-1">Qty: {item.quantity}</p>
                   </div>
                   <span className="font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                    ₹{item.price * item.quantity}
+                    ₹{Number(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -105,20 +109,20 @@ export default function Invoice() {
             <div className="space-y-3 text-sm font-medium text-gray-500 dark:text-slate-400">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="text-gray-900 dark:text-white">₹{subtotal}</span>
+                <span className="text-gray-900 dark:text-white">₹{formattedSubtotal}</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax (5%)</span>
-                <span className="text-gray-900 dark:text-white">₹{tax}</span>
+                <span className="text-gray-900 dark:text-white">₹{formattedTax}</span>
               </div>
               <div className="flex justify-between">
                 <span>Service Charge</span>
-                <span className="text-gray-900 dark:text-white">₹{serviceCharge}</span>
+                <span className="text-gray-900 dark:text-white">₹{formattedServiceCharge}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-green-500">
                   <span>Discount</span>
-                  <span>-₹{discount}</span>
+                  <span>-₹{formattedDiscount}</span>
                 </div>
               )}
               
@@ -145,13 +149,32 @@ export default function Invoice() {
       {/* Bottom Sticky Button */}
       <div className="border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 pb-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] rounded-t-3xl z-10">
         <button
-          onClick={() => navigate("/customer/review")}
-          className="flex h-14 w-full items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+          onClick={() => setIsReceiptOpen(true)}
+          className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
         >
-          <span>Confirm & Pay</span>
-          <span>₹{total}</span>
+          <ReceiptText size={20} />
+          <span>Download Invoice</span>
         </button>
       </div>
+
+      <ThermalReceipt 
+          isOpen={isReceiptOpen} 
+          onClose={() => setIsReceiptOpen(false)} 
+          data={{
+              bill_number: `INV-${orderId}`,
+              table: customerSession?.tableId || 'Walk-in',
+              subtotal: Number(subtotal),
+              service_charge: Number(serviceCharge),
+              cgst: Number(tax) / 2,
+              sgst: Number(tax) / 2,
+              grand_total: Number(total)
+          }}
+          items={orderItems.map(item => ({
+              name: item.name,
+              qty: item.quantity,
+              price: item.price
+          }))}
+      />
 
     </PageLayout>
   );

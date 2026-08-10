@@ -4,6 +4,7 @@ import PageLayout from "../../components/customer/layout/PageLayout";
 import { useEffect, useState } from "react";
 import customerApi from "../../services/customerApi";
 import { getWsUrl } from "../../services/api";
+import { playNotificationSound } from "../../utils/audio";
 import { useApp } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
@@ -32,6 +33,7 @@ export default function OrderTracking() {
           try {
               const data = JSON.parse(event.data);
               if (data.event === "order.updated" || data.event === "order.created") {
+                  playNotificationSound();
                   fetchDetails(); // Re-fetch to get latest status and updated times
               }
           } catch (err) {
@@ -56,7 +58,7 @@ export default function OrderTracking() {
           "Confirmed": ["Preparing", "Cooked", "Served", "Completed"],
           "Preparing": ["Cooked", "Served", "Completed"],
           "Ready to Serve": ["Served", "Completed"],
-          "Served": ["Completed"]
+          "Served": ["Served", "Completed"]
       };
 
       const activeMap = {
@@ -64,7 +66,7 @@ export default function OrderTracking() {
           "Confirmed": "Confirmed",
           "Preparing": "Preparing",
           "Ready to Serve": "Cooked",
-          "Served": "Served"
+          "Served": null
       };
 
       if (activeMap[stepName] === currentStatus) return "active";

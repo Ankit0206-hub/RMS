@@ -46,6 +46,9 @@ export default function BottomNav({ active = "home" }) {
           try {
               const data = JSON.parse(event.data);
               if (data.event === "order.updated" || data.event === "order.created") {
+                  import('../../../utils/audio').then(({ playNotificationSound }) => {
+                      playNotificationSound();
+                  });
                   fetchDetails();
               }
           } catch (err) {}
