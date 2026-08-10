@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { X, Printer } from 'lucide-react';
 
-const ThermalReceipt = ({ isOpen, onClose, data, items }) => {
+const ThermalReceipt = ({ isOpen, onClose, data, items, isA4Format = false }) => {
     const printRef = useRef();
 
     if (!isOpen) return null;
@@ -18,7 +18,7 @@ const ThermalReceipt = ({ isOpen, onClose, data, items }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm print:bg-white print:backdrop-blur-none">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto py-10 bg-black/60 backdrop-blur-sm modal-print-wrapper">
             {/* Modal Controls (Hidden during print) */}
             <div className="absolute top-4 right-4 flex space-x-3 print:hidden">
                 <button 
@@ -36,10 +36,13 @@ const ThermalReceipt = ({ isOpen, onClose, data, items }) => {
                 </button>
             </div>
 
-            {/* Receipt Container */}
             <div 
-                className="bg-white text-black p-6 shadow-2xl relative print:shadow-none print:p-0 receipt-print-container"
-                style={{ width: '320px', fontFamily: '"Courier New", Courier, monospace' }}
+                className={`bg-white text-black p-6 shadow-2xl relative print:shadow-none print:p-0 receipt-print-container ${isA4Format ? 'a4-format' : 'thermal-format'}`}
+                style={{ 
+                    width: isA4Format ? '800px' : '320px', 
+                    maxWidth: '100%',
+                    fontFamily: isA4Format ? '"Inter", sans-serif' : '"Courier New", Courier, monospace' 
+                }}
                 ref={printRef}
             >
                 {/* Header */}
@@ -89,19 +92,19 @@ const ThermalReceipt = ({ isOpen, onClose, data, items }) => {
                     </div>
                     {data?.service_charge > 0 && (
                         <div className="flex justify-between">
-                            <span>Service Chg (5%)</span>
+                            <span>Service Chg</span>
                             <span>{data?.service_charge?.toFixed(2)}</span>
                         </div>
                     )}
                     {data?.cgst > 0 && (
                         <div className="flex justify-between">
-                            <span>CGST (2.5%)</span>
+                            <span>CGST</span>
                             <span>{data?.cgst?.toFixed(2)}</span>
                         </div>
                     )}
                     {data?.sgst > 0 && (
                         <div className="flex justify-between">
-                            <span>SGST (2.5%)</span>
+                            <span>SGST</span>
                             <span>{data?.sgst?.toFixed(2)}</span>
                         </div>
                     )}
@@ -128,37 +131,48 @@ const ThermalReceipt = ({ isOpen, onClose, data, items }) => {
                     body * {
                         visibility: hidden;
                     }
+                    /* Override modal wrapper to break out of fixed positioning */
+                    .modal-print-wrapper {
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
+                        width: auto !important;
+                        height: auto !important;
+                        overflow: visible !important;
+                        background: white !important;
+                        display: block !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        backdrop-filter: none !important;
+                    }
                     .print\\:hidden {
                         display: none !important;
-                    }
-                    .print\\:shadow-none {
-                        box-shadow: none !important;
-                    }
-                    .print\\:p-0 {
-                        padding: 0 !important;
-                    }
-                    .print\\:bg-white {
-                        background-color: white !important;
-                    }
-                    .print\\:backdrop-blur-none {
-                        backdrop-filter: none !important;
                     }
                     /* Show only the receipt container and its children */
                     .receipt-print-container, 
                     .receipt-print-container * {
                         visibility: visible;
                     }
-                    .receipt-print-container {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
+                    .thermal-format {
+                        position: static !important;
                         width: 80mm !important; /* Thermal printer standard width */
-                        margin: 0;
-                        padding: 0;
+                        margin: 0 auto !important;
+                        padding: 0 4mm !important; /* Margin from edges to prevent cut off */
+                        box-shadow: none !important;
+                    }
+                    .a4-format {
+                        position: static !important;
+                        width: 100% !important;
+                        max-width: 210mm !important;
+                        margin: 0 auto !important;
+                        padding: 10mm 15mm !important; /* Standard A4 padding */
+                        box-shadow: none !important;
                     }
                     @page {
                         margin: 0;
-                        size: 80mm auto;
+                    }
+                    @media print and (max-width: 80mm) {
+                        @page { size: 80mm auto; }
                     }
                 }
             `}} />

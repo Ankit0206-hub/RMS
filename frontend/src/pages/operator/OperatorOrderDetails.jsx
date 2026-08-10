@@ -5,7 +5,7 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { 
     ArrowLeft, Printer, MoreHorizontal, User, ClipboardList, CheckCircle2, 
-    Clock, IndianRupee, MessageSquare, AlertCircle, RefreshCcw, XCircle, FileText
+    Clock, IndianRupee, MessageSquare, AlertCircle, RefreshCcw, XCircle, FileText, Download
 } from 'lucide-react';
 import ThermalReceipt from '../../components/ThermalReceipt';
 
@@ -13,6 +13,7 @@ const OperatorOrderDetails = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+    const [receiptFormat, setReceiptFormat] = useState('thermal');
 
     // Use query to fetch order details, using raw ID
     const { data: orderResponse, isLoading } = useQuery({
@@ -151,11 +152,18 @@ const OperatorOrderDetails = () => {
                 </button>
                 <div className="flex items-center space-x-3">
                     <button 
-                        onClick={() => setIsReceiptOpen(true)}
+                        onClick={() => { setReceiptFormat('thermal'); setIsReceiptOpen(true); }}
                         className="flex items-center bg-white dark:bg-slate-900 border border-[#5e5ce6] text-[#5e5ce6] px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm"
                     >
                         <Printer className="w-3.5 h-3.5 mr-2" />
                         Print Bill
+                    </button>
+                    <button 
+                        onClick={() => { setReceiptFormat('a4'); setIsReceiptOpen(true); }}
+                        className="flex items-center bg-[#5e5ce6] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#4b49c7] transition-colors shadow-sm"
+                    >
+                        <Download className="w-3.5 h-3.5 mr-2" />
+                        Download Invoice
                     </button>
                 </div>
             </div>
@@ -467,6 +475,7 @@ const OperatorOrderDetails = () => {
             <ThermalReceipt 
                 isOpen={isReceiptOpen} 
                 onClose={() => setIsReceiptOpen(false)} 
+                isA4Format={receiptFormat === 'a4'}
                 data={{
                     bill_number: `ORD${orderData.id}`,
                     table: orderData.table_number,

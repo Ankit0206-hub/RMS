@@ -32,6 +32,7 @@ import ThermalReceipt from "../../components/ThermalReceipt";
 const OperatorBilling = () => {
   const queryClient = useQueryClient();
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [receiptFormat, setReceiptFormat] = useState('thermal');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [mainTab, setMainTab] = useState("Active"); // 'Active' or 'Recent'
   const [selectedId, setSelectedId] = useState(null);
@@ -910,12 +911,20 @@ const OperatorBilling = () => {
               {/* Action Buttons */}
               <div className="mt-8 flex flex-col space-y-3">
                 {selectedItem?.status === "Billed" ? (
-                  <button 
-                    onClick={() => setIsReceiptOpen(true)}
-                    className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Download Invoice
-                  </button>
+                  <div className="flex space-x-3 w-full">
+                    <button 
+                      onClick={() => { setReceiptFormat('thermal'); setIsReceiptOpen(true); }}
+                      className="flex-1 py-4 bg-[#5e5ce6] text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-[#4b49c7] transition-colors shadow-sm"
+                    >
+                      <Printer className="w-4 h-4 mr-2" /> Print
+                    </button>
+                    <button 
+                      onClick={() => { setReceiptFormat('a4'); setIsReceiptOpen(true); }}
+                      className="flex-1 py-4 bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-white rounded-2xl font-bold text-sm flex items-center justify-center hover:bg-gray-200 dark:bg-slate-700 transition-colors shadow-sm"
+                    >
+                      <Download className="w-4 h-4 mr-2" /> Download
+                    </button>
+                  </div>
                 ) : selectedItem?.status === "Pending Billing" ? (
                   <button
                     onClick={handleProceedToBill}
@@ -949,6 +958,7 @@ const OperatorBilling = () => {
       <ThermalReceipt
         isOpen={isReceiptOpen}
         onClose={() => setIsReceiptOpen(false)}
+        isA4Format={receiptFormat === 'a4'}
         data={{
           bill_number: matchingBill?.bill_number,
           session_id: selectedItem?.id,
