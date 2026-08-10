@@ -146,7 +146,7 @@ export default function Checkout() {
                             </span>
 
                             <span>
-                                ₹{subtotal}
+                                ₹{subtotal.toFixed(2)}
                             </span>
                         </div>
 
@@ -156,7 +156,7 @@ export default function Checkout() {
                             </span>
 
                             <span>
-                                ₹{gst}
+                                ₹{gst.toFixed(2)}
                             </span>
                         </div>
 
@@ -166,7 +166,7 @@ export default function Checkout() {
                             </span>
 
                             <span>
-                                ₹{serviceCharge}
+                                ₹{serviceCharge.toFixed(2)}
                             </span>
                         </div>
 
@@ -176,7 +176,7 @@ export default function Checkout() {
                             </span>
 
                             <span className="text-green-600">
-                                -₹{discount}
+                                -₹{discount.toFixed(2)}
                             </span>
                         </div>
 
@@ -186,7 +186,7 @@ export default function Checkout() {
                             <span>Total</span>
 
                             <span className="text-orange-500">
-                                ₹{total}
+                                ₹{total.toFixed(2)}
                             </span>
                         </div>
 
@@ -204,7 +204,7 @@ export default function Checkout() {
                    
                     onClick={() => navigate("/customer/payment")}
                 >
-                    Proceed To Pay ₹{total}
+                    Proceed To Pay ₹{total.toFixed(2)}
                 </Button>
 
             </div>

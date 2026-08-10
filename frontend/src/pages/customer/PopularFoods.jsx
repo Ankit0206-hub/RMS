@@ -88,18 +88,18 @@ export default function PopularFoods() {
                 </div>
 
                 {/* Food Grid */}
-                <div className="grid grid-cols-4 gap-4 p-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-5">
                     {foods.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase())).map((food) => (
                         <div
                             key={food.id}
                             onClick={() => navigate("/customer/food-details")}
-                            className="cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow transition hover:shadow-xl"
+                            className="cursor-pointer flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-gray-100 dark:border-slate-800 transition hover:shadow-md"
                         >
                             <div className="relative">
                                 <img
                                     src={food.image}
                                     alt={food.name}
-                                    className="h-40 w-full object-cover"
+                                    className="h-32 sm:h-40 w-full object-cover"
                                 />
 
                                 <button
@@ -130,14 +130,14 @@ export default function PopularFoods() {
                                 </div>
                             </div>
 
-                            <div className="p-3">
-                                <h3 className="font-semibold">
+                            <div className="p-3 flex flex-col flex-1">
+                                <h3 className="font-bold text-gray-800 dark:text-white leading-tight line-clamp-2 min-h-[40px]">
                                     {food.name}
                                 </h3>
 
-                                <div className="mt-3 flex items-center justify-between">
-                                    <span className="font-bold text-orange-500">
-                                        ₹{food.price}
+                                <div className="mt-auto pt-3 flex items-center justify-between">
+                                    <span className="font-black text-orange-500">
+                                        ₹{Number(food.price).toFixed(2)}
                                     </span>
 
                                     {(() => {
@@ -177,9 +177,9 @@ export default function PopularFoods() {
                                                         addToCart(food);
                                                     }
                                                 }}
-                                                className="rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600"
+                                                className="rounded-xl bg-orange-500 p-2 text-white hover:bg-orange-600 shadow-sm active:scale-95 transition-transform"
                                             >
-                                                <Plus size={16} />
+                                                <Plus size={18} strokeWidth={2.5} />
                                             </button>
                                         );
                                     })()}

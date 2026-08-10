@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import Header from "../../components/customer/navigation/Header";
 import SearchBar from "../../components/customer/ui/SearchBar";
@@ -11,6 +13,7 @@ import customerApi from "../../services/customerApi";
 export default function Home() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -37,8 +40,16 @@ export default function Home() {
 
         <Header />
 
-        <div className="mt-4">
-          <SearchBar />
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <SearchBar />
+          </div>
+          <button
+            onClick={() => navigate("/customer/cart")}
+            className="mt-4 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 dark:bg-slate-800 text-orange-500 shadow-sm border border-orange-100 dark:border-slate-700 active:scale-95 transition-transform"
+          >
+            <ShoppingCart size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Top Hero Banner Carousel */}
