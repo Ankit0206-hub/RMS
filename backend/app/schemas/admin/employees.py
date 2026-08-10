@@ -13,6 +13,10 @@ class EmployeeBase(BaseModel):
     role_id: int
     kitchen_id: Optional[int] = None
     section: Optional[str] = None
+    image_url: Optional[str] = None
+    aadhar_url: Optional[str] = None
+    pan_url: Optional[str] = None
+    passbook_url: Optional[str] = None
 
 class EmployeeCreate(EmployeeBase):
     password: str
@@ -30,6 +34,10 @@ class EmployeeUpdate(BaseModel):
     kitchen_id: Optional[int] = None
     section: Optional[str] = None
     password: Optional[str] = None
+    image_url: Optional[str] = None
+    aadhar_url: Optional[str] = None
+    pan_url: Optional[str] = None
+    passbook_url: Optional[str] = None
 
 class EmployeeResponse(EmployeeBase):
     id: int

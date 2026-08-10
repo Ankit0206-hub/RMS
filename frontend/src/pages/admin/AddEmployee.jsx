@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, User, Shield, FileText, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, User, Shield, FileText, Plus, Trash2, X, Camera, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 import { Input } from '../../components/ui';
 
@@ -11,6 +11,9 @@ const AddEmployee = () => {
   const queryClient = useQueryClient();
 
   const [customFields, setCustomFields] = useState([]);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -21,9 +24,10 @@ const AddEmployee = () => {
     role_id: 1, // 1 for Operator, 2 for Waiter, 3 for Kitchen
     kitchen_id: '',
     is_active: true,
-    aadhar_card: null,
-    pan_card: null,
-    bank_passbook: null
+    image_url: '',
+    aadhar_url: '',
+    pan_url: '',
+    passbook_url: ''
   });
 
   const { data: employeesData } = useQuery({
@@ -38,6 +42,14 @@ const AddEmployee = () => {
     queryKey: ['kitchens'],
     queryFn: async () => {
       const res = await api.get('/admin/kitchen/list');
+      return res.data.data || [];
+    }
+  });
+
+  const { data: roles } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const res = await api.get('/admin/roles/');
       return res.data.data || [];
     }
   });
@@ -72,6 +84,79 @@ const AddEmployee = () => {
       toast.error(message);
     }
   });
+
+  const createRoleMutation = useMutation({
+    mutationFn: async (name) => {
+      const response = await api.post('/admin/roles/', { name });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success('Role created successfully');
+      queryClient.invalidateQueries(['roles']);
+      setFormData(prev => ({ ...prev, role_id: data.data.id }));
+      setIsRoleModalOpen(false);
+      setNewRoleName('');
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || 'Failed to create role';
+      toast.error(message);
+    }
+  });
+
+  const handleCreateRole = (e) => {
+    e.preventDefault();
+    if (newRoleName.trim()) {
+      createRoleMutation.mutate(newRoleName.trim());
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setIsUploading(true);
+    try {
+        const response = await api.post('/admin/employees/upload-image', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        setFormData(prev => ({ ...prev, image_url: response.data.data.image_url }));
+        toast.success('Profile picture uploaded');
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to upload image');
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
+  const handleDocumentUpload = async (e, documentType) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const toastId = toast.loading('Uploading document...');
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+
+    try {
+        const response = await api.post('/admin/employees/upload-document', uploadFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const url = response.data.data.document_url;
+        setFormData(prev => ({ ...prev, [documentType]: url }));
+        toast.success('Document uploaded successfully', { id: toastId });
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to upload document', { id: toastId });
+    }
+  };
 
   const handleChange = (e) => {
     let { name, value, type, checked, files } = e.target;
@@ -148,6 +233,43 @@ const AddEmployee = () => {
                 <User className="h-5 w-5 text-cyan-500" />
               </div>
               <h3 className="text-lg font-bold text-gray-900">Basic Information</h3>
+            </div>
+
+            <div className="mb-8 flex justify-center">
+              <div className="relative group">
+                <div className={`w-28 h-28 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden bg-gray-50 transition-colors ${formData.image_url ? 'border-transparent' : 'border-gray-300 hover:border-cyan-500 hover:bg-cyan-50'}`}>
+                  {formData.image_url ? (
+                    <img src={formData.image_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center p-4">
+                      {isUploading ? (
+                        <Loader2 className="w-8 h-8 text-cyan-500 animate-spin mx-auto" />
+                      ) : (
+                        <>
+                          <Camera className="w-8 h-8 text-gray-400 mx-auto group-hover:text-cyan-500 mb-1 transition-colors" />
+                          <span className="text-[10px] font-semibold text-gray-500 group-hover:text-cyan-600">Add Photo</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploading}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" 
+                />
+                {formData.image_url && (
+                   <button
+                     type="button"
+                     onClick={(e) => { e.preventDefault(); setFormData(prev => ({ ...prev, image_url: '' })); }}
+                     className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 shadow-sm hover:bg-red-200 transition-colors z-10"
+                   >
+                     <X className="w-3 h-3" />
+                   </button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
@@ -252,18 +374,23 @@ const AddEmployee = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
               <div className="w-full">
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  Role
-                </label>
+                <div className="flex justify-between items-end mb-1">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Role
+                  </label>
+                  <button type="button" onClick={() => setIsRoleModalOpen(true)} className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 flex items-center">
+                    <Plus className="w-3 h-3 mr-1" /> New Role
+                  </button>
+                </div>
                 <select
                   name="role_id"
                   value={formData.role_id}
                   onChange={handleChange}
                   className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2.5 transition-colors"
                 >
-                  <option value={1}>Operator</option>
-                  <option value={2}>Waiter</option>
-                  <option value={3}>Kitchen Staff</option>
+                  {roles?.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -314,19 +441,58 @@ const AddEmployee = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             <div className="w-full">
                <label className="block text-sm font-semibold text-gray-700 mb-1">Aadhar Card</label>
-               <input type="file" name="aadhar_card" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+               <input type="file" onChange={(e) => handleDocumentUpload(e, 'aadhar_url')} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 mb-2" />
+               {formData.aadhar_url && <a href={formData.aadhar_url} target="_blank" rel="noreferrer" className="text-xs text-cyan-600 hover:underline">View Uploaded Aadhar</a>}
             </div>
             <div className="w-full">
                <label className="block text-sm font-semibold text-gray-700 mb-1">PAN Card</label>
-               <input type="file" name="pan_card" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+               <input type="file" onChange={(e) => handleDocumentUpload(e, 'pan_url')} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 mb-2" />
+               {formData.pan_url && <a href={formData.pan_url} target="_blank" rel="noreferrer" className="text-xs text-cyan-600 hover:underline">View Uploaded PAN</a>}
             </div>
             <div className="w-full">
                <label className="block text-sm font-semibold text-gray-700 mb-1">Bank Passbook</label>
-               <input type="file" name="bank_passbook" onChange={handleChange} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" />
+               <input type="file" onChange={(e) => handleDocumentUpload(e, 'passbook_url')} className="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2 transition-colors cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 mb-2" />
+               {formData.passbook_url && <a href={formData.passbook_url} target="_blank" rel="noreferrer" className="text-xs text-cyan-600 hover:underline">View Uploaded Passbook</a>}
             </div>
           </div>
         </div>
       </div>
+
+      {isRoleModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="text-lg font-bold text-gray-900">Add New Role</h3>
+                    <button type="button" onClick={() => setIsRoleModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                <div className="p-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-gray-600 mb-1">Role Name*</label>
+                            <input 
+                                type="text" 
+                                required 
+                                value={newRoleName}
+                                onChange={(e) => setNewRoleName(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500" 
+                                placeholder="e.g. Cleaning Staff"
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-8 flex justify-end gap-3">
+                        <button type="button" onClick={() => setIsRoleModalOpen(false)} className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
+                            Cancel
+                        </button>
+                        <button type="button" onClick={handleCreateRole} disabled={createRoleMutation.isPending || !newRoleName.trim()} className="px-5 py-2.5 text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-700 rounded-xl transition-colors disabled:opacity-50">
+                            {createRoleMutation.isPending ? 'Creating...' : 'Create Role'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
     </form>
   );
 };

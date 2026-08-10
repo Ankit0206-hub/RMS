@@ -21,6 +21,7 @@ from app.api.operator import operator_router
 from app.api.waiter import waiter_router
 from app.api.customer import customer_router
 
+from app.api.admin import roles as admin_roles
 
 from app.api.customer import reviews as customer_reviews
 from app.api.admin import reviews as admin_reviews
@@ -78,6 +79,7 @@ app.include_router(admin_ordering.router, prefix="/api/v1/admin", tags=["Admin O
 app.include_router(admin_billing.router, prefix="/api/v1/admin", tags=["Admin Billing"])
 app.include_router(admin_analytics.router, prefix="/api/v1/admin", tags=["Admin Analytics"])
 app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations", tags=["Admin Reservations"])
+app.include_router(admin_roles.router, prefix="/api/v1/admin/roles", tags=["Admin Roles"])
 app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(admin_kitchen.router, prefix="/api/v1/admin/kitchen", tags=["Admin Kitchen"])
 app.include_router(kitchen_router.router, prefix="/api/v1/kitchen", tags=["Kitchen"])

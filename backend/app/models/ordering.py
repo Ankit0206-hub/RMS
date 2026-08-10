@@ -40,6 +40,7 @@ class Order(TimestampMixin, Base):
     session: Mapped["CustomerSession"] = relationship(back_populates="orders")
     items: Mapped[List["OrderItem"]] = relationship(back_populates="order", cascade="all, delete-orphan")
     status_history: Mapped[List["OrderStatusHistory"]] = relationship(back_populates="order", cascade="all, delete-orphan")
+    waiter: Mapped[Optional["Employee"]] = relationship("Employee")
 
 class OrderItem(TimestampMixin, Base):
     __tablename__ = "order_items"

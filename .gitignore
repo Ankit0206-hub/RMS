@@ -12,6 +12,7 @@ backend/.venvl/
 backend/__pycache__/
 backend/.pytest_cache/
 backend/restaurant.db
+backend/rms.db
 backend/scripts
 dummy_data_log.json
 seed_dashboard.py

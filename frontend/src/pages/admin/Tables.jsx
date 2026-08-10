@@ -16,7 +16,7 @@ const Tables = () => {
     const navigate = useNavigate();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [floorFilter, setFloorFilter] = useState('All Floors');
+    const [floorFilter, setFloorFilter] = useState('All Sections');
     const [statusFilter, setStatusFilter] = useState('All Status');
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -41,15 +41,16 @@ const Tables = () => {
     const reserved = tablesData.filter(t => t.status === 'Reserved').length;
     const outOfOrder = tablesData.filter(t => t.status === 'Out of Order').length;
 
-    const uniqueFloors = ['All Floors', ...new Set(tablesData.map(t => t.floor).filter(Boolean))];
+    const hasEmptyFloor = tablesData.some(t => !t.floor);
+    const uniqueFloors = ['All Sections', ...new Set(tablesData.map(t => t.floor).filter(Boolean))];
+    if (hasEmptyFloor) uniqueFloors.push('N/A');
 
     const filteredTables = tablesData.filter(t => {
         const matchesSearch = searchTerm ? (
-            (t.table_number && String(t.table_number).toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (t.name && String(t.name).toLowerCase().includes(searchTerm.toLowerCase()))
+            (t.table_number && String(t.table_number).toLowerCase().includes(searchTerm.toLowerCase().trim()))
         ) : true;
-        const matchesFloor = floorFilter !== 'All Floors' ? t.floor === floorFilter : true;
-        const matchesStatus = statusFilter !== 'All Status' ? t.status === statusFilter : true;
+        const matchesFloor = floorFilter !== 'All Sections' ? (floorFilter === 'N/A' ? !t.floor : t.floor === floorFilter) : true;
+        const matchesStatus = statusFilter !== 'All Status' ? (t.status || '').toLowerCase().trim() === statusFilter.toLowerCase().trim() : true;
         return matchesSearch && matchesFloor && matchesStatus;
     });
 
@@ -66,14 +67,10 @@ const Tables = () => {
     const columns = [
         { 
             header: "Table No.", 
-            cell: (row) => <span className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${getStatusColor(row.status)}`}>{row.table_number}</span> 
+            cell: (row) => <span className="font-bold text-gray-900 text-[13px]">{row.table_number}</span> 
         },
         { 
-            header: "Table Name", 
-            cell: (row) => <span className="font-bold text-gray-900 text-[13px]">{row.name || 'N/A'}</span> 
-        },
-        { 
-            header: "Floor", 
+            header: "Section", 
             cell: (row) => <span className="font-semibold text-gray-600 text-xs">{row.floor || 'N/A'}</span> 
         },
         { 
@@ -126,7 +123,10 @@ const Tables = () => {
         <div className="space-y-6 pb-10 font-inter">
             {/* KPI Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    onClick={() => { setFloorFilter('All Sections'); setStatusFilter('All Status'); setCurrentPage(1); }}
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'All Status' && floorFilter === 'All Sections' ? 'border-blue-400 ring-2 ring-blue-50' : 'border-gray-100 hover:border-gray-300'}`}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-blue-50 rounded-full text-blue-500">
                             <LayoutGrid className="w-6 h-6" />
@@ -137,11 +137,14 @@ const Tables = () => {
                         </div>
                     </div>
                     <div className="text-[10px] font-semibold text-gray-400 mt-4 text-center">
-                        All Floors
+                        All Sections
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    onClick={() => { setStatusFilter('Available'); setCurrentPage(1); }}
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Available' ? 'border-green-400 ring-2 ring-green-50' : 'border-gray-100 hover:border-gray-300'}`}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-green-50 rounded-full text-green-500">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -156,7 +159,10 @@ const Tables = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    onClick={() => { setStatusFilter('Occupied'); setCurrentPage(1); }}
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Occupied' ? 'border-orange-400 ring-2 ring-orange-50' : 'border-gray-100 hover:border-gray-300'}`}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-orange-50 rounded-full text-orange-500">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -171,7 +177,10 @@ const Tables = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    onClick={() => { setStatusFilter('Reserved'); setCurrentPage(1); }}
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Reserved' ? 'border-indigo-400 ring-2 ring-indigo-50' : 'border-gray-100 hover:border-gray-300'}`}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-red-50 rounded-full text-red-500">
                             <Calendar className="w-6 h-6" />
@@ -186,7 +195,10 @@ const Tables = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                <div 
+                    onClick={() => { setStatusFilter('Out of Order'); setCurrentPage(1); }}
+                    className={`bg-white p-5 rounded-xl border shadow-sm flex flex-col justify-between cursor-pointer transition-all ${statusFilter === 'Out of Order' ? 'border-red-400 ring-2 ring-red-50' : 'border-gray-100 hover:border-gray-300'}`}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="p-3 bg-indigo-50 rounded-full text-indigo-500">
                             <Settings className="w-6 h-6" />

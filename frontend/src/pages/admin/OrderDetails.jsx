@@ -1,41 +1,107 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../services/api';
+import ThermalReceipt from '../../components/ThermalReceipt';
 import { 
     Printer, Download, ChevronDown, ClipboardList, Calendar, 
     Utensils, Users, User, Plus, Edit2, Copy, RefreshCcw, XCircle,
-    CheckCircle2, Clock
+    CheckCircle2, Clock, Loader2, ArrowLeft
 } from 'lucide-react';
 
 const OrderDetails = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const queryClient = useQueryClient();
+    const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
-    // Mock data matching the mockup exactly
-    const orderItems = [
-        { id: 1, name: 'Paneer Tikka', category: 'Starter', qty: 1, price: 220.00, amount: 220.00, img: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=100&h=100&fit=crop' },
-        { id: 2, name: 'Veg Biryani', category: 'Main Course', qty: 1, price: 180.00, amount: 180.00, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=100&h=100&fit=crop' },
-        { id: 3, name: 'Butter Naan', category: 'Main Course', qty: 2, price: 45.00, amount: 90.00, img: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=100&h=100&fit=crop' },
-        { id: 4, name: 'Coca Cola', category: 'Beverage', qty: 2, price: 30.00, amount: 60.00, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=100&h=100&fit=crop' },
-        { id: 5, name: 'Gulab Jamun', category: 'Dessert', qty: 1, price: 80.00, amount: 80.00, img: 'https://images.unsplash.com/photo-1596568212629-9e2c608f60dc?w=100&h=100&fit=crop' },
-        { id: 6, name: 'Masala Papad', category: 'Starter', qty: 1, price: 25.00, amount: 25.00, img: 'https://images.unsplash.com/photo-1605333555234-bc2cc5a37dc6?w=100&h=100&fit=crop' },
-    ];
+    const { data: orderResponse, isLoading } = useQuery({
+        queryKey: ['order', id],
+        queryFn: async () => {
+            const response = await api.get(`/admin/ordering/orders/${id}`);
+            return response.data;
+        }
+    });
+
+    const updateStatusMutation = useMutation({
+        mutationFn: async (newStatus) => {
+            await api.patch(`/admin/ordering/orders/${id}/status`, { status: newStatus });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['order', id]);
+            setIsStatusMenuOpen(false);
+        }
+    });
+
+    const order = orderResponse?.data;
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            </div>
+        );
+    }
+
+    if (!order) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                <div className="text-gray-400 font-medium">Order not found</div>
+                <button onClick={() => navigate(-1)} className="text-indigo-500 font-semibold hover:underline">Go Back</button>
+            </div>
+        );
+    }
+
+    const orderDate = new Date(order.created_at);
+    const dateFormatted = orderDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeFormatted = orderDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     return (
         <div className="space-y-6 pb-10 font-inter">
             {/* Header Actions */}
-            <div className="flex justify-end items-center space-x-3 mb-6">
-                <button className="flex items-center bg-white border border-gray-200 px-4 py-2.5 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <button 
+                        onClick={() => navigate(-1)} 
+                        className="flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Orders
+                    </button>
+                </div>
+                <div className="flex items-center space-x-3 relative">
+                <button 
+                    onClick={() => setIsReceiptOpen(true)}
+                    className="flex items-center bg-white border border-gray-200 px-4 py-2.5 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                >
                     <Printer className="w-3.5 h-3.5 mr-2" />
                     Print Invoice
                 </button>
-                <button className="flex items-center bg-white border border-gray-200 px-4 py-2.5 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                    <Download className="w-3.5 h-3.5 mr-2" />
-                    Download PDF
-                </button>
-                <button className="flex items-center bg-[#5e5ce6] hover:bg-[#4f46e5] text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm">
-                    Update Status
-                    <ChevronDown className="w-3.5 h-3.5 ml-2" />
-                </button>
+                <div className="relative">
+                    <button 
+                        onClick={() => setIsStatusMenuOpen(!isStatusMenuOpen)}
+                        disabled={updateStatusMutation.isPending}
+                        className="flex items-center bg-[#5e5ce6] hover:bg-[#4f46e5] text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-75"
+                    >
+                        {updateStatusMutation.isPending ? 'Updating...' : 'Update Status'}
+                        <ChevronDown className="w-3.5 h-3.5 ml-2" />
+                    </button>
+                    {isStatusMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
+                            {['Pending', 'Preparing', 'Completed', 'Served', 'Cancelled'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => updateStatusMutation.mutate(status)}
+                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-gray-50 transition-colors ${order.status === status ? 'text-[#5e5ce6] bg-indigo-50' : 'text-gray-700'}`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                </div>
             </div>
 
             {/* Top Order Meta Card */}
@@ -47,12 +113,17 @@ const OrderDetails = () => {
                     <div>
                         <div className="flex items-center space-x-3 mb-1">
                             <span className="text-xs text-gray-500 font-semibold">Order ID</span>
-                            <h2 className="text-xl font-black text-gray-900">#ORD1263</h2>
-                            <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">Completed</span>
+                            <h2 className="text-xl font-black text-gray-900">#ORD{order.id}</h2>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                order.status === 'Completed' ? 'bg-green-50 text-green-600' :
+                                order.status === 'Cancelled' ? 'bg-red-50 text-red-600' :
+                                order.status === 'Preparing' ? 'bg-orange-50 text-orange-600' :
+                                'bg-blue-50 text-blue-600'
+                            }`}>{order.status}</span>
                         </div>
                         <div className="flex items-center space-x-4 text-xs font-semibold text-gray-600">
-                            <span className="flex items-center"><Calendar className="w-3.5 h-3.5 mr-1 text-gray-400" /> 20 May 2025, 12:45 PM</span>
-                            <span className="flex items-center"><Utensils className="w-3.5 h-3.5 mr-1 text-gray-400" /> Dine In</span>
+                            <span className="flex items-center"><Calendar className="w-3.5 h-3.5 mr-1 text-gray-400" /> {dateFormatted}, {timeFormatted}</span>
+                            <span className="flex items-center"><Utensils className="w-3.5 h-3.5 mr-1 text-gray-400" /> {order.order_type || 'Take Away'}</span>
                         </div>
                     </div>
                 </div>
@@ -64,33 +135,33 @@ const OrderDetails = () => {
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-gray-400">Order Type</p>
-                            <p className="text-xs font-bold text-gray-900 mt-0.5">Dine In</p>
-                            <div className="flex items-center mt-2">
-                                <div className="p-1.5 bg-green-50 text-green-500 rounded-md mr-2">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400">Table</p>
-                                    <p className="text-xs font-bold text-gray-900 mt-0.5">T2 - Table 2</p>
-                                </div>
-                            </div>
+                            <p className="text-xs font-bold text-gray-900 mt-0.5">{order.order_type || 'Take Away'}</p>
                         </div>
                     </div>
 
                     <div className="flex items-start space-x-3">
-                        <img src="https://ui-avatars.com/api/?name=Suresh+Yadav&background=e0e7ff&color=4f46e5" alt="Customer" className="w-8 h-8 rounded-full" />
+                        <div className="p-2 bg-green-50 text-green-500 rounded-lg">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400">Table</p>
+                            <p className="text-xs font-bold text-gray-900 mt-0.5">{order.table_number ? `Table ${order.table_number}` : 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3">
+                        <img src={`https://ui-avatars.com/api/?name=${order.customer_name ? encodeURIComponent(order.customer_name) : 'Walk+in'}&background=e0e7ff&color=4f46e5`} alt="Customer" className="w-8 h-8 rounded-full" />
                         <div>
                             <p className="text-[10px] font-bold text-gray-400">Customer</p>
-                            <p className="text-xs font-bold text-gray-900 mt-0.5">Suresh Yadav</p>
+                            <p className="text-xs font-bold text-gray-900 mt-0.5">{order.customer_name || 'Walk-in Customer'}</p>
                         </div>
                     </div>
 
                     <div className="flex items-start space-x-3">
-                        <img src="https://i.pravatar.cc/150?img=11" alt="Waiter" className="w-8 h-8 rounded-full" />
+                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs">{order.waiter_name ? order.waiter_name.charAt(0).toUpperCase() : 'W'}</div>
                         <div>
                             <p className="text-[10px] font-bold text-gray-400">Waiter</p>
-                            <p className="text-xs font-bold text-gray-900 mt-0.5">Suresh Yadav</p>
-                            <p className="text-[10px] font-semibold text-gray-500">+91 98765 43210</p>
+                            <p className="text-xs font-bold text-gray-900 mt-0.5">{order.waiter_name || 'N/A'}</p>
                         </div>
                     </div>
                 </div>
@@ -118,20 +189,23 @@ const OrderDetails = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orderItems.map((item, idx) => (
-                                        <tr key={item.id} className={idx !== orderItems.length - 1 ? 'border-b border-gray-50' : ''}>
+                                    {order.items?.map((item, idx) => (
+                                        <tr key={item.id} className={idx !== order.items.length - 1 ? 'border-b border-gray-50' : ''}>
                                             <td className="py-3 px-5">
                                                 <div className="flex items-center space-x-3">
-                                                    <img src={item.img} alt={item.name} className="w-10 h-10 rounded-lg object-cover" />
+                                                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                                                        <Utensils className="w-4 h-4" />
+                                                    </div>
                                                     <div>
-                                                        <div className="text-xs font-bold text-gray-900">{item.name}</div>
-                                                        <div className="text-[10px] font-semibold text-gray-400 mt-0.5">{item.category}</div>
+                                                        <div className="text-xs font-bold text-gray-900">{item.menu_item_name}</div>
+                                                        <div className="text-[10px] font-semibold text-gray-400 mt-0.5">{item.menu_item_category}</div>
+                                                        {item.notes && <div className="text-[9px] text-gray-500 italic mt-0.5">Note: {item.notes}</div>}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-5 text-center text-xs font-bold text-gray-900">{item.qty}</td>
-                                            <td className="py-3 px-5 text-right text-xs font-semibold text-gray-600">{item.price.toFixed(2)}</td>
-                                            <td className="py-3 px-5 text-right text-xs font-bold text-gray-900">{item.amount.toFixed(2)}</td>
+                                            <td className="py-3 px-5 text-center text-xs font-bold text-gray-900">{item.quantity}</td>
+                                            <td className="py-3 px-5 text-right text-xs font-semibold text-gray-600">{(item.price_at_order).toFixed(2)}</td>
+                                            <td className="py-3 px-5 text-right text-xs font-bold text-gray-900">{(item.price_at_order * item.quantity).toFixed(2)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -156,23 +230,23 @@ const OrderDetails = () => {
                             <div className="p-5 space-y-4 flex-1">
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-gray-500 font-semibold">Customer Type</span>
-                                    <span className="font-bold text-gray-900 bg-gray-50 px-2 py-1 rounded">Walk-in Customer</span>
+                                    <span className="font-bold text-gray-900 bg-gray-50 px-2 py-1 rounded">{order.customer_name ? 'Registered' : 'Walk-in Customer'}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-gray-500 font-semibold">Name</span>
-                                    <span className="font-bold text-gray-900">Suresh Yadav</span>
+                                    <span className="font-bold text-gray-900">{order.customer_name || 'N/A'}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-gray-500 font-semibold">Phone</span>
-                                    <span className="font-bold text-gray-900">+91 98765 43210</span>
+                                    <span className="font-bold text-gray-900">{order.customer_phone || 'N/A'}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-gray-500 font-semibold">Email</span>
-                                    <span className="font-bold text-gray-900">suresh.yadav@email.com</span>
+                                    <span className="font-bold text-gray-900">N/A</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-gray-500 font-semibold">Special Instructions</span>
-                                    <span className="font-bold text-gray-900">No onions in food</span>
+                                    <span className="font-bold text-gray-900">{order.special_instructions || 'None'}</span>
                                 </div>
                             </div>
                         </div>
@@ -193,48 +267,41 @@ const OrderDetails = () => {
                                         <div className="ml-4 flex-1">
                                             <div className="flex justify-between">
                                                 <div className="text-xs font-bold text-gray-900">Order Placed</div>
-                                                <div className="text-[10px] text-gray-500 font-semibold">by Suresh Yadav</div>
                                             </div>
-                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">20 May 2025, 12:40 PM</div>
+                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">{dateFormatted}, {timeFormatted}</div>
                                         </div>
                                     </div>
                                     
                                     <div className="flex relative">
-                                        <div className="w-6 h-6 rounded-full bg-green-50 text-green-500 flex items-center justify-center shrink-0 z-10 border border-white">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 border border-white ${order.status !== 'Pending' ? 'bg-green-50 text-green-500' : 'bg-gray-100 text-gray-400'}`}>
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <div className="flex justify-between">
                                                 <div className="text-xs font-bold text-gray-900">Order Confirmed</div>
-                                                <div className="text-[10px] text-gray-500 font-semibold">by Kitchen</div>
                                             </div>
-                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">20 May 2025, 12:41 PM</div>
                                         </div>
                                     </div>
                                     
                                     <div className="flex relative">
-                                        <div className="w-6 h-6 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0 z-10 border border-white">
-                                            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 border border-white ${['Preparing', 'Completed', 'Served'].includes(order.status) ? 'bg-orange-50 text-orange-500' : 'bg-gray-100 text-gray-400'}`}>
+                                            <div className={`w-2 h-2 rounded-full ${['Preparing', 'Completed', 'Served'].includes(order.status) ? 'bg-orange-500' : 'bg-gray-400'}`}></div>
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <div className="flex justify-between">
                                                 <div className="text-xs font-bold text-gray-900">Order Preparing</div>
-                                                <div className="text-[10px] text-gray-500 font-semibold">by Kitchen</div>
                                             </div>
-                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">20 May 2025, 12:43 PM</div>
                                         </div>
                                     </div>
 
                                     <div className="flex relative">
-                                        <div className="w-6 h-6 rounded-full bg-green-50 text-green-500 flex items-center justify-center shrink-0 z-10 border border-white">
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 border border-white ${['Completed', 'Served'].includes(order.status) ? 'bg-green-50 text-green-500' : 'bg-gray-100 text-gray-400'}`}>
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                         </div>
                                         <div className="ml-4 flex-1">
                                             <div className="flex justify-between">
                                                 <div className="text-xs font-bold text-gray-900">Order Completed</div>
-                                                <div className="text-[10px] text-gray-500 font-semibold">by Suresh Yadav</div>
                                             </div>
-                                            <div className="text-[10px] text-gray-400 font-medium mt-0.5">20 May 2025, 12:45 PM</div>
                                         </div>
                                     </div>
                                 </div>
@@ -274,46 +341,14 @@ const OrderDetails = () => {
                             Order Summary
                         </div>
                         <div className="p-5 space-y-4">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500 font-semibold">Sub Total</span>
-                                <span className="font-bold text-gray-900">₹ 655.00</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500 font-semibold">Discount</span>
-                                <span className="font-bold text-gray-900">- ₹ 10.00</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500 font-semibold">Tax (5%)</span>
-                                <span className="font-bold text-gray-900">₹ 32.75</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-500 font-semibold">Service Charge (2%)</span>
-                                <span className="font-bold text-gray-900">₹ 13.20</span>
-                            </div>
-                            
-                            <div className="border-t border-gray-100 border-dashed pt-4 flex justify-between items-center">
+                            <div className="border-t border-gray-100 border-dashed pt-2 flex justify-between items-center">
                                 <span className="font-black text-gray-900 text-sm">Grand Total</span>
-                                <span className="font-black text-gray-900 text-lg">₹ 690.95</span>
+                                <span className="font-black text-gray-900 text-lg">₹ {order.total_amount?.toFixed(2) || '0.00'}</span>
                             </div>
 
                             <div className="bg-green-50 rounded-lg p-4 mt-2 flex justify-between items-center">
-                                <span className="font-bold text-green-700 text-xs">Amount Paid</span>
-                                <span className="font-black text-green-700 text-sm">₹ 690.95</span>
-                            </div>
-
-                            <div className="space-y-3 pt-2">
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-500 font-semibold">Payment Method</span>
-                                    <span className="font-bold text-gray-900">UPI</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-500 font-semibold">Payment Status</span>
-                                    <span className="font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100">● Paid</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-500 font-semibold">Paid On</span>
-                                    <span className="font-bold text-gray-900 text-right leading-tight">20 May 2025, 12:45 PM</span>
-                                </div>
+                                <span className="font-bold text-green-700 text-xs">Total Amount</span>
+                                <span className="font-black text-green-700 text-sm">₹ {order.total_amount?.toFixed(2) || '0.00'}</span>
                             </div>
                         </div>
                     </div>
@@ -331,33 +366,30 @@ const OrderDetails = () => {
                                     <div className="absolute -left-[27px] top-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center border-2 border-white shadow-sm z-10">
                                         <CheckCircle2 className="w-3 h-3 text-white" />
                                     </div>
-                                    <div className="absolute -left-[19px] top-5 bottom-[-24px] w-0.5 bg-green-500 z-0"></div>
+                                    <div className={`absolute -left-[19px] top-5 bottom-[-24px] w-0.5 z-0 ${order.status !== 'Pending' ? 'bg-green-500' : 'bg-gray-200'}`}></div>
                                     <div className="text-xs font-bold text-gray-900">Order Placed</div>
-                                    <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">20 May 2025,<br/>12:40 PM</div>
+                                    <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">{dateFormatted},<br/>{timeFormatted}</div>
                                 </div>
 
                                 <div className="relative">
-                                    <div className="absolute -left-[27px] top-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center border-2 border-white shadow-sm z-10">
-                                        <CheckCircle2 className="w-3 h-3 text-white" />
+                                    <div className={`absolute -left-[27px] top-0 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 ${order.status !== 'Pending' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <CheckCircle2 className="w-3 h-3" />
                                     </div>
-                                    <div className="absolute -left-[19px] top-5 bottom-[-24px] w-0.5 bg-green-500 z-0"></div>
+                                    <div className={`absolute -left-[19px] top-5 bottom-[-24px] w-0.5 z-0 ${['Preparing', 'Completed', 'Served'].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
                                     <div className="text-xs font-bold text-gray-900">Order Confirmed</div>
-                                    <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">20 May 2025,<br/>12:41 PM</div>
                                 </div>
 
                                 <div className="relative">
-                                    <div className="absolute -left-[27px] top-0 w-5 h-5 rounded-full bg-orange-500 border-4 border-orange-100 flex items-center justify-center shadow-sm z-10"></div>
-                                    <div className="absolute -left-[19px] top-5 bottom-[-24px] w-0.5 bg-green-500 z-0"></div>
+                                    <div className={`absolute -left-[27px] top-0 w-5 h-5 rounded-full border-4 flex items-center justify-center shadow-sm z-10 ${['Preparing', 'Completed', 'Served'].includes(order.status) ? 'bg-orange-500 border-orange-100' : 'bg-gray-100 border-gray-100'}`}></div>
+                                    <div className={`absolute -left-[19px] top-5 bottom-[-24px] w-0.5 z-0 ${['Completed', 'Served'].includes(order.status) ? 'bg-green-500' : 'bg-gray-200'}`}></div>
                                     <div className="text-xs font-bold text-gray-900">Order Preparing</div>
-                                    <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">20 May 2025,<br/>12:43 PM</div>
                                 </div>
 
                                 <div className="relative">
-                                    <div className="absolute -left-[27px] top-0 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center border-2 border-white shadow-sm z-10">
-                                        <CheckCircle2 className="w-3 h-3 text-white" />
+                                    <div className={`absolute -left-[27px] top-0 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm z-10 ${['Completed', 'Served'].includes(order.status) ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <CheckCircle2 className="w-3 h-3" />
                                     </div>
                                     <div className="text-xs font-bold text-gray-900">Order Completed</div>
-                                    <div className="text-[10px] text-gray-400 font-medium leading-tight mt-0.5">20 May 2025,<br/>12:45 PM</div>
                                 </div>
                             </div>
                         </div>
@@ -371,33 +403,40 @@ const OrderDetails = () => {
                         <div className="p-5 space-y-4">
                             <div className="flex justify-between items-center text-[11px]">
                                 <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Order Source</span>
-                                <span className="font-bold text-gray-900">In Restaurant</span>
+                                <span className="font-bold text-gray-900">{order.order_type || 'In Restaurant'}</span>
                             </div>
                             <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Floor</span>
-                                <span className="font-bold text-gray-900">Ground Floor</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">No. of Guests</span>
-                                <span className="font-bold text-gray-900">2</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Bill No.</span>
-                                <span className="font-bold text-gray-900">BILL654</span>
-                            </div>
-                            <div className="flex justify-between items-center text-[11px]">
-                                <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Created By</span>
-                                <span className="font-bold text-gray-900">Suresh Yadav</span>
+                                <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Session ID</span>
+                                <span className="font-bold text-gray-900">{order.session_id}</span>
                             </div>
                             <div className="flex justify-between items-center text-[11px]">
                                 <span className="text-gray-500 font-semibold text-blue-500 cursor-pointer hover:underline">Last Updated</span>
-                                <span className="font-bold text-gray-900 text-right leading-tight">20 May 2025,<br/>12:50 PM</span>
+                                <span className="font-bold text-gray-900 text-right leading-tight">
+                                    {new Date(order.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},<br/>
+                                    {new Date(order.updated_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
                             </div>
                         </div>
                     </div>
 
                 </div>
             </div>
+
+            <ThermalReceipt 
+                isOpen={isReceiptOpen}
+                onClose={() => setIsReceiptOpen(false)}
+                data={{
+                    bill_number: `ORD-${order.id}`,
+                    session_id: order.session_id,
+                    table: order.table_number ? `T-${order.table_number}` : null,
+                    subtotal: order.total_amount,
+                    service_charge: 0,
+                    cgst: 0,
+                    sgst: 0,
+                    grand_total: order.total_amount,
+                }}
+                items={order.items || []}
+            />
         </div>
     );
 };
