@@ -151,7 +151,7 @@ const Dashboard = () => {
                             <Users className="w-4 h-4 xl:w-5 xl:h-5" />
                         </div>
                         <div className="flex items-center text-[9px] xl:text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-1 rounded-md">
-                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time
+                            <TrendingUp className="w-2.5 h-2.5 mr-1" /> All Time cust
                         </div>
                     </div>
                     <div>
