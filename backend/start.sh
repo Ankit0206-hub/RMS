@@ -3,25 +3,21 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# Create log file and run tail in background to preserve docker logs
-touch app.log
-tail -f app.log &
-
-echo "Starting backend initialization..." >> app.log 2>&1
+echo "Starting backend initialization..."
 
 # Run database migrations
-echo "Running alembic upgrade head..." >> app.log 2>&1
-alembic upgrade head >> app.log 2>&1
+echo "Running alembic upgrade head..."
+alembic upgrade head
 
 # Seed initial admin and roles (if not exists)
-echo "Running seed.py..." >> app.log 2>&1
-python scripts/seed.py >> app.log 2>&1
+echo "Running seed.py..."
+python scripts/seed.py
 
 # Start the application
 if [ -f "add_real_menu.py" ]; then
-    echo "Running add_real_menu.py..." >> app.log 2>&1
-    python add_real_menu.py >> app.log 2>&1
+    echo "Running add_real_menu.py..."
+    python add_real_menu.py
 fi
 
-echo "Starting uvicorn server..." >> app.log 2>&1
-exec uvicorn main:app --host 0.0.0.0 --port 8000 >> app.log 2>&1
+echo "Starting uvicorn server..."
+exec uvicorn main:app --host 0.0.0.0 --port 8000
