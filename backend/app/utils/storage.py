@@ -4,13 +4,14 @@ import uuid
 import boto3
 from botocore.exceptions import ClientError
 from fastapi import UploadFile
+from app.core.config import settings
 
-# Configure R2 details from environment (they will be None if not set)
-R2_ACCOUNT_ID = os.getenv("R2_ACCOUNT_ID")
-R2_ACCESS_KEY_ID = os.getenv("R2_ACCESS_KEY_ID")
-R2_SECRET_ACCESS_KEY = os.getenv("R2_SECRET_ACCESS_KEY")
-R2_BUCKET_NAME = os.getenv("R2_BUCKET_NAME")
-R2_PUBLIC_URL_PREFIX = os.getenv("R2_PUBLIC_URL_PREFIX")
+# Helper properties
+R2_ACCOUNT_ID = settings.R2_ACCOUNT_ID
+R2_ACCESS_KEY_ID = settings.R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY = settings.R2_SECRET_ACCESS_KEY
+R2_BUCKET_NAME = settings.R2_BUCKET_NAME
+R2_PUBLIC_URL_PREFIX = settings.R2_PUBLIC_URL_PREFIX
 
 def get_r2_client():
     if not all([R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME]):
@@ -59,12 +60,13 @@ async def upload_file_to_r2_or_local(file: UploadFile, directory: str = "profile
             if R2_PUBLIC_URL_PREFIX:
                 public_url = f"{R2_PUBLIC_URL_PREFIX.rstrip('/')}/{object_key}"
             else:
-                # Fallback to general R2 dev url format if they didn't provide a prefix but provided other creds
-                public_url = f"https://{R2_BUCKET_NAME}.{R2_ACCOUNT_ID}.r2.cloudflarestorage.com/{object_key}"
+                # If R2_PUBLIC_URL_PREFIX is not set, we cannot serve files publicly via R2
+                # Raise an error or fallback to local
+                raise ValueError("R2_PUBLIC_URL_PREFIX must be configured for R2 uploads.")
                 
             return public_url
             
-        except ClientError as e:
+        except Exception as e:
             print(f"Failed to upload to R2, falling back to local. Error: {e}")
             # Reset pointer to allow local save fallback
             await file.seek(0)
