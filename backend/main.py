@@ -82,6 +82,8 @@ app.include_router(admin_reservations.router, prefix="/api/v1/admin/reservations
 app.include_router(admin_roles.router, prefix="/api/v1/admin/roles", tags=["Admin Roles"])
 app.include_router(admin_notifications.router, prefix="/api/v1/admin/notifications", tags=["Admin Notifications"])
 app.include_router(admin_kitchen.router, prefix="/api/v1/admin/kitchen", tags=["Admin Kitchen"])
+from app.api.admin import logs as admin_logs
+app.include_router(admin_logs.router, prefix="/api/v1/admin/logs", tags=["Admin Logs"])
 app.include_router(kitchen_router.router, prefix="/api/v1/kitchen", tags=["Kitchen"])
 app.include_router(operator_router.router, prefix="/api/v1", tags=["Operator"])
 app.include_router(waiter_router.router, prefix="/api/v1", tags=["Waiter"])

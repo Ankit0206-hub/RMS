@@ -20,4 +20,5 @@ if [ -f "add_real_menu.py" ]; then
 fi
 
 echo "Starting uvicorn server..."
-exec uvicorn main:app --host 0.0.0.0 --port 8000
+mkdir -p logs
+uvicorn main:app --host 0.0.0.0 --port 8000 2>&1 | tee logs/backend.log

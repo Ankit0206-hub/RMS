@@ -13,21 +13,37 @@ async def seed():
     print("Generating real menu items...")
     
     async with AsyncSessionLocal() as session:
-        # Fetch Categories
-        cats = (await session.execute(select(MenuCategory))).scalars().all()
-        
-        # Fetch Kitchens
+        # Fetch or create Kitchens
         kits = (await session.execute(select(Kitchen))).scalars().all()
         main_kit = next((k for k in kits if 'Main' in k.name), None)
+        if not main_kit:
+            main_kit = Kitchen(name="Main Kitchen", description="Handles all vegetarian and general items")
+            session.add(main_kit)
+            
         nonveg_kit = next((k for k in kits if 'Non-Veg' in k.name), None)
+        if not nonveg_kit:
+            nonveg_kit = Kitchen(name="Non-Veg Kitchen", description="Specialized for all non-vegetarian items")
+            session.add(nonveg_kit)
+            
+        # Fetch or create Categories
+        cats = (await session.execute(select(MenuCategory))).scalars().all()
         
-        starters_cat = next((c for c in cats if c.id == 1), None)
-        main_course_cat = next((c for c in cats if c.id == 2), None)
-        desert_cat = next((c for c in cats if c.id == 3), None)
-        
-        if not (main_kit and nonveg_kit and starters_cat and main_course_cat and desert_cat):
-            print("Required categories/kitchens missing!")
-            return
+        starters_cat = next((c for c in cats if c.name == 'Starters'), None)
+        if not starters_cat:
+            starters_cat = MenuCategory(name="Starters", description="Appetizers and quick bites")
+            session.add(starters_cat)
+            
+        main_course_cat = next((c for c in cats if c.name == 'Main Course'), None)
+        if not main_course_cat:
+            main_course_cat = MenuCategory(name="Main Course", description="Heavy dishes for main meals")
+            session.add(main_course_cat)
+            
+        desert_cat = next((c for c in cats if c.name == 'Desserts'), None)
+        if not desert_cat:
+            desert_cat = MenuCategory(name="Desserts", description="Sweet dishes to end your meal")
+            session.add(desert_cat)
+            
+        await session.flush()
             
         items_data = [
             # Starters
@@ -288,6 +304,7 @@ async def seed():
                         
         await session.commit()
         print("Successfully added 30 real menu items with variants and add-ons.")
+    await engine.dispose()
 
 if __name__ == "__main__":
     asyncio.run(seed())
