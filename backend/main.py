@@ -60,9 +60,14 @@ def parse_cors(origins_str):
             pass
     return [origin.strip() for origin in origins_str.split(",")]
 
+# Always ensure the production frontend is allowed, regardless of deployer environment variables
+allowed_origins = parse_cors(settings.CORS_ORIGINS)
+if "https://rm.kvontech.com" not in allowed_origins and "*" not in allowed_origins:
+    allowed_origins.append("https://rm.kvontech.com")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=parse_cors(settings.CORS_ORIGINS),
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
