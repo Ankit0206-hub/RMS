@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.api.dependencies import get_current_admin_user
+from app.api.deps import get_current_admin_user
 from app.models import User
 import subprocess
 import os
