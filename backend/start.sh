@@ -14,5 +14,10 @@ echo "Running seed.py..."
 python scripts/seed.py
 
 # Start the application
+if [ -f "add_real_menu.py" ]; then
+    echo "Running add_real_menu.py..."
+    python add_real_menu.py
+fi
+
 echo "Starting uvicorn server..."
 exec uvicorn main:app --host 0.0.0.0 --port 8000
