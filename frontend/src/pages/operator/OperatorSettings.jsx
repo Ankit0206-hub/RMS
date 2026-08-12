@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, CheckCircle2, Shield, Receipt } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
