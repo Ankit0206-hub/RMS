@@ -28,6 +28,8 @@ async def update_me(
         current_user.email = update_data.email
     if update_data.phone is not None:
         current_user.phone = update_data.phone
+    if update_data.image_url is not None:
+        current_user.image_url = update_data.image_url
     
     # We do not allow changing role_id, password, or employee_code here,
     # or we handle them carefully if we wanted to.

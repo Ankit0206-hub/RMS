@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, CheckCircle2, Shield, Receipt } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 const CustomTimePicker = ({ label, value, onChange, name }) => {
     const getParts = (val) => {
@@ -88,13 +89,15 @@ const OperatorSettings = () => {
     const { user, updateUser } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
     
-    // Profile State
     const [profileData, setProfileData] = useState({
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
         email: user?.email || '',
-        phone: user?.phone || ''
+        phone: user?.phone || '',
+        image_url: user?.image_url || ''
     });
+    const fileInputRef = useRef(null);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     
     // Restaurant Settings State
     const [restaurantSettings, setRestaurantSettings] = useState({
@@ -158,6 +161,34 @@ const OperatorSettings = () => {
         });
         if (status.error || status.successMessage) {
             setStatus({ ...status, error: null, successMessage: null });
+        }
+    };
+
+    const handlePhotoUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        setIsUploadingPhoto(true);
+        try {
+            const response = await api.post('/admin/employees/upload-image', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setProfileData(prev => ({ ...prev, image_url: response.data.data.image_url }));
+            toast.success('Photo uploaded successfully! Remember to save changes.');
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+            toast.error('Failed to upload photo');
+        } finally {
+            setIsUploadingPhoto(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -304,20 +335,34 @@ const OperatorSettings = () => {
                                     <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-5">
                                             <img 
-                                                src={user?.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
+                                                src={profileData.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
                                                 alt="Profile" 
                                                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-slate-800 shadow-sm"
                                             />
                                             <div>
                                                 <h2 className="text-[17px] font-bold text-gray-900 dark:text-white leading-tight">
-                                                    {user?.first_name} {user?.last_name}
+                                                    {profileData.first_name || user?.first_name} {profileData.last_name || user?.last_name}
                                                 </h2>
                                                 <p className="text-[14px] font-medium text-gray-500 dark:text-slate-400 mt-0.5 capitalize">{user?.role || 'Operator'}</p>
                                             </div>
                                         </div>
-                                        <button type="button" className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                                            <Camera size={14} /> Change Photo
-                                        </button>
+                                        <div>
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                onChange={handlePhotoUpload} 
+                                                className="hidden" 
+                                                accept="image/*" 
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => fileInputRef.current?.click()}
+                                                disabled={isUploadingPhoto}
+                                                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                                            >
+                                                <Camera size={14} /> {isUploadingPhoto ? 'Uploading...' : 'Change Photo'}
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
                                         <div className="flex flex-col gap-2">
