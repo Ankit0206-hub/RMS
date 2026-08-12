@@ -46,10 +46,8 @@ const Login = () => {
                 {/* Content */}
                 <div className="relative z-10 flex flex-col justify-center h-full">
                     {/* Brand */}
-                    <div className="flex items-center space-x-3 mb-12">
-                        <div className="bg-transparent p-2 border-2 border-[#6366f1] rounded-xl flex items-center justify-center">
-                            <UtensilsCrossed className="w-8 h-8 text-[#6366f1]" />
-                        </div>
+                    <div className="flex items-center space-x-3 mb-4">
+                        <img src="/favicon.png" alt="Logo" className="w-20 h-20 object-contain" />
                         <div>
                             <h1 className="text-3xl font-bold tracking-wide">Dine<span className="text-[#6366f1]">Ops</span></h1>
                             <p className="text-xs text-gray-300 font-medium tracking-wider">Restaurant Management System</p>
@@ -75,11 +73,7 @@ const Login = () => {
                         
                         {/* Header */}
                     <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#6366f1] mb-6 shadow-lg shadow-indigo-200">
-                            <div className="border-2 border-white p-1.5 rounded-lg">
-                                <Utensils className="w-6 h-6 text-white" />
-                            </div>
-                        </div>
+                        <img src="/favicon.png" alt="Logo" className="w-28 h-28 object-contain mx-auto " />
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome <span className="text-[#6366f1]">Back!</span></h2>
                         <p className="text-sm text-gray-500 font-medium">Login to your DineOps account</p>
                     </div>

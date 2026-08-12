@@ -311,8 +311,8 @@ const AdminLayout = () => {
                         className={`flex items-center space-x-3 ${!isSidebarOpen ? 'cursor-pointer' : ''}`}
                         onClick={() => !isSidebarOpen && setIsSidebarOpen(true)}
                     >
-                        <div className="bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                            <UtensilsCrossed className="w-6 h-6 text-[#6366f1]" />
+                        <div className=" ">
+                            <img src="/favicon.png" alt="Logo" className="w-15 h-15 object-contain mx-auto " />
                         </div>
                         {isSidebarOpen && (
                             <div>
@@ -364,8 +364,8 @@ const AdminLayout = () => {
                                             }
                                         }}
                                         className={`flex items-center justify-between px-4 py-2.5 text-sm font-medium rounded-xl transition-all relative group ${isActive
-                                                ? 'bg-[#5e5ce6] text-white shadow-md'
-                                                : 'text-[#a5a9d6] hover:bg-white/10 hover:text-white'
+                                            ? 'bg-[#5e5ce6] text-white shadow-md'
+                                            : 'text-[#a5a9d6] hover:bg-white/10 hover:text-white'
                                             } ${!isSidebarOpen && 'justify-center'}`}
                                     >
                                         <div className="flex items-center">
