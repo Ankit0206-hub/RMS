@@ -175,7 +175,7 @@ const OperatorLayout = () => {
                 {isSidebarOpen ? (
                     <div className="flex items-center px-6 py-5 border-b border-gray-50 dark:border-slate-800/50/80">
                         <img
-                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150"
+                            src={user?.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
                             alt={`${user?.first_name || 'User'} ${user?.last_name || ''}`}
                             className="w-10 h-10 rounded-full object-cover border border-slate-100 dark:border-slate-800 shrink-0"
                         />
@@ -187,7 +187,7 @@ const OperatorLayout = () => {
                 ) : (
                     <div className="flex justify-center py-4 border-b border-gray-50 dark:border-slate-800/50/80">
                         <img
-                            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150"
+                            src={user?.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
                             alt={`${user?.first_name || 'User'} ${user?.last_name || ''}`}
                             className="w-9 h-9 rounded-full object-cover border border-slate-100 dark:border-slate-800"
                         />
@@ -321,7 +321,7 @@ const OperatorLayout = () => {
                                 className="flex items-center focus:outline-none relative"
                             >
                                 <img
-                                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150"
+                                    src={user?.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
                                     alt="Profile"
                                     className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 hover:border-orange-500 transition-colors"
                                 />

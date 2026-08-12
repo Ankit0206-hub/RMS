@@ -150,13 +150,14 @@ class AnalyticsRepository:
                 Employee.id,
                 Employee.first_name,
                 Employee.last_name,
+                Employee.image_url,
                 func.sum(Bill.grand_total).label("sales")
             )
             .join(Order, Order.waiter_id == Employee.id)
             .join(CustomerSession, CustomerSession.id == Order.session_id)
             .join(Bill, Bill.session_id == CustomerSession.id)
             .where(Bill.payment_status == 'Paid')
-            .group_by(Employee.id, Employee.first_name, Employee.last_name)
+            .group_by(Employee.id, Employee.first_name, Employee.last_name, Employee.image_url)
             .order_by(func.sum(Bill.grand_total).desc())
             .limit(limit)
         )
@@ -167,7 +168,7 @@ class AnalyticsRepository:
                 "id": row.id,
                 "name": f"{row.first_name} {row.last_name}",
                 "sales": float(row.sales),
-                "avatar": f"https://api.dicebear.com/7.x/avataaars/svg?seed={row.first_name}{row.last_name}"
+                "avatar": row.image_url or f"https://api.dicebear.com/7.x/avataaars/svg?seed={row.first_name}{row.last_name}"
             }
             for row in result.all()
         ]

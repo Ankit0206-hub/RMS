@@ -36,7 +36,14 @@ class EmployeeRepository:
             employee_code=employee_in.employee_code,
             role_id=employee_in.role_id,
             is_active=employee_in.is_active,
+            is_on_break=employee_in.is_on_break,
             kitchen_id=employee_in.kitchen_id,
+            gender=employee_in.gender,
+            section=employee_in.section,
+            image_url=employee_in.image_url,
+            aadhar_url=employee_in.aadhar_url,
+            pan_url=employee_in.pan_url,
+            passbook_url=employee_in.passbook_url,
         )
         db.add(db_obj)
         await db.commit()

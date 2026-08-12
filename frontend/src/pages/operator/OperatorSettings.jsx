@@ -304,7 +304,7 @@ const OperatorSettings = () => {
                                     <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-5">
                                             <img 
-                                                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150" 
+                                                src={user?.image_url || `https://ui-avatars.com/api/?name=${user?.first_name || 'U'}+${user?.last_name || ''}&background=0D8ABC&color=fff`}
                                                 alt="Profile" 
                                                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 dark:border-slate-800 shadow-sm"
                                             />
