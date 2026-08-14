@@ -13,7 +13,7 @@ const CustomerDisplay = () => {
     }, []);
 
     const { data: ordersData, isLoading, error, refetch } = useQuery({
-        queryKey: ['customer-display-orders', sessionId],
+        queryKey: ['customer-display-orders'],
         queryFn: async () => {
             const res = await api.get('/customer/display/active-orders');
             return res.data.data;
