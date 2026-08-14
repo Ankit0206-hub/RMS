@@ -11,14 +11,8 @@ const OrderDetailsPanel = ({ order, isOpen, onClose }) => {
 
     const { id, rawId, type, status, table, customerName, customerPhone, waiterName, date, time, amount, items } = order;
 
-    // Use items passed from order if available, else mock data for now
-    const orderItems = items || [
-        { id: 1, name: 'Paneer Butter Masala', qty: 1, price: 280.00, amount: 280.00, img: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=100&h=100&fit=crop' },
-        { id: 2, name: 'Veg Biryani', qty: 1, price: 240.00, amount: 240.00, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=100&h=100&fit=crop' },
-        { id: 3, name: 'Garlic Naan', qty: 2, price: 60.00, amount: 120.00, img: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=100&h=100&fit=crop' },
-        { id: 4, name: 'Masala Cold Drink', qty: 2, price: 40.00, amount: 80.00, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=100&h=100&fit=crop' },
-        { id: 5, name: 'Gulab Jamun', qty: 1, price: 60.00, amount: 60.00, img: 'https://images.unsplash.com/photo-1596568212629-9e2c608f60dc?w=100&h=100&fit=crop' },
-    ];
+    // Use items passed from order if available
+    const orderItems = items && items.length > 0 ? items : [];
 
     const { data: settingsResponse } = useQuery({
         queryKey: ['operator-settings'],

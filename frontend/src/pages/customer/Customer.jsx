@@ -96,19 +96,13 @@ export default function Customer() {
 
       <div className="relative z-10 flex h-full flex-col px-6 pt-8 pb-6 md:px-12 md:pt-16 md:pb-8 overflow-hidden">
         
-        {/* Top Header / Cancel & Skip */}
+        {/* Top Header / Cancel */}
         <div className="absolute top-6 right-6 md:top-10 md:right-10 z-20 flex items-center gap-4 md:gap-6">
           <button 
             onClick={() => navigate("/customer")}
             className="text-[14px] md:text-lg font-bold text-gray-500 dark:text-slate-400 hover:text-red-500 transition"
           >
             Cancel
-          </button>
-          <button 
-            onClick={() => navigate("/customer/home")}
-            className="text-[14px] md:text-lg font-bold text-[#0f172a] hover:text-orange-600 transition"
-          >
-            Skip
           </button>
         </div>
 
@@ -134,99 +128,106 @@ export default function Customer() {
           </p>
         </div>
 
-        <div className="flex-1 flex flex-col justify-center space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full">
-          {/* Your Name */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Your Name</label>
-            <div className="flex items-center mt-0.5 md:mt-1.5">
-              <User className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none"
-              />
-            </div>
+        {!qrTableId ? (
+          <div className="flex-1 flex flex-col items-center justify-center space-y-4 max-w-sm md:max-w-lg mx-auto w-full text-center">
+             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl md:rounded-[1.5rem] p-6 md:p-8 shadow-sm border border-white/50 w-full flex flex-col items-center">
+                <div className="bg-orange-100 dark:bg-slate-800 text-orange-500 rounded-full p-4 mb-4">
+                  <Utensils className="w-8 h-8 md:w-10 md:h-10" />
+                </div>
+                <h3 className="text-[20px] md:text-2xl font-bold text-[#0f172a] mb-2">Scan QR Code</h3>
+                <p className="text-[14px] md:text-base text-[#475569]">
+                  Please scan the QR code located on your table to view the menu and place your order.
+                </p>
+             </div>
           </div>
+        ) : (
+          <>
+            <div className="flex-1 flex flex-col justify-center space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full">
+              {/* Your Name */}
+              <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
+                <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Your Name</label>
+                <div className="flex items-center mt-0.5 md:mt-1.5">
+                  <User className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none"
+                  />
+                </div>
+              </div>
 
-          {/* Contact Number */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Contact Number</label>
-            <div className="flex items-center mt-0.5 md:mt-1.5">
-              <Phone className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    if (val.length <= 10) setForm({ ...form, phone: val });
-                }}
-                maxLength={10}
-                pattern="[0-9]*"
-                className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none"
-              />
-            </div>
-          </div>
+              {/* Contact Number */}
+              <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col transition-all">
+                <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Contact Number</label>
+                <div className="flex items-center mt-0.5 md:mt-1.5">
+                  <Phone className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 10) setForm({ ...form, phone: val });
+                    }}
+                    maxLength={10}
+                    pattern="[0-9]*"
+                    className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none"
+                  />
+                </div>
+              </div>
 
-          {/* Number of People */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-3 md:px-6 md:py-5 shadow-sm flex items-center justify-between">
-            <div className="flex flex-col">
-              <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Number of People</label>
-              <div className="flex items-center mt-0.5 md:mt-1.5">
-                <Users className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
-                <span className="font-bold text-[#0f172a] text-[15px] md:text-lg">{form.persons}</span>
+              {/* Number of People */}
+              <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-3 md:px-6 md:py-5 shadow-sm flex items-center justify-between">
+                <div className="flex flex-col">
+                  <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Number of People</label>
+                  <div className="flex items-center mt-0.5 md:mt-1.5">
+                    <Users className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
+                    <span className="font-bold text-[#0f172a] text-[15px] md:text-lg">{form.persons}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 md:gap-6 bg-gray-100 dark:bg-slate-800/50 md:bg-gray-100 dark:bg-slate-800/70 rounded-full px-2 py-1 md:px-3 md:py-2">
+                  <button onClick={handleDecreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
+                    <Minus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+                  </button>
+                  <span className="font-extrabold w-4 md:w-6 text-center text-[#0f172a] md:text-lg">{form.persons}</span>
+                  <button onClick={handleIncreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
+                    <Plus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Select Table */}
+              <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col relative transition-all">
+                <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Assigned Table</label>
+                <div className="flex items-center mt-0.5 md:mt-1.5">
+                  <Utensils className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
+                  <select
+                    value={form.table}
+                    onChange={(e) => setForm({ ...form, table: e.target.value })}
+                    disabled={true}
+                    className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none appearance-none disabled:opacity-80"
+                  >
+                    <option value={qrTableId}>{qrTableId} (Scanned Table)</option>
+                  </select>
+                </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4 md:gap-6 bg-gray-100 dark:bg-slate-800/50 md:bg-gray-100 dark:bg-slate-800/70 rounded-full px-2 py-1 md:px-3 md:py-2">
-              <button onClick={handleDecreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
-                <Minus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
-              </button>
-              <span className="font-extrabold w-4 md:w-6 text-center text-[#0f172a] md:text-lg">{form.persons}</span>
-              <button onClick={handleIncreasePersons} className="p-1 md:p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:bg-slate-900 transition">
-                <Plus className="text-[#0f172a] w-4 h-4 md:w-5 md:h-5" strokeWidth={3} />
-              </button>
-            </div>
-          </div>
 
-          {/* Select Table */}
-          <div className="rounded-2xl md:rounded-[1.5rem] border border-white/50 bg-white dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm focus-within:border-orange-500 focus-within:bg-white dark:bg-slate-900 flex flex-col relative transition-all">
-            <label className="text-[11px] md:text-[13px] text-gray-500 dark:text-slate-400 font-bold ml-8 md:ml-10 uppercase tracking-wider">Select Table</label>
-            <div className="flex items-center mt-0.5 md:mt-1.5">
-              <Utensils className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
-              <select
-                value={form.table}
-                onChange={(e) => setForm({ ...form, table: e.target.value })}
-                disabled={isTableLocked}
-                className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="flex-1 min-h-[16px] md:min-h-[32px]"></div>
+
+            {/* Continue Button */}
+            <div className="pb-2 pt-4 md:pt-8 mt-auto max-w-sm md:max-w-lg mx-auto w-full">
+              <button
+                onClick={handleContinue}
+                disabled={loading}
+                className="w-full rounded-2xl md:rounded-3xl bg-orange-500 py-4 md:py-5 text-[17px] md:text-xl font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 active:scale-[0.98] disabled:opacity-70"
               >
-                {isTableLocked ? (
-                  <option value={qrTableId}>{qrTableId} (Scanned Table)</option>
-                ) : (
-                  <>
-                    {tables.length === 0 && <option value="">No vacant tables</option>}
-                    {tables.map(t => (
-                      <option key={t.id} value={t.id}>{t.id} ({t.capacity} Seats)</option>
-                    ))}
-                  </>
-                )}
-              </select>
+                {loading ? "Starting..." : "Continue"}
+              </button>
             </div>
-          </div>
-        </div>
-
-        <div className="flex-1 min-h-[16px] md:min-h-[32px]"></div>
-
-        {/* Continue Button */}
-        <div className="pb-2 pt-4 md:pt-8 mt-auto max-w-sm md:max-w-lg mx-auto w-full">
-          <button
-            onClick={handleContinue}
-            disabled={loading}
-            className="w-full rounded-2xl md:rounded-3xl bg-orange-500 py-4 md:py-5 text-[17px] md:text-xl font-bold text-white shadow-xl shadow-orange-500/30 transition hover:bg-orange-600 active:scale-[0.98] disabled:opacity-70"
-          >
-            {loading ? "Starting..." : "Continue"}
-          </button>
-        </div>
+          </>
+        )}
 
       </div>
     </PageLayout>

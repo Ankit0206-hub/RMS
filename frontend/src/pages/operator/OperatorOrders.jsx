@@ -79,8 +79,15 @@ const OperatorOrders = () => {
         type: order.order_type || "Take Away",
         amount: order.total_amount || 0.0,
         status: order.status,
-        waiterName: "Amit Verma", // Waiter assignment logic pending in backend
-        items: null, // We'll mock this in the details panel until backend provides nested items
+        waiterName: order.waiter_name || "-",
+        items: order.items ? order.items.map(i => ({
+            id: i.id,
+            name: i.menu_item_name || "Unknown Item",
+            qty: i.quantity,
+            price: i.price_at_order,
+            amount: i.quantity * i.price_at_order,
+            img: i.menu_item_image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop'
+        })) : null,
       };
     });
   }, [ordersResponse]);
