@@ -57,3 +57,39 @@ async def update_operator_settings(
 ):
     data = await settings_service.update_settings(db, settings_in)
     return StandardResponse(data=data)
+
+@router.post("/tables/{table_id}/clear")
+async def clear_operator_table(
+    table_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_operator)
+):
+    from sqlalchemy.future import select
+    from fastapi import HTTPException
+    from app.models.restaurant import RestaurantTable
+    from app.models.ordering import CustomerSession
+    from sqlalchemy.orm import selectinload
+    from app.api.websocket_router import manager
+    
+    query = select(RestaurantTable).where(RestaurantTable.table_number == table_id).options(
+        selectinload(RestaurantTable.sessions)
+    )
+    result = await db.execute(query)
+    table = result.scalars().first()
+    
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+        
+    for session in table.sessions:
+        if session.status == "Active":
+            session.status = "Completed"
+            
+    table.status = "Available"
+    await db.commit()
+    
+    await manager.broadcast("TABLE_UPDATED", {
+        "table_id": table.table_number,
+        "status": "Available"
+    }, ["operator", "waiter", "kitchen"])
+    
+    return {"message": "Table cleared successfully"}

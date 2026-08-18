@@ -24,7 +24,7 @@ export default function Customization() {
 
         {/* Header */}
         <div className="flex items-center gap-3 border-b bg-white dark:bg-slate-900 px-5 py-4">
-          <button onClick={() => navigate('/customer/cart')}>
+          <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
 

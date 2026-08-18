@@ -520,3 +520,46 @@ async def mark_notification_read(
     notif.is_read = True
     await db.commit()
     return {"message": "Notification marked as read"}
+
+@router.post("/tables/{table_id}/clear")
+async def clear_waiter_table(
+    table_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Employee = Depends(get_current_waiter)
+):
+    from sqlalchemy.future import select
+    from fastapi import HTTPException
+    from app.models.restaurant import RestaurantTable, TableAssignment
+    from sqlalchemy.orm import selectinload
+    
+    assignment_query = select(TableAssignment).join(RestaurantTable).where(
+        RestaurantTable.table_number == table_id,
+        TableAssignment.employee_id == current_user.id,
+        TableAssignment.is_active == True
+    )
+    assignment_result = await db.execute(assignment_query)
+    if not assignment_result.scalars().first():
+        raise HTTPException(status_code=403, detail="Not assigned to this table")
+
+    query = select(RestaurantTable).where(RestaurantTable.table_number == table_id).options(
+        selectinload(RestaurantTable.sessions)
+    )
+    result = await db.execute(query)
+    table = result.scalars().first()
+    
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+        
+    for session in table.sessions:
+        if session.status == "Active":
+            session.status = "Completed"
+            
+    table.status = "Available"
+    await db.commit()
+    
+    await manager.broadcast("TABLE_UPDATED", {
+        "table_id": table.table_number,
+        "status": "Available"
+    }, ["operator", "waiter", "kitchen"])
+    
+    return {"message": "Table cleared successfully"}

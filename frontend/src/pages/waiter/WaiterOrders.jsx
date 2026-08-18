@@ -125,7 +125,7 @@ export default function WaiterOrders() {
                                                 <button 
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        waiterApi.updateOrderStatus(order.id, "Preparing").then(() => fetchOrders());
+                                                        waiterApi.updateOrderStatus(order.id, "Confirmed").then(() => fetchOrders());
                                                     }} 
                                                     className="bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-indigo-600 transition-colors mr-2"
                                                 >

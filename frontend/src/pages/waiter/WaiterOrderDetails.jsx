@@ -62,7 +62,7 @@ export default function WaiterOrderDetails() {
 
     const handleAcceptOrder = async () => {
         try {
-            await waiterApi.updateOrderStatus(orderId, "Preparing");
+            await waiterApi.updateOrderStatus(orderId, "Confirmed");
             toast.success("Order accepted and sent to kitchen");
             fetchOrderDetails();
         } catch (error) {

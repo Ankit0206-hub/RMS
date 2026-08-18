@@ -38,7 +38,7 @@ export default function Language() {
 
         <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
-          <button onClick={() => navigate('/customer/settings')}>
+          <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
 

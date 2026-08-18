@@ -24,7 +24,7 @@ const OperatorOrders = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterDate, setFilterDate] = useState("");
   const [filterType, setFilterType] = useState("All");
-  const [filterTable, setFilterTable] = useState("All");
+  const [filterTable, setFilterTable] = useState(location.state?.tableNumber || "All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);

@@ -21,6 +21,7 @@ class CustomerStartSessionRequest(BaseModel):
     customer_name: Optional[str] = None
     customer_phone: Optional[str] = None
     guests: int
+    pin: Optional[str] = None
 
 class CustomerOrderItemRequest(BaseModel):
     menu_item_id: int
@@ -70,16 +71,32 @@ async def start_customer_session(
     existing_session = active_session_result.scalars().first()
     
     if existing_session:
+        if not existing_session.session_pin:
+            # Legacy session without PIN
+            from app.core.security import create_access_token
+            token = create_access_token(subject=str(existing_session.id), role="customer")
+            return {"message": "Joined existing session", "session_id": existing_session.id, "token": token}
+            
+        if not req.pin:
+            return {"requires_pin": True, "host_name": existing_session.customer_name or "another customer"}
+            
+        if req.pin != existing_session.session_pin:
+            raise HTTPException(status_code=401, detail="Incorrect PIN")
+            
         from app.core.security import create_access_token
         token = create_access_token(subject=str(existing_session.id), role="customer")
-        return {"message": "Joined existing session", "session_id": existing_session.id, "token": token}
+        return {"message": "Joined existing session", "session_id": existing_session.id, "token": token, "session_pin": existing_session.session_pin}
         
+    import random
+    new_pin = f"{random.randint(1000, 9999)}"
+    
     session = CustomerSession(
         table_id=table.id,
         customer_name=req.customer_name,
         customer_phone=req.customer_phone,
         number_of_people=req.guests,
-        status="Active"
+        status="Active",
+        session_pin=new_pin
     )
     db.add(session)
     table.status = "Occupied"
@@ -96,7 +113,7 @@ async def start_customer_session(
     from app.core.security import create_access_token
     token = create_access_token(subject=str(session.id), role="customer")
     
-    return {"message": "Session started", "session_id": session.id, "token": token}
+    return {"message": "Session started", "session_id": session.id, "token": token, "session_pin": new_pin}
 
 @router.get("/menu")
 async def get_customer_menu(db: AsyncSession = Depends(get_db)):

@@ -54,7 +54,7 @@ export default function Cart() {
       <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10 relative">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate("/customer/home")} 
+            onClick={() => navigate(-1)} 
             className="p-2 -ml-2 rounded-full hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 active:scale-95 transition-transform z-20"
           >
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
@@ -110,7 +110,7 @@ export default function Cart() {
             </p>
 
             <button
-              onClick={() => navigate("/customer/home")}
+              onClick={() => navigate("/customer/categories")}
               className="rounded-2xl bg-orange-500 px-8 py-3.5 font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 active:scale-95 transition-all w-full max-w-[260px] flex items-center justify-center gap-2"
             >
               Browse Menu
@@ -184,18 +184,10 @@ export default function Cart() {
                   <span>Item Total</span>
                   <span className="text-gray-900 dark:text-white">₹{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span className="text-gray-900 dark:text-white">₹{tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Service Charge</span>
-                  <span className="text-gray-900 dark:text-white">₹{serviceCharge.toFixed(2)}</span>
-                </div>
                 <div className="my-3 border-t border-gray-100 dark:border-slate-800 border-dashed" />
                 <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white">
                   <span>Grand Total</span>
-                  <span className="text-orange-500 text-xl font-black">₹{total.toFixed(2)}</span>
+                  <span className="text-orange-500 text-xl font-black">₹{subtotal.toFixed(2)}</span>
                 </div>
               </div>
 

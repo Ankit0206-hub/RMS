@@ -59,10 +59,10 @@ export default function OrderSuccess() {
         {/* Buttons */}
         <div className="w-full space-y-4">
           <button
-            onClick={() => navigate("/customer/order-tracking")}
+            onClick={() => navigate("/customer/orders")}
             className="flex h-14 w-full items-center justify-center rounded-2xl bg-orange-500 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
           >
-            Track Order
+            View Orders
           </button>
 
           <button

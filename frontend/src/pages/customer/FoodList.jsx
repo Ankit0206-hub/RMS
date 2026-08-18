@@ -4,10 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
 import CustomizationModal from "../../components/customer/common/CustomizationModal";
+import RepeatCustomizationModal from "../../components/customer/common/RepeatCustomizationModal";
 import { useEffect } from "react";
 import customerApi from "../../services/customerApi";
-
-
 
 export default function FoodList() {
   const navigate = useNavigate();
@@ -16,6 +15,7 @@ export default function FoodList() {
   const [activeFilter, setActiveFilter] = useState("all"); // 'all', 'veg', 'non-veg', 'spicy'
   const [searchQuery, setSearchQuery] = useState("");
   const [customizationFood, setCustomizationFood] = useState(null);
+  const [repeatFoodItem, setRepeatFoodItem] = useState(null);
   const [currentData, setCurrentData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +79,7 @@ export default function FoodList() {
 
         {/* Header */}
         <div className="flex items-center justify-center relative px-4 pt-6 pb-2">
-          <button onClick={() => navigate("/customer/categories")} className="absolute left-4 p-2 z-10 active:scale-95 transition-transform">
+          <button onClick={() => navigate(-1)} className="absolute left-4 p-2 z-10 active:scale-95 transition-transform">
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
           <h1 className="text-lg font-bold text-gray-900 dark:text-white capitalize">
@@ -184,24 +184,35 @@ export default function FoodList() {
                   </p>
                   
                   {(() => {
-                    const cartItem = cartItems.find((item) => item.id === food.id || item.name === food.name);
-                    if (cartItem) {
+                    const matchingItems = cartItems.filter(item => item.originalId === food.id || item.id === food.id || item.name === food.name);
+                    const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
+                    if (totalQty > 0) {
+                      const lastItem = matchingItems[matchingItems.length - 1];
                       return (
                         <div className="flex items-center gap-1 sm:gap-2 rounded-lg bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white shadow-sm">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              decreaseQuantity(cartItem.id || food.id || food.name);
+                              if (matchingItems.length > 1) {
+                                navigate('/customer/cart');
+                              } else {
+                                decreaseQuantity(lastItem.id);
+                              }
                             }}
                             className="p-1"
                           >
                             <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                           </button>
-                          <span className="text-xs sm:text-sm font-bold text-center px-1">{cartItem.quantity}</span>
+                          <span className="text-xs sm:text-sm font-bold text-center px-1">{totalQty}</span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              increaseQuantity(cartItem.id || food.id || food.name);
+                              const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions || food.customizableSpice;
+                              if (hasCustomization) {
+                                setRepeatFoodItem(lastItem);
+                              } else {
+                                increaseQuantity(lastItem.id);
+                              }
                             }}
                             className="p-1"
                           >
@@ -214,7 +225,8 @@ export default function FoodList() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (food.hasPortions || food.customizableSpice) {
+                          const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions || food.customizableSpice;
+                          if (hasCustomization) {
                             setCustomizationFood(food);
                           } else {
                             addToCart(food);
@@ -244,6 +256,19 @@ export default function FoodList() {
         isOpen={!!customizationFood} 
         onClose={() => setCustomizationFood(null)} 
         food={customizationFood} 
+      />
+
+      <RepeatCustomizationModal
+        isOpen={!!repeatFoodItem}
+        onClose={() => setRepeatFoodItem(null)}
+        cartItem={repeatFoodItem}
+        onChooseNew={(item) => {
+          // Find the original food object from currentData
+          const originalFood = currentData.find(f => f.id === item.originalId || f.name === item.name);
+          if (originalFood) {
+            setCustomizationFood(originalFood);
+          }
+        }}
       />
     </PageLayout>
   );

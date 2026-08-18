@@ -119,10 +119,8 @@ export default function Review() {
   };
 
   const handleFinish = () => {
-      localStorage.removeItem('customer_token');
-      localStorage.removeItem('customerSession');
-      navigate("/customer/landing");
-  };
+        navigate("/customer/order-details");
+    };
 
   if (submitted) {
       return (
@@ -134,7 +132,7 @@ export default function Review() {
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Thank You!</h2>
                   <p className="text-gray-500 dark:text-slate-400 mb-8">Your feedback has been submitted successfully.</p>
                   <button onClick={handleFinish} className="w-full bg-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 dark:shadow-none hover:bg-orange-600 transition active:scale-95">
-                      Back to Home
+                      Return to Orders
                   </button>
               </div>
           </PageLayout>

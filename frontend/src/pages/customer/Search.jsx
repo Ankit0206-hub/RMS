@@ -1,22 +1,22 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search as SearchIcon, ArrowLeft, Star, Plus, Minus, Clock, X, Trash2, Search, Utensils } from 'lucide-react';
 import PageLayout from "../../components/customer/layout/PageLayout";
 import BottomNav from "../../components/customer/navigation/BottomNav";
-import { ArrowLeft, Search, Star, Plus, Minus, Utensils } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
-
+import customerApi from "../../services/customerApi";
+import CustomizationModal from "../../components/customer/common/CustomizationModal";
+import RepeatCustomizationModal from "../../components/customer/common/RepeatCustomizationModal";
 import RecentSearch from "../../components/customer/search/RecentSearch";
 import TrendingFood from "../../components/customer/search/TrendingFood";
-import { useEffect } from "react";
-import customerApi from "../../services/customerApi";
-
-
 
 export default function SearchPage() {
   const navigate = useNavigate();
   const { addToCart, cartItems, increaseQuantity, decreaseQuantity } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [allDishes, setAllDishes] = useState([]);
+  const [customizationFood, setCustomizationFood] = useState(null);
+  const [repeatFoodItem, setRepeatFoodItem] = useState(null);
 
   useEffect(() => {
     customerApi.getMenu().then(data => {
@@ -56,7 +56,7 @@ export default function SearchPage() {
           {/* Header */}
           <div className="flex items-center gap-3">
 
-            <button onClick={() => navigate('/customer/home')}>
+            <button onClick={() => navigate(-1)}>
               <ArrowLeft size={22} />
             </button>
 
@@ -108,24 +108,35 @@ export default function SearchPage() {
                       {/* Action */}
                       <div className="flex items-center justify-end">
                         {(() => {
-                          const cartItem = cartItems.find((item) => item.id === food.id || item.originalId === food.id || item.name === food.name);
-                          if (cartItem) {
+                          const matchingItems = cartItems.filter(item => item.originalId === food.id || item.id === food.id || item.name === food.name);
+                          const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
+                          if (totalQty > 0) {
+                            const lastItem = matchingItems[matchingItems.length - 1];
                             return (
                               <div className="flex items-center gap-1 sm:gap-2 rounded-lg bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white shadow-sm">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    decreaseQuantity(cartItem.id || food.id);
+                                    if (matchingItems.length > 1) {
+                                      navigate('/customer/cart');
+                                    } else {
+                                      decreaseQuantity(lastItem.id);
+                                    }
                                   }}
                                   className="p-1"
                                 >
                                   <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                 </button>
-                                <span className="text-xs sm:text-sm font-bold text-center px-1">{cartItem.quantity}</span>
+                                <span className="text-xs sm:text-sm font-bold text-center px-1">{totalQty}</span>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    increaseQuantity(cartItem.id || food.id);
+                                    const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
+                                    if (hasCustomization) {
+                                      setRepeatFoodItem(lastItem);
+                                    } else {
+                                      increaseQuantity(lastItem.id);
+                                    }
                                   }}
                                   className="p-1"
                                 >
@@ -138,7 +149,12 @@ export default function SearchPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                addToCart(food);
+                                const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
+                                if (hasCustomization) {
+                                  setCustomizationFood(food);
+                                } else {
+                                  addToCart(food);
+                                }
                               }}
                               className="rounded-full bg-orange-500 p-2 text-white shadow-sm hover:bg-orange-600 active:scale-95"
                             >
@@ -170,6 +186,23 @@ export default function SearchPage() {
         <BottomNav />
 
       </div>
+      <CustomizationModal 
+        isOpen={!!customizationFood} 
+        onClose={() => setCustomizationFood(null)} 
+        food={customizationFood} 
+      />
+      
+      <RepeatCustomizationModal
+        isOpen={!!repeatFoodItem}
+        onClose={() => setRepeatFoodItem(null)}
+        cartItem={repeatFoodItem}
+        onChooseNew={(item) => {
+          const originalFood = allDishes.find(f => f.id === item.originalId || f.name === item.name);
+          if (originalFood) {
+            setCustomizationFood(originalFood);
+          }
+        }}
+      />
     </PageLayout>
   );
 }

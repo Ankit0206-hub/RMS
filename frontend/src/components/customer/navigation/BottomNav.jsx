@@ -66,7 +66,7 @@ export default function BottomNav({ active = "home" }) {
       {/* Active Order Banner */}
       {activeOrder && (
         <div 
-          onClick={() => navigate("/customer/order-tracking")}
+          onClick={() => navigate("/customer/order-details", { state: { order: activeOrder } })}
           className="bg-orange-50 dark:bg-orange-900/20 px-4 py-3 flex items-center justify-between cursor-pointer border-b border-orange-100 dark:border-orange-900/30"
         >
           <div className="flex items-center gap-3">

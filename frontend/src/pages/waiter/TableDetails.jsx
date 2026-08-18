@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Clock, Users, Plus, Utensils, Receipt } from 'lucide-react';
 import toast from 'react-hot-toast';
 import waiterApi from '../../services/waiterApi';
+import api from '../../services/api';
 import OrderTimeline from '../../components/waiter/OrderTimeline';
 
 export default function TableDetails() {
@@ -20,6 +21,19 @@ export default function TableDetails() {
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [availableTables, setAvailableTables] = useState([]);
     const [isTransferring, setIsTransferring] = useState(false);
+
+    
+    const handleClearTable = async () => {
+        if (!window.confirm("Are you sure you want to free up this table?")) return;
+        try {
+            await api.post(`/waiter/tables/${id}/clear`);
+            toast.success("Table cleared");
+            navigate('/waiter/tables');
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to clear table");
+        }
+    };
 
     useEffect(() => {
         if (isTransferModalOpen) {

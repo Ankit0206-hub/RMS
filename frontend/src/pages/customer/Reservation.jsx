@@ -10,7 +10,7 @@ export default function Reservation() {
       <div className="flex h-full flex-col bg-white dark:bg-slate-900">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-slate-800 px-5 py-4">
-          <button onClick={() => navigate('/customer/home')}>
+          <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
 

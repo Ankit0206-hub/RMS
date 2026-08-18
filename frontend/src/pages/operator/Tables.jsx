@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { ChevronRight, Search, Filter, RefreshCw, Eye, Edit2, MoreVertical, X, CheckCircle2, Clock, Map, Users, Square, RefreshCcw, Trash, QrCode } from 'lucide-react';
 import QRCodeModal from '../admin/QRCodeModal';
@@ -19,6 +21,82 @@ const Tables = () => {
 
     const tables = tablesResponse?.data || [];
 
+        const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const [tableModalOpen, setTableModalOpen] = useState(false);
+    const [editingTable, setEditingTable] = useState(null);
+    const [tableForm, setTableForm] = useState({ table_number: '', capacity: 4, floor: 'Main Hall' });
+
+    const { data: settings = {} } = useQuery({
+        queryKey: ['settings'],
+        queryFn: async () => {
+            const res = await api.get('/admin/settings');
+            return res.data;
+        }
+    });
+
+    const generateNextTableName = (tablesList, settingsData, selectedFloor) => {
+        const convention = settingsData.table_naming_convention || 'Numeric';
+        const globalPrefix = settingsData.normal_table_prefix || 'T-';
+        const floorPrefixes = settingsData.floor_prefixes || {};
+        
+        let prefix = globalPrefix;
+        if (selectedFloor && floorPrefixes[selectedFloor]) {
+            prefix = floorPrefixes[selectedFloor];
+        }
+
+        const floorTables = tablesList.filter(t => (t.floor || 'Main Hall') === (selectedFloor || 'Main Hall'));
+        const count = floorTables.length + 1;
+        
+        if (convention === 'Numeric') {
+            return `${prefix}${count}`;
+        } else if (convention === 'Alphabetic') {
+            const char = String.fromCharCode(64 + count);
+            return `${prefix}${char}`;
+        }
+        return `${prefix}${count}`;
+    };
+
+    const openTableModal = (table = null) => {
+        if (table) {
+            setEditingTable(table);
+            setTableForm({ table_number: table.table_number, capacity: table.capacity, floor: table.floor || 'Main Hall' });
+        } else {
+            setEditingTable(null);
+            setTableForm({ table_number: generateNextTableName(tables, settings, 'Main Hall'), capacity: 4, floor: 'Main Hall' });
+        }
+        setTableModalOpen(true);
+    };
+
+    const tableMutation = useMutation({
+        mutationFn: async (data) => {
+            if (editingTable) {
+                return api.put(`/admin/tables/${editingTable.id}`, data);
+            } else {
+                return api.post('/admin/tables/', data);
+            }
+        },
+        onSuccess: () => {
+            toast.success(editingTable ? "Table updated!" : "Table created!");
+            queryClient.invalidateQueries({ queryKey: ['operator-tables'] });
+            setTableModalOpen(false);
+        },
+        onError: () => toast.error("Failed to save table")
+    });
+
+    const handleTableSubmit = () => {
+        const payload = {
+            table_number: tableForm.table_number,
+            capacity: parseInt(tableForm.capacity),
+            floor: tableForm.floor,
+        };
+        if (!editingTable) {
+            payload.status = 'Available';
+            payload.qr_code = 'temp';
+        }
+        tableMutation.mutate(payload);
+    };
+
     const totalTables = tables.length;
     const available = tables.filter(t => t.status === 'Available').length;
     const occupied = tables.filter(t => t.status === 'Occupied').length;
@@ -32,7 +110,21 @@ const Tables = () => {
         return true;
     });
 
+
+    const handleClearTable = async (tableId) => {
+        if (!window.confirm("Are you sure you want to free up this table?")) return;
+        try {
+            await api.post(`/operator/tables/${tableId}/clear`);
+            refetch();
+            setSelectedTable(null);
+        } catch (error) {
+            console.error(error);
+            alert("Failed to clear table");
+        }
+    };
+
     const getStatusColor = (status) => {
+
         switch(status) {
             case 'Available': return { text: 'text-emerald-600', bg: 'bg-emerald-50', dot: 'bg-emerald-500' };
             case 'Occupied': return { text: 'text-orange-500', bg: 'bg-orange-50', dot: 'bg-orange-500' };
@@ -50,7 +142,7 @@ const Tables = () => {
                 <div className="overflow-y-auto flex-1 scrollbar-hide space-y-4">
                     {/* Header Action Buttons */}
                     <div className="flex justify-end mb-4">
-                        <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors">
+                        <button onClick={openTableModal} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center transition-colors">
                             <span className="text-lg mr-1">+</span> Add Table
                         </button>
                     </div>
@@ -207,7 +299,7 @@ const Tables = () => {
                                                 <td className="px-5 py-3.5">
                                                     <div className="flex justify-center space-x-2">
                                                         <button onClick={() => setSelectedTable(table)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Eye size={15} /></button>
-                                                        <button className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Edit2 size={15} /></button>
+                                                        <button onClick={() => openTableModal(table)} className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><Edit2 size={15} /></button>
                                                         <button 
                                                             onClick={() => setQrTable(table)}
                                                             className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
@@ -215,7 +307,7 @@ const Tables = () => {
                                                         >
                                                             <QrCode size={15} />
                                                         </button>
-                                                        <button className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"><MoreVertical size={15} /></button>
+                                                        
                                                     </div>
                                                 </td>
                                             </tr>
@@ -291,17 +383,16 @@ const Tables = () => {
                             {/* Quick Actions */}
                             <div className="pt-4 border-t border-gray-100 dark:border-slate-800">
                                 <h4 className="text-[11px] font-bold text-gray-900 dark:text-white mb-3">Quick Actions</h4>
+                                {selectedTable.status === 'Occupied' && (
+                                    <button 
+                                        onClick={() => handleClearTable(selectedTable.id)}
+                                        className="w-full mb-3 flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 py-2.5 rounded-xl font-bold transition-colors"
+                                    >
+                                        Free Up Table
+                                    </button>
+                                )}
                                 <div className="space-y-2.5">
-                                    <button className="w-full flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors">
-                                        <Edit2 size={14} className="mr-3 text-indigo-600" /> Edit Table
-                                    </button>
-                                    <button className="w-full flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-orange-600 hover:bg-orange-50 transition-colors">
-                                        <RefreshCcw size={14} className="mr-3 text-orange-600" /> Change Status
-                                    </button>
-                                    <button className="w-full flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                                        <Users size={14} className="mr-3 text-red-600" /> Clean Table
-                                    </button>
-                                    <button className="w-full flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors">
+                                    <button onClick={() => navigate('/operator/orders', { state: { tableNumber: selectedTable.table_number } })} className="w-full flex items-center px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors">
                                         <Eye size={14} className="mr-3 text-indigo-600" /> View Orders
                                     </button>
                                 </div>
@@ -318,6 +409,67 @@ const Tables = () => {
                     className="fixed inset-0 bg-gray-900/20 z-10 lg:hidden"
                     onClick={() => setSelectedTable(null)}
                 />
+            )}
+
+
+            {/* Table Modal */}
+            {tableModalOpen && (
+                <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white">{editingTable ? "Edit Table" : "Add Table"}</h2>
+                            <button onClick={() => setTableModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <div className="space-y-4 mb-8">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Table Number/Name</label>
+                                <input 
+                                    type="text" 
+                                    value={tableForm.table_number}
+                                    onChange={(e) => setTableForm(prev => ({...prev, table_number: e.target.value}))}
+                                    className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                                    placeholder="e.g. T-01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Capacity</label>
+                                <input 
+                                    type="number" 
+                                    value={tableForm.capacity}
+                                    onChange={(e) => setTableForm(prev => ({...prev, capacity: e.target.value}))}
+                                    className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">Section/Floor</label>
+                                <select 
+                                    value={tableForm.floor}
+                                    onChange={(e) => {
+                                        const newFloor = e.target.value;
+                                        setTableForm(prev => ({
+                                            ...prev, 
+                                            floor: newFloor,
+                                            table_number: generateNextTableName(tables, settings, newFloor)
+                                        }));
+                                    }}
+                                    className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 bg-gray-50 dark:bg-slate-800 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                                >
+                                    {(settings.floors_areas || ['Main Hall', 'Patio', 'Bar', 'VIP', 'Balcony', 'Garden', 'Rooftop']).map(f => (
+                                        <option key={f} value={f}>{f}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-3">
+                            <button onClick={() => setTableModalOpen(false)} className="px-4 py-2 text-sm font-bold text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                            <button onClick={handleTableSubmit} disabled={!tableForm.table_number || tableMutation.isPending || tableForm.capacity === '' || tableForm.capacity <= 0} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50">
+                                {editingTable ? 'Save Changes' : (tableMutation.isPending ? 'Creating...' : 'Create Table')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <QRCodeModal 

@@ -21,6 +21,11 @@ const CustomerMenu = () => {
     const [orderStatus, setOrderStatus] = useState(null);
     const [ws, setWs] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [customizingItem, setCustomizingItem] = useState(null);
+    const [prepType, setPrepType] = useState('Full Plate');
+    const [spiceLevel, setSpiceLevel] = useState('');
+    const [selectedVariants, setSelectedVariants] = useState({});
+    const [selectedAddons, setSelectedAddons] = useState({});
 
     // 1. Initialize Session
     const startSessionMutation = useMutation({
@@ -79,9 +84,78 @@ const CustomerMenu = () => {
         }
     });
 
-    const addToCart = (item) => {
-        setCart([...cart, { ...item, cartId: Math.random() }]);
-        toast.success(`Added ${item.name} to cart`);
+    const handleFirstAdd = (item) => {
+        setCustomizingItem(item);
+        setPrepType('Full Plate');
+        setSpiceLevel('');
+        const defaultVars = {};
+        if (item.variant_groups) {
+            item.variant_groups.forEach(vg => {
+                const defaultVar = vg.variants.find(v => v.is_default);
+                if (defaultVar) defaultVars[vg.id] = defaultVar.id;
+                else if (vg.variants.length > 0) defaultVars[vg.id] = vg.variants[0].id;
+            });
+        }
+        setSelectedVariants(defaultVars);
+        setSelectedAddons({});
+    };
+
+    const confirmCustomization = () => {
+        const basePrice = customizingItem.originalPrice || customizingItem.price;
+        let newPrice = prepType === 'Half Plate' ? (customizingItem.half_price != null ? customizingItem.half_price : Math.round(basePrice * 0.6)) : basePrice;
+        
+        if (customizingItem.variant_groups) {
+            customizingItem.variant_groups.forEach(vg => {
+                const selectedId = selectedVariants[vg.id];
+                if (selectedId) {
+                    const variant = vg.variants.find(v => v.id === selectedId);
+                    if (variant) newPrice += variant.extra_price;
+                }
+            });
+        }
+
+        if (customizingItem.addon_groups) {
+            customizingItem.addon_groups.forEach(ag => {
+                ag.addons.forEach(addon => {
+                    if (selectedAddons[addon.id]) newPrice += addon.price;
+                });
+            });
+        }
+        
+        const notesParts = [];
+        if (prepType && prepType !== 'Full Plate') notesParts.push(prepType);
+        if (spiceLevel) notesParts.push(spiceLevel);
+        if (customizingItem.variant_groups) {
+            customizingItem.variant_groups.forEach(vg => {
+                const selectedId = selectedVariants[vg.id];
+                if (selectedId) {
+                    const variant = vg.variants.find(v => v.id === selectedId);
+                    if (variant) notesParts.push(`${vg.name}: ${variant.name}`);
+                }
+            });
+        }
+        if (customizingItem.addon_groups) {
+            const addons = [];
+            customizingItem.addon_groups.forEach(ag => {
+                ag.addons.forEach(addon => {
+                    if (selectedAddons[addon.id]) addons.push(addon.name);
+                });
+            });
+            if (addons.length > 0) notesParts.push(`Addons: ${addons.join(', ')}`);
+        }
+
+        setCart([...cart, { 
+            ...customizingItem, 
+            cartId: Math.random(),
+            price: newPrice,
+            notes: notesParts.join(' | ') || undefined,
+            prepType,
+            spiceLevel,
+            selectedVariants,
+            selectedAddons
+        }]);
+        setCustomizingItem(null);
+        toast.success(`Added ${customizingItem.name} to cart`);
     };
 
     const placeOrderMutation = useMutation({
@@ -100,11 +174,11 @@ const CustomerMenu = () => {
     const handlePlaceOrder = () => {
         if (!cart.length) return;
         
-        // Group by menu_item_id to calculate quantities
         const itemMap = {};
         cart.forEach(item => {
-            if (itemMap[item.id]) itemMap[item.id].quantity += 1;
-            else itemMap[item.id] = { menu_item_id: item.id, quantity: 1, notes: "" };
+            const key = item.id + (item.notes ? '|' + item.notes : '');
+            if (itemMap[key]) itemMap[key].quantity += 1;
+            else itemMap[key] = { menu_item_id: item.id, quantity: 1, notes: item.notes || "" };
         });
         
         const items = Object.values(itemMap);
@@ -172,7 +246,7 @@ const CustomerMenu = () => {
                                 <p className="text-gray-500 dark:text-slate-400 text-sm">{item.description}</p>
                                 <p className="text-cyan-600 font-medium mt-1">₹{parseFloat(item.price).toFixed(2)}</p>
                             </div>
-                            <Button onClick={() => addToCart(item)} size="sm">Add</Button>
+                            <Button onClick={() => handleFirstAdd(item)} size="sm">Add</Button>
                         </Card>
                     ));
                 })()}
@@ -194,7 +268,10 @@ const CustomerMenu = () => {
                 <div className="space-y-4">
                     {cart.map((item, idx) => (
                         <div key={idx} className="flex justify-between border-b border-gray-200 dark:border-slate-700 pb-2">
-                            <span>{item.name}</span>
+                            <div>
+                                <span>{item.name}</span>
+                                {item.notes && <div className="text-[10px] text-gray-500">{item.notes}</div>}
+                            </div>
                             <span>₹{parseFloat(item.price).toFixed(2)}</span>
                         </div>
                     ))}
@@ -210,6 +287,103 @@ const CustomerMenu = () => {
                         {placeOrderMutation.isPending ? 'Sending...' : 'Send to Kitchen'}
                     </Button>
                 </div>
+            </Modal>
+
+            {/* Customization Modal */}
+            <Modal isOpen={!!customizingItem} onClose={() => setCustomizingItem(null)} title={customizingItem?.name || "Customize"}>
+                {customizingItem && (
+                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                        {customizingItem.half_price != null && (
+                            <div>
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2 block">Preparation</label>
+                                <div className="flex gap-2">
+                                    {['Full Plate', 'Half Plate'].map(type => (
+                                        <button 
+                                            key={type}
+                                            onClick={() => setPrepType(type)}
+                                            className={`flex-1 py-2 rounded-lg font-bold text-sm transition-all border ${
+                                                prepType === type 
+                                                ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm' 
+                                                : 'bg-white text-gray-700 dark:bg-slate-800 dark:text-gray-300 border-gray-200 dark:border-slate-700'
+                                            }`}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {(customizingItem.is_spicy_customizable ?? customizingItem.category?.is_spicy_customizable ?? false) && (
+                            <div>
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2 block">Spiciness</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {['Low Spicy', 'Medium', 'Extra Spicy'].map(level => (
+                                        <button 
+                                            key={level}
+                                            onClick={() => setSpiceLevel(level)}
+                                            className={`flex-1 min-w-[30%] py-2 rounded-lg font-bold text-sm transition-all border ${
+                                                spiceLevel === level 
+                                                ? 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800' 
+                                                : 'bg-white text-gray-600 dark:bg-slate-800 dark:text-gray-400 border-gray-200 dark:border-slate-700'
+                                            }`}
+                                        >
+                                            {level}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {customizingItem.variant_groups?.map((vg) => (
+                            <div key={vg.id}>
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2 block">{vg.name}</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {vg.variants.map(v => (
+                                        <button 
+                                            key={v.id}
+                                            onClick={() => setSelectedVariants(prev => ({ ...prev, [vg.id]: v.id }))}
+                                            className={`flex-1 min-w-[30%] py-2 rounded-lg font-bold text-sm transition-all border ${
+                                                selectedVariants[vg.id] === v.id 
+                                                ? 'bg-cyan-600 text-white border-cyan-600 shadow-sm' 
+                                                : 'bg-white text-gray-700 dark:bg-slate-800 dark:text-gray-300 border-gray-200 dark:border-slate-700'
+                                            }`}
+                                        >
+                                            {v.name} {v.extra_price > 0 && `(+₹${v.extra_price})`}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {customizingItem.addon_groups?.map((ag) => (
+                            <div key={ag.id}>
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                                    {ag.name} {ag.max_selections > 0 && <span className="text-[10px] normal-case text-gray-400">(Max {ag.max_selections})</span>}
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {ag.addons.map(addon => (
+                                        <button 
+                                            key={addon.id}
+                                            onClick={() => setSelectedAddons(prev => ({ ...prev, [addon.id]: !prev[addon.id] }))}
+                                            className={`flex-1 min-w-[30%] py-2 px-3 rounded-lg font-bold text-sm transition-all border flex items-center justify-between ${
+                                                selectedAddons[addon.id] 
+                                                ? 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-800' 
+                                                : 'bg-white text-gray-600 dark:bg-slate-800 dark:text-gray-400 border-gray-200 dark:border-slate-700'
+                                            }`}
+                                        >
+                                            <span>{addon.name}</span>
+                                            {addon.price > 0 && <span className="opacity-70 text-[11px] ml-1">+₹{addon.price}</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        
+                        <Button onClick={confirmCustomization} className="w-full mt-6">
+                            Add to Order
+                        </Button>
+                    </div>
+                )}
             </Modal>
         </div>
     );

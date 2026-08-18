@@ -46,7 +46,7 @@ export default function Categories() {
         <div className={`sticky top-0 z-20 transition-all duration-300 ${isScrolled ? "bg-white dark:bg-slate-900/80 backdrop-blur-xl shadow-sm pb-3 pt-12" : "bg-transparent pb-2 pt-4"} px-6 md:px-10`}>
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => navigate("/customer/home")} 
+              onClick={() => navigate(-1)} 
               className="p-2.5 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 hover:bg-slate-50 hover:scale-105 active:scale-95 transition-all text-slate-700 dark:text-slate-300"
             >
               <ArrowLeft size={20} strokeWidth={2.5} />

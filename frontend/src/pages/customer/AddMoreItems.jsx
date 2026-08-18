@@ -10,7 +10,7 @@ export default function AddMoreItems() {
       {/* Header */}
       <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/customer/cart')} className="p-1">
+          <button onClick={() => navigate(-1)} className="p-1">
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
           </button>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add More Items</h1>
@@ -40,14 +40,14 @@ export default function AddMoreItems() {
         {/* Buttons */}
         <div className="w-full space-y-4">
           <button
-            onClick={() => navigate("/customer/home")}
+            onClick={() => navigate(-1)}
             className="flex h-14 w-full items-center justify-center rounded-2xl bg-orange-500 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
           >
             Yes, Continue Ordering
           </button>
 
           <button
-            onClick={() => navigate("/customer/order-tracking")}
+            onClick={() => navigate("/customer/orders")}
             className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-orange-500 font-bold text-orange-500 transition hover:bg-orange-50 active:scale-[0.98]"
           >
             No, I'm Done for Now

@@ -15,7 +15,7 @@ class CustomerSession(TimestampMixin, Base):
     number_of_people: Mapped[Optional[int]] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20), default="Active", index=True) # Active, Completed
     bill_requested: Mapped[bool] = mapped_column(Boolean, default=False)
-    
+    session_pin: Mapped[Optional[str]] = mapped_column(String(4))
     table: Mapped["RestaurantTable"] = relationship(back_populates="sessions")
     orders: Mapped[List["Order"]] = relationship(back_populates="session")
     bills: Mapped[List["Bill"]] = relationship(back_populates="session")

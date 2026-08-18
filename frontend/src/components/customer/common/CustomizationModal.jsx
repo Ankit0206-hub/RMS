@@ -8,15 +8,36 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
   const [portion, setPortion] = useState("Full");
   const [spiceLevel, setSpiceLevel] = useState("Medium Spicy");
   const [instructions, setInstructions] = useState("");
+  
+  const [selectedVariants, setSelectedVariants] = useState({});
+  const [selectedAddons, setSelectedAddons] = useState({});
 
   const isEditing = !!food?.cartItemId;
 
-  // Reset state when modal opens for a new food
   useEffect(() => {
     if (isOpen && food) {
       setPortion(food.portion || "Full");
       setSpiceLevel(food.spiceLevel || "Medium Spicy");
       setInstructions(food.instructions || "");
+      
+      if (food.selectedVariants) {
+        setSelectedVariants(food.selectedVariants);
+      } else {
+        const defaultVariants = {};
+        if (food?.variant_groups) {
+          food.variant_groups.forEach(vg => {
+            const defaultVar = vg.variants.find(v => v.is_default);
+            if (defaultVar) {
+              defaultVariants[vg.id] = defaultVar.id;
+            } else if (vg.variants.length > 0) {
+              defaultVariants[vg.id] = vg.variants[0].id;
+            }
+          });
+        }
+        setSelectedVariants(defaultVariants);
+      }
+      
+      setSelectedAddons(food.selectedAddons || {});
     }
   }, [isOpen, food]);
 
@@ -26,7 +47,27 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
   const customizableSpice = food.is_spicy_customizable ?? food.category?.is_spicy_customizable ?? false;
   
   const basePrice = food.basePrice || food.price || 0;
-  const currentPrice = portion === "Half" ? (food.half_price ?? Math.round(basePrice * 0.6)) : basePrice;
+  let currentPrice = portion === "Half" ? (food.half_price ?? Math.round(basePrice * 0.6)) : basePrice;
+
+  // Add variant prices
+  if (food.variant_groups) {
+    food.variant_groups.forEach(vg => {
+      const selectedId = selectedVariants[vg.id];
+      if (selectedId) {
+        const variant = vg.variants.find(v => v.id === selectedId);
+        if (variant && variant.extra_price) currentPrice += variant.extra_price;
+      }
+    });
+  }
+
+  // Add addon prices
+  if (food.addon_groups) {
+    food.addon_groups.forEach(ag => {
+      ag.addons.forEach(addon => {
+        if (selectedAddons[addon.id] && addon.price) currentPrice += addon.price;
+      });
+    });
+  }
 
   const handleAdd = () => {
     if (isEditing) {
@@ -35,6 +76,8 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
         portion,
         spiceLevel,
         instructions,
+        selectedVariants,
+        selectedAddons,
         price: currentPrice,
         basePrice: basePrice
       }, food.quantity);
@@ -44,6 +87,8 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
         portion,
         spiceLevel,
         instructions,
+        selectedVariants,
+        selectedAddons,
         price: currentPrice,
         basePrice: basePrice
       });
@@ -115,6 +160,63 @@ export default function CustomizationModal({ isOpen, onClose, food }) {
               </div>
             </div>
           )}
+
+          {/* Dynamic Variant Groups */}
+          {food?.variant_groups?.map((vg) => (
+            <div key={vg.id}>
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3">{vg.name}</h3>
+              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/80 p-4">
+                {vg.variants.map((v) => (
+                  <label key={v.id} onClick={() => setSelectedVariants(prev => ({ ...prev, [vg.id]: v.id }))} className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${selectedVariants[vg.id] === v.id ? 'border-orange-500 bg-white dark:bg-slate-900' : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900'}`}>
+                        {selectedVariants[vg.id] === v.id && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
+                      </div>
+                      <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{v.name}</span>
+                    </div>
+                    {v.extra_price > 0 && (
+                      <span className="text-[14px] font-bold text-gray-700 dark:text-slate-300">+₹{v.extra_price}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Dynamic Addon Groups */}
+          {food?.addon_groups?.map((ag) => (
+            <div key={ag.id}>
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-white mb-3">
+                {ag.name}
+                {ag.max_selections > 0 && (
+                  <span className="ml-2 text-[11px] font-medium text-gray-500 normal-case bg-white dark:bg-slate-900 px-2 py-0.5 rounded-full border border-gray-200 dark:border-slate-700">
+                    Max {ag.max_selections}
+                  </span>
+                )}
+              </h3>
+              <div className="flex flex-col gap-3 rounded-[1.25rem] border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50/80 p-4">
+                {ag.addons.map((addon) => (
+                  <label key={addon.id} onClick={() => {
+                      if (!selectedAddons[addon.id] && ag.max_selections > 0) {
+                        const currentSelections = ag.addons.filter(a => selectedAddons[a.id]).length;
+                        if (currentSelections >= ag.max_selections) return;
+                      }
+                      setSelectedAddons(prev => ({ ...prev, [addon.id]: !prev[addon.id] }));
+                    }} className="flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded border ${selectedAddons[addon.id] ? 'border-orange-500 bg-orange-500' : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900'}`}>
+                        {selectedAddons[addon.id] && <div className="h-2 w-2 rounded-sm bg-white" />}
+                      </div>
+                      <span className="text-[14px] font-semibold text-gray-900 dark:text-white">{addon.name}</span>
+                    </div>
+                    {addon.price > 0 && (
+                      <span className="text-[14px] font-bold text-gray-700 dark:text-slate-300">+₹{addon.price}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {/* Special Instructions */}
           <div>

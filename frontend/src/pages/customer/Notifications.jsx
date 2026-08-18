@@ -84,7 +84,7 @@ export default function Notifications() {
 
             <div className="bg-white dark:bg-slate-900 shadow-sm px-5 py-4 flex items-center">
 
-                <button onClick={() => navigate('/customer/home')}>
+                <button onClick={() => navigate(-1)}>
                     <ArrowLeft size={22} />
                 </button>
 

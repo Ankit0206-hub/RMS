@@ -13,7 +13,6 @@ import Cart from "../pages/customer/Cart.jsx";
 import Checkout from "../pages/customer/Checkout.jsx";
 import Payment from "../pages/customer/Payment.jsx";
 import OrderSuccess from "../pages/customer/OrderSuccess.jsx";
-import OrderTracking from "../pages/customer/OrderTracking.jsx";
 import CallWaiter from "../pages/customer/CallWaiter.jsx";
 import Notifications from "../pages/customer/Notifications.jsx";
 import Favorites from "../pages/customer/Favorites.jsx";
@@ -61,7 +60,6 @@ export default function AppRoutes() {
         <Route path="checkout" element={<Checkout />} />
         <Route path="payment" element={<Payment />} />
         <Route path="order-success" element={<OrderSuccess />} />
-        <Route path="order-tracking" element={<OrderTracking />} />
         <Route path="call-waiter" element={<CallWaiter />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="favorites" element={<Favorites />} />

@@ -97,7 +97,7 @@ export default function FoodDetails() {
       <PageLayout>
         <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-slate-800/50">
           <button
-            onClick={() => navigate('/customer/home')}
+            onClick={() => navigate(-1)}
             className="rounded-xl bg-orange-500 px-6 py-3 font-medium text-white"
           >
             Go Back
@@ -119,7 +119,7 @@ export default function FoodDetails() {
           />
 
           <button
-            onClick={() => navigate('/customer/home')}
+            onClick={() => navigate(-1)}
             className="absolute left-4 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-slate-900/80 backdrop-blur-sm shadow-sm"
           >
             <ArrowLeft size={24} className="text-gray-900 dark:text-white" />

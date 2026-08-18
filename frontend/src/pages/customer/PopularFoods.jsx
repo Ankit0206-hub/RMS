@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 
 import MobileContainer from "../../components/customer/layout/MobileContainer";
 import CustomizationModal from "../../components/customer/common/CustomizationModal";
+import RepeatCustomizationModal from "../../components/customer/common/RepeatCustomizationModal";
 import customerApi from "../../services/customerApi";
 import { useApp } from "../../context/AppContext";
-
-
 
 export default function PopularFoods() {
     const navigate = useNavigate();
@@ -16,6 +15,7 @@ export default function PopularFoods() {
     const [foods, setFoods] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [customizationFood, setCustomizationFood] = useState(null);
+    const [repeatFoodItem, setRepeatFoodItem] = useState(null);
 
     useEffect(() => {
         customerApi.getMenu().then(data => {
@@ -62,7 +62,7 @@ export default function PopularFoods() {
                 {/* Header */}
                 <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="flex items-center gap-4 p-5">
-                        <button onClick={() => navigate('/customer/home')}>
+                        <button onClick={() => navigate(-1)}>
                             <ArrowLeft size={24} />
                         </button>
 
@@ -141,24 +141,35 @@ export default function PopularFoods() {
                                     </span>
 
                                     {(() => {
-                                        const cartItem = cartItems.find((item) => (item.originalId || item.id) === food.id);
-                                        if (cartItem) {
+                                        const matchingItems = cartItems.filter((item) => (item.originalId || item.id) === food.id || item.name === food.name);
+                                        const totalQty = matchingItems.reduce((sum, item) => sum + item.quantity, 0);
+                                        if (totalQty > 0) {
+                                            const lastItem = matchingItems[matchingItems.length - 1];
                                             return (
                                                 <div className="flex items-center gap-2 sm:gap-3 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-1 text-orange-600 dark:text-orange-500 font-bold border border-orange-200 dark:border-orange-800">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            decreaseQuantity(cartItem.id || food.id);
+                                                            if (matchingItems.length > 1) {
+                                                                navigate('/customer/cart');
+                                                            } else {
+                                                                decreaseQuantity(lastItem.id);
+                                                            }
                                                         }}
                                                         className="p-1"
                                                     >
                                                         <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                                     </button>
-                                                    <span className="text-xs sm:text-sm font-semibold">{cartItem.quantity}</span>
+                                                    <span className="text-xs sm:text-sm font-semibold">{totalQty}</span>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            increaseQuantity(cartItem.id || food.id);
+                                                            const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
+                                                            if (hasCustomization) {
+                                                                setRepeatFoodItem(lastItem);
+                                                            } else {
+                                                                increaseQuantity(lastItem.id);
+                                                            }
                                                         }}
                                                         className="p-1"
                                                     >
@@ -171,7 +182,8 @@ export default function PopularFoods() {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (food.hasPortions !== false || food.customizableSpice !== false) {
+                                                    const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
+                                                    if (hasCustomization) {
                                                         setCustomizationFood(food);
                                                     } else {
                                                         addToCart(food);
@@ -194,6 +206,18 @@ export default function PopularFoods() {
                 isOpen={!!customizationFood} 
                 onClose={() => setCustomizationFood(null)} 
                 food={customizationFood} 
+            />
+            
+            <RepeatCustomizationModal
+                isOpen={!!repeatFoodItem}
+                onClose={() => setRepeatFoodItem(null)}
+                cartItem={repeatFoodItem}
+                onChooseNew={(item) => {
+                    const originalFood = foods.find(f => f.id === item.originalId || f.name === item.name);
+                    if (originalFood) {
+                        setCustomizationFood(originalFood);
+                    }
+                }}
             />
         </MobileContainer>
     );

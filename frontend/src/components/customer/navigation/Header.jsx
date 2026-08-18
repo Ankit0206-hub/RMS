@@ -22,12 +22,13 @@ export default function Header() {
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
         {/* Table Indicator */}
         <div className="flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-400 px-2.5 py-1 md:px-4 md:py-1.5 shadow-md shadow-orange-200/50 min-w-0">
-          <span className="text-[11px] md:text-sm font-bold tracking-wide text-white truncate">
+          <span className="text-[11px] md:text-sm font-bold tracking-wide text-white truncate whitespace-pre">
             {customerSession?.tableId 
               ? (customerSession.tableId.toLowerCase().includes('table') 
                   ? customerSession.tableId 
                   : `Table ${customerSession.tableId}`) 
               : "No Table"}
+            {customerSession?.sessionPin && ` | PIN: ${customerSession.sessionPin}`}
           </span>
         </div>
 

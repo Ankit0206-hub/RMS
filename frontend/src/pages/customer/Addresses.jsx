@@ -84,7 +84,7 @@ export default function Addresses() {
 
                     {/* Back Button */}
                     <button
-                        onClick={() => navigate("/customer/profile")}
+                        onClick={() => navigate(-1)}
                         className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:bg-slate-700 transition"
                     >
                         <ArrowLeft size={22} className="text-gray-800 dark:text-slate-200 font-bold" />

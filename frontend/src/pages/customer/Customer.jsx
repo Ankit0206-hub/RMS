@@ -21,7 +21,10 @@ export default function Customer() {
     persons: 1,
     table: "",
   });
-
+  const [requirePin, setRequirePin] = useState(false);
+  const [hostName, setHostName] = useState("");
+  const [pin, setPin] = useState("");
+  
   useEffect(() => {
     const fetchTables = async () => {
       try {
@@ -55,14 +58,29 @@ export default function Customer() {
       return;
     }
     
+    if (requirePin && !pin) {
+      toast.error("Please enter the PIN to join the session");
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await customerApi.startSession({
         table_id: form.table,
         customer_name: form.name,
         customer_phone: form.phone,
-        guests: form.persons
+        guests: form.persons,
+        pin: requirePin ? pin : undefined
       });
+      
+      if (res.requires_pin) {
+        setRequirePin(true);
+        setHostName(res.host_name);
+        toast.error(`Table is occupied. Please ask ${res.host_name} for the PIN.`);
+        setLoading(false);
+        return;
+      }
+      
       // Store session
       if (res.token) {
         localStorage.setItem('customer_token', res.token);
@@ -72,7 +90,8 @@ export default function Customer() {
         sessionId: res.session_id,
         tableId: form.table,
         customerName: form.name,
-        customerPhone: form.phone
+        customerPhone: form.phone,
+        sessionPin: res.session_pin
       });
       navigate("/customer/home");
     } catch (err) {
@@ -213,6 +232,27 @@ export default function Customer() {
                 </div>
               </div>
             </div>
+            
+            {requirePin && (
+              <div className="flex-1 flex flex-col justify-center space-y-3 md:space-y-5 max-w-sm md:max-w-lg mx-auto w-full mt-4">
+                <div className="rounded-2xl md:rounded-[1.5rem] border-2 border-orange-500 bg-orange-50 dark:bg-slate-900/80 backdrop-blur-md px-4 py-2.5 md:px-6 md:py-4 shadow-sm flex flex-col transition-all">
+                  <label className="text-[11px] md:text-[13px] text-orange-600 font-bold ml-8 md:ml-10 uppercase tracking-wider">Session PIN Required</label>
+                  <p className="text-[12px] text-gray-600 ml-8 md:ml-10 mb-2">Table is occupied by {hostName}. Ask them for the 4-digit PIN.</p>
+                  <div className="flex items-center mt-0.5 md:mt-1.5">
+                    <User className="text-[#0f172a] mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6" />
+                    <input
+                      type="text"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      maxLength={4}
+                      placeholder="Enter 4-digit PIN"
+                      className="w-full bg-transparent font-bold text-[#0f172a] text-[15px] md:text-lg outline-none tracking-[0.5em]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
 
             <div className="flex-1 min-h-[16px] md:min-h-[32px]"></div>
 

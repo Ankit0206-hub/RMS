@@ -12,6 +12,7 @@ export default function OrderHistory() {
   const { customerSession } = useApp();
 
   const [activeTab, setActiveTab] = useState("All");
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +26,7 @@ export default function OrderHistory() {
         const res = await customerApi.getGlobalOrderHistory(customerSession.sessionId);
         const mappedOrders = (res.orders || []).map(o => ({
           id: o.id,
-          status: o.status === "Verification Pending" || o.status === "Pending" ? "Pending" : o.status === "Cancelled" ? "Cancelled" : "Delivered",
+          status: o.status,
           rawStatus: o.status,
           date: new Date(o.time).toLocaleString(undefined, {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -60,10 +61,11 @@ export default function OrderHistory() {
   };
 
   return (
+    <>
     <PageLayout className="bg-gray-50 dark:bg-slate-800/50 flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 z-20 bg-white dark:bg-slate-900/80 backdrop-blur-md px-5 py-4 shadow-sm flex items-center">
-        <button onClick={() => navigate('/customer/profile')} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:bg-slate-800 transition active:scale-95">
           <ArrowLeft size={24} className="text-gray-900 dark:text-white" />
         </button>
         <h1 className="flex-1 text-center text-lg font-bold text-gray-900 dark:text-white mr-8">
@@ -91,7 +93,9 @@ export default function OrderHistory() {
       </div>
 
       {/* Orders List */}
+      
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+
         {loading ? (
           <div className="flex flex-col items-center justify-center h-40 gap-3">
             <Loader2 className="animate-spin text-orange-500" size={32} />
@@ -187,6 +191,10 @@ export default function OrderHistory() {
       </div>
 
       <BottomNav active="orders" />
-    </PageLayout>
+    
+      </PageLayout>
+      
+    </>
+
   );
 }

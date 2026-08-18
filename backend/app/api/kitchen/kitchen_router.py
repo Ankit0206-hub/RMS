@@ -43,7 +43,7 @@ async def check_and_update_order_status(db: AsyncSession, order_id: int):
             except Exception as e:
                 print(f"Failed to automatically update order status to Cooked: {e}")
     else:
-        if order.status in ["Cooked", "Served"]:
+        if order.status in ["Confirmed", "Pending", "Placed", "Cooked", "Served"]:
             try:
                 await service.update_order_status(db, order_id, OrderStatusUpdate(status="Preparing"))
             except Exception as e:

@@ -18,7 +18,7 @@ export default function Favorites() {
 
         <div className="flex items-center gap-4 px-4 pt-5 pb-4 bg-white dark:bg-slate-900">
 
-          <button onClick={() => navigate('/customer/home')}>
+          <button onClick={() => navigate(-1)}>
             <ArrowLeft size={22} />
           </button>
 
