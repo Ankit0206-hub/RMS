@@ -470,7 +470,7 @@ const TableAssignment = () => {
                                                 </h4>
                                                 <span className={`text-[9px] 2xl:text-[10px] font-bold px-1.5 py-0.5 rounded-full ${statusClass}`}>{statusText}</span>
                                             </div>
-                                            <p className="text-[10px] lg:text-[11px] 2xl:text-xs text-gray-500 dark:text-slate-400 truncate">{workload} Tables • Main Hall</p>
+                                            <p className="text-[10px] lg:text-[11px] 2xl:text-xs text-gray-500 dark:text-slate-400 truncate">{workload} Tables • {waiter.section || 'General'}</p>
                                         </div>
                                     </div>
                                 );
