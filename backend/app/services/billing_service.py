@@ -20,25 +20,54 @@ class BillingService:
             
         existing_bill = await self.repository.get_bill_by_session(db, session_id)
         if existing_bill:
-            raise BusinessRuleException("Bill already generated for this session")
+            if existing_bill.payment_status == "Paid":
+                raise BusinessRuleException("Cannot regenerate a paid bill")
+            # Delete the outdated unpaid bill so we can regenerate it
+            await db.delete(existing_bill)
+            await db.commit()
             
         subtotal = 0.0
         items_data = []
         
         # Aggregate items across all orders in the session
+        grouped_items = {}
         for order in session.orders:
+            if order.status == "Verification Pending":
+                raise BusinessRuleException("Cannot generate a bill because there are orders pending verification. Please accept or reject them first.")
             if order.status not in ["Cancelled"]: # Count everything that wasn't cancelled
                 for item in order.items:
                     menu_item = await self.menu_repository.get_by_id(db, item.menu_item_id)
-                    item_total = float(item.quantity * item.price_at_order)
-                    subtotal += item_total
-                    items_data.append({
-                        "menu_item_id": item.menu_item_id,
-                        "item_name": menu_item.name if menu_item else "Unknown Item",
-                        "quantity": item.quantity,
-                        "price": float(item.price_at_order),
-                        "total": item_total
-                    })
+                    base_name = menu_item.name if menu_item else "Unknown Item"
+                    
+                    # Handle customizations text
+                    addons_text = ""
+                    portion_text = ""
+                    if item.customizations:
+                        if isinstance(item.customizations, dict):
+                            cust = item.customizations
+                            if cust.get("portion"):
+                                portion_text = f" ({cust['portion']})"
+                            if cust.get("addons") and isinstance(cust["addons"], list):
+                                addons_text = f" + {', '.join([a['name'] for a in cust['addons']])}"
+                                
+                    display_name = f"{base_name}{portion_text}{addons_text}"
+                    price = float(item.price_at_order)
+                    group_key = (item.menu_item_id, price, display_name)
+                    
+                    if group_key not in grouped_items:
+                        grouped_items[group_key] = {
+                            "menu_item_id": item.menu_item_id,
+                            "item_name": display_name,
+                            "quantity": 0,
+                            "price": price,
+                            "total": 0.0
+                        }
+                    
+                    grouped_items[group_key]["quantity"] += item.quantity
+                    grouped_items[group_key]["total"] += float(item.quantity * price)
+                    subtotal += float(item.quantity * price)
+
+        items_data = list(grouped_items.values())
 
         import math
         # Load settings for taxes and fees

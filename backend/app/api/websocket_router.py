@@ -75,6 +75,17 @@ async def websocket_customer(websocket: WebSocket, session_id: int = Query(...))
     try:
         while True:
             data = await websocket.receive_text()
+            try:
+                import json
+                message = json.loads(data)
+                action = message.get("action")
+                if action == "SYNC_CART":
+                    cart_data = message.get("cartItems", [])
+                    await manager.notify_customer(session_id, "CART_UPDATED", cart_data, exclude=websocket)
+                elif action == "REQUEST_CART_SYNC":
+                    await manager.notify_customer(session_id, "CART_SYNC_REQUESTED", {}, exclude=websocket)
+            except json.JSONDecodeError:
+                pass
     except WebSocketDisconnect:
         manager.disconnect(websocket, "customer")
 

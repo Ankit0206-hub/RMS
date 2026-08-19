@@ -89,7 +89,20 @@ class OrderingService:
                 "notes": item_in.notes
             })
 
+        
+        # Check if there is an existing UNPAID bill. If so, delete it because it's now obsolete.
+        from sqlalchemy.future import select
+        from app.models.billing import Bill
+        bill_stmt = select(Bill).where(Bill.session_id == session.id, Bill.payment_status != 'Paid')
+        bill_res = await db.execute(bill_stmt)
+        existing_bills = bill_res.scalars().all()
+        for b in existing_bills:
+            await db.delete(b)
+        if existing_bills:
+            await db.commit()
+            
         # Generate token number
+
         today_start = datetime.combine(datetime.utcnow().date(), datetime.min.time())
         stmt = select(func.count(Order.id)).where(Order.created_at >= today_start)
         today_order_count = await db.scalar(stmt)

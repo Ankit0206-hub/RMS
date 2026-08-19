@@ -60,7 +60,7 @@ async def update_operator_settings(
 
 @router.post("/tables/{table_id}/clear")
 async def clear_operator_table(
-    table_id: str,
+    table_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: Employee = Depends(get_current_operator)
 ):
@@ -71,7 +71,7 @@ async def clear_operator_table(
     from sqlalchemy.orm import selectinload
     from app.api.websocket_router import manager
     
-    query = select(RestaurantTable).where(RestaurantTable.table_number == table_id).options(
+    query = select(RestaurantTable).where(RestaurantTable.id == table_id).options(
         selectinload(RestaurantTable.sessions)
     )
     result = await db.execute(query)
@@ -80,6 +80,9 @@ async def clear_operator_table(
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
         
+    # Collect active session IDs before marking them completed
+    active_session_ids = [session.id for session in table.sessions if session.status == "Active"]
+
     for session in table.sessions:
         if session.status == "Active":
             session.status = "Completed"
@@ -91,5 +94,13 @@ async def clear_operator_table(
         "table_id": table.table_number,
         "status": "Available"
     }, ["operator", "waiter", "kitchen"])
+
+    # Notify ONLY the customers connected to this specific table's sessions
+    for session_id in active_session_ids:
+        await manager.notify_customer(session_id, "TABLE_CLEARED", {
+            "table_id": table.table_number,
+            "message": "Your session has been ended by the staff."
+        })
     
     return {"message": "Table cleared successfully"}
+

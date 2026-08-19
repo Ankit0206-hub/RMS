@@ -248,11 +248,14 @@ export default function WaiterMenu() {
                             return (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {filteredItems.map(item => (
-                                        <div key={item.id} className="bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors">
+                                        <div key={item.id} className={`bg-white/20 backdrop-blur-xl p-4 rounded-3xl shadow-sm border border-white/40 flex justify-between items-center transition-colors ${!item.is_available ? 'opacity-50 grayscale' : ''}`}>
                                             <div className="flex items-center space-x-4">
                                                 <img src={item.img} alt="Food" className="h-16 w-16 md:h-20 md:w-20 rounded-2xl object-cover shadow-sm" />
                                                 <div>
-                                                    <h3 className="font-bold text-gray-800 md:text-lg leading-tight">{item.name}</h3>
+                                                    <h3 className="font-bold text-gray-800 md:text-lg leading-tight">
+                                                        {item.name}
+                                                        {!item.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}
+                                                    </h3>
                                                     {(item.selectedVariants && Object.keys(item.selectedVariants).length > 0) || (item.selectedAddons && Object.keys(item.selectedAddons).length > 0) || item.prepType || item.spiceLevel ? (
                                                         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                                                             {item.prepType && <span className="text-[10px] font-bold text-gray-600 bg-white/40 px-2 py-0.5 rounded-md border border-white/50 shadow-sm">{item.prepType}</span>}
@@ -269,10 +272,10 @@ export default function WaiterMenu() {
                                                 <div className="flex items-center bg-white/30 backdrop-blur-md rounded-xl p-1 shadow-inner border border-white/40">
                                                     <button onClick={() => updateQty(item.id, -1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Minus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
                                                     <span className="w-8 md:w-10 text-center font-black text-sm md:text-base text-gray-800">{item.qty}</span>
-                                                    <button onClick={() => updateQty(item.id, 1)} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all"><Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
+                                                    <button onClick={() => updateQty(item.id, 1)} disabled={!item.is_available} className="p-1.5 bg-white/50 rounded-lg shadow-sm active:scale-95 transition-all disabled:opacity-50"><Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-700" /></button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => handleFirstAdd(item)} className="bg-rose-100/50 text-rose-500 p-2.5 rounded-xl font-bold border border-rose-200/50 active:scale-95 transition-all">
+                                                <button onClick={() => handleFirstAdd(item)} disabled={!item.is_available} className="bg-rose-100/50 text-rose-500 p-2.5 rounded-xl font-bold border border-rose-200/50 active:scale-95 transition-all disabled:opacity-50 disabled:bg-gray-100 disabled:text-gray-400">
                                                     <Plus className="h-5 w-5 md:h-6 md:w-6" />
                                                 </button>
                                             )}

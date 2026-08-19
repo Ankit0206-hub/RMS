@@ -27,6 +27,8 @@ class CustomerOrderItemRequest(BaseModel):
     menu_item_id: int
     quantity: int
     notes: Optional[str] = None
+    customizations: Optional[dict] = None
+    price_at_order: Optional[float] = None
 
 class CustomerOrderCreate(BaseModel):
     special_instructions: Optional[str] = None
@@ -82,6 +84,9 @@ async def start_customer_session(
             
         if req.pin != existing_session.session_pin:
             raise HTTPException(status_code=401, detail="Incorrect PIN")
+            
+        if req.guests != existing_session.number_of_people:
+            raise HTTPException(status_code=401, detail="Incorrect number of persons for this session")
             
         from app.core.security import create_access_token
         token = create_access_token(subject=str(existing_session.id), role="customer")
@@ -159,6 +164,7 @@ async def get_customer_menu(db: AsyncSession = Depends(get_db)):
                         "price": float(item.price),
                         "image_url": item.images[0].image_url if getattr(item, 'images', None) and len(item.images) > 0 else "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
                         "is_veg": item.is_veg,
+                        "is_available": item.is_available,
                         "half_price": float(item.half_price) if item.half_price is not None else None,
                         "is_spicy_customizable": item.is_spicy_customizable,
                         "avg_rating": ratings_dict.get(item.id, {}).get("avg_rating", 0),
@@ -235,6 +241,16 @@ async def create_customer_order(
         await db.flush()
         is_new_order = True
     
+    # Check if there is an existing UNPAID bill. If so, delete it because it's now obsolete.
+    from app.models.billing import Bill
+    bill_stmt = select(Bill).where(Bill.session_id == session.id, Bill.payment_status != 'Paid')
+    bill_res = await db.execute(bill_stmt)
+    existing_bills = bill_res.scalars().all()
+    for b in existing_bills:
+        await db.delete(b)
+    if existing_bills:
+        await db.flush()
+
     for item_req in req.items:
         mi_query = select(MenuItem).where(MenuItem.id == item_req.menu_item_id)
         mi_result = await db.execute(mi_query)
@@ -246,8 +262,9 @@ async def create_customer_order(
             order_id=order.id,
             menu_item_id=menu_item.id,
             quantity=item_req.quantity,
-            price_at_order=menu_item.price,
-            notes=item_req.notes
+            price_at_order=item_req.price_at_order if item_req.price_at_order is not None else menu_item.price,
+            notes=item_req.notes,
+            customizations=item_req.customizations
         )
         db.add(order_item)
         
@@ -311,7 +328,7 @@ async def get_customer_session_details(
         
     query = select(CustomerSession).where(CustomerSession.id == session_id).options(
         selectinload(CustomerSession.orders).selectinload(Order.items).selectinload(OrderItem.menu_item).selectinload(MenuItem.images),
-        selectinload(CustomerSession.bills)
+        selectinload(CustomerSession.bills).selectinload(Bill.items)
     )
     result = await db.execute(query)
     session = result.scalars().first()
@@ -351,6 +368,20 @@ async def get_customer_session_details(
     bill_status = active_bills[0].payment_status if active_bills else None
     bill_id = active_bills[0].id if active_bills else None
 
+    
+    bill_data = None
+    if active_bills:
+        b = active_bills[0]
+        bill_data = {
+            "bill_number": b.bill_number,
+            "generated_at": b.generated_at.isoformat() if b.generated_at else None,
+            "subtotal": float(b.subtotal),
+            "total_tax": float(b.total_tax),
+            "service_charge": float(b.service_charge),
+            "grand_total": float(b.grand_total),
+            "items": [{"name": bi.item_name, "qty": bi.quantity, "price": float(bi.price)} for bi in b.items]
+        }
+        
     return {
         "session_id": session.id,
         "table_id": session.table_id,
@@ -361,7 +392,8 @@ async def get_customer_session_details(
         "tax": tax_amount,
         "grand_total": grand_total,
         "bill_status": bill_status,
-        "bill_id": bill_id
+        "bill_id": bill_id,
+        "bill_data": bill_data
     }
 
 @router.get("/sessions/{session_id}/orders/history")

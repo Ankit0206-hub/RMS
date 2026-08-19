@@ -21,6 +21,7 @@ export default function RequestFinalBill() {
     setLoading(true);
     try {
       await customerApi.requestBill(customerSession.sessionId);
+      localStorage.setItem("billRequested_" + customerSession.sessionId, "true");
       setRequested(true);
       toast.success("Bill requested successfully.");
       navigate("/customer/review");

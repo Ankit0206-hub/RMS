@@ -21,10 +21,15 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [isScrolled, setIsScrolled] = useState(false);
   
-  useEffect(() => {
+  const fetchMenu = () => {
     customerApi.getMenu()
       .then(data => setCategories(data))
       .catch(err => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchMenu();
+    window.addEventListener('menuUpdated', fetchMenu);
 
     const handleScroll = (e) => {
       setIsScrolled(e.target.scrollTop > 20);
@@ -32,7 +37,10 @@ export default function Categories() {
     
     const container = document.getElementById("categories-container");
     if (container) container.addEventListener("scroll", handleScroll);
-    return () => container && container.removeEventListener("scroll", handleScroll);
+    return () => {
+      container && container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('menuUpdated', fetchMenu);
+    };
   }, []);
 
   const filteredCategories = categories.filter((cat) =>
@@ -40,8 +48,8 @@ export default function Categories() {
   );
 
   return (
-    <PageLayout className="bg-[#f8fafc] dark:bg-slate-950">
-      <div id="categories-container" className="flex h-full flex-col overflow-y-auto">
+    <PageLayout className="bg-[#f8fafc] dark:bg-slate-950 flex flex-col h-full">
+      <div id="categories-container" className="flex-1 flex flex-col overflow-y-auto">
         {/* Sleek Header */}
         <div className={`sticky top-0 z-20 transition-all duration-300 ${isScrolled ? "bg-white dark:bg-slate-900/80 backdrop-blur-xl shadow-sm pb-3 pt-12" : "bg-transparent pb-2 pt-4"} px-6 md:px-10`}>
           <div className="flex items-center justify-between">
@@ -113,8 +121,8 @@ export default function Categories() {
           )}
         </div>
 
-        <BottomNav active="categories" />
       </div>
+      <BottomNav active="categories" />
     </PageLayout>
   );
 }

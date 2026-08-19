@@ -59,14 +59,14 @@ export default function OrderSuccess() {
         {/* Buttons */}
         <div className="w-full space-y-4">
           <button
-            onClick={() => navigate("/customer/orders")}
+            onClick={() => navigate("/customer/orders", { replace: true })}
             className="flex h-14 w-full items-center justify-center rounded-2xl bg-orange-500 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
           >
             View Orders
           </button>
 
           <button
-            onClick={() => navigate("/customer/home")}
+            onClick={() => navigate("/customer/home", { replace: true })}
             className="flex h-14 w-full items-center justify-center rounded-2xl border-2 border-orange-500 font-bold text-orange-500 transition hover:bg-orange-50 active:scale-[0.98]"
           >
             Continue Ordering

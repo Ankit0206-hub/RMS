@@ -26,7 +26,11 @@ export default function Home() {
         setLoading(false);
       }
     };
+    
     fetchMenu();
+
+    window.addEventListener('menuUpdated', fetchMenu);
+    return () => window.removeEventListener('menuUpdated', fetchMenu);
   }, []);
 
   const allItems = categories.flatMap(c => c.items);

@@ -39,29 +39,42 @@ export default function BottomNav({ active = "home" }) {
       
       fetchDetails();
 
-      const wsUrl = `${getWsUrl()}/ws/customer?session_id=${customerSession.sessionId}`;
-      const ws = new WebSocket(wsUrl);
-      
-      ws.onmessage = (event) => {
-          try {
-              const data = JSON.parse(event.data);
-              if (data.event === "order.updated" || data.event === "order.created") {
-                  import('../../../utils/audio').then(({ playNotificationSound }) => {
-                      playNotificationSound();
-                  });
-                  fetchDetails();
-              }
-          } catch (err) {}
-      };
-      
-      return () => ws.close();
+      const handleOrderUpdate = () => fetchDetails();
+      window.addEventListener('orderUpdatedLocally', handleOrderUpdate);
+      return () => window.removeEventListener('orderUpdatedLocally', handleOrderUpdate);
     }
   }, [customerSession]);
 
   const cartItemCount = cartItems.length;
+  const totalItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartSubtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   
   return (
-    <div className="flex flex-col w-full z-50 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800">
+    <div className="flex flex-col w-full z-50 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 relative">
+      
+      {/* Floating Cart Summary (Swiggy/Zomato style) */}
+      {cartItemCount > 0 && active !== "cart" && (
+        <div className="absolute top-0 left-0 w-full -translate-y-full px-4 pb-3 pt-1 pointer-events-none">
+          <div 
+            onClick={() => navigate("/customer/cart")}
+            className="w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl flex items-center justify-between p-3.5 shadow-[0_8px_25px_rgba(34,197,94,0.35)] cursor-pointer pointer-events-auto transition-transform active:scale-95"
+          >
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-green-100 mb-0.5">
+                {totalItemCount} Item{totalItemCount > 1 ? 's' : ''} added
+              </span>
+              <span className="text-base font-black">
+                ₹{cartSubtotal.toFixed(2)}
+                <span className="text-xs font-normal text-green-100 ml-1">plus taxes</span>
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-1 text-sm font-bold bg-white/20 px-3 py-1.5 rounded-xl">
+              View Cart <ChevronRight size={16} strokeWidth={3} className="mt-0.5" />
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Active Order Banner */}
       {activeOrder && (

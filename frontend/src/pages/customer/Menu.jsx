@@ -12,7 +12,7 @@ import { toast, Toaster } from 'react-hot-toast';
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
     const location = useLocation();
-    const tableId = location.state?.tableId || searchParams.get('table') || 1;
+    const tableId = location.state?.tableId || searchParams.get('table_id') || searchParams.get('table') || 1;
     
     const [sessionId, setSessionId] = useState(location.state?.sessionId || null);
     const queryClient = useQueryClient();
@@ -47,26 +47,14 @@ const CustomerMenu = () => {
         }
     }, [tableId, sessionId]);
 
-    // 2. Connect Customer WebSocket when session is ready
+    // 2. Listen to global order events instead of managing WebSocket locally
     useEffect(() => {
-        if (sessionId) {
-            const socket = new WebSocket(`${getWsUrl()}/ws/customer?session_id=${sessionId}`);
-            socket.onopen = () => console.log("Customer WebSocket Connected");
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log("Customer received event:", data);
-                if (data.event === 'order.updated' || data.event === 'order.created') {
-                    playNotificationSound();
-                    setOrderStatus(data.payload.status);
-                    toast(`Your order is now: ${data.payload.status}`, { icon: '🔔' });
-                } else if (data.event === 'menu.updated') {
-                    queryClient.invalidateQueries({ queryKey: ['customerMenu'] });
-                }
-            };
-            setWs(socket);
-            return () => socket.close();
-        }
-    }, [sessionId]);
+        const handleOrderEvent = () => {
+            // Toast will be managed globally, but if we need a specific UI update on Menu, do it here.
+        };
+        window.addEventListener('orderUpdatedLocally', handleOrderEvent);
+        return () => window.removeEventListener('orderUpdatedLocally', handleOrderEvent);
+    }, []);
 
     // 3. Fetch Menu
     const { data: menuData, isLoading } = useQuery({
@@ -240,13 +228,13 @@ const CustomerMenu = () => {
                     }
 
                     return filteredItems.map(item => (
-                        <Card key={item.id} className="p-4 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+                        <Card key={item.id} className={`p-4 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 ${!item.is_available ? "opacity-50 grayscale" : ""}`}>
                             <div>
-                                <h3 className="font-bold">{item.name}</h3>
+                                <h3 className="font-bold">{item.name}{!item.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}</h3>
                                 <p className="text-gray-500 dark:text-slate-400 text-sm">{item.description}</p>
                                 <p className="text-cyan-600 font-medium mt-1">₹{parseFloat(item.price).toFixed(2)}</p>
                             </div>
-                            <Button onClick={() => handleFirstAdd(item)} size="sm">Add</Button>
+                            <Button onClick={() => handleFirstAdd(item)} size="sm" disabled={!item.is_available}>Add</Button>
                         </Card>
                     ));
                 })()}

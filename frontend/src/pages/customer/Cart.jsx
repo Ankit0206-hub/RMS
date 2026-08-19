@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
+import BottomNav from "../../components/customer/navigation/BottomNav";
 import { useApp } from "../../context/AppContext";
 import CustomizationModal from "../../components/customer/common/CustomizationModal";
 import customerApi from "../../services/customerApi";
@@ -204,9 +205,12 @@ export default function Cart() {
                     const itemsForApi = cartItems.map(item => ({
                       menu_item_id: item.originalId || item.id,
                       quantity: item.quantity,
-                      notes: [item.portion ? `Portion: ${item.portion}` : "", item.spiceLevel ? `Spice: ${item.spiceLevel}` : "", item.instructions || ""].filter(Boolean).join(" | ")
+                      notes: item.instructions || "",
+                      customizations: { portion: item.portion, spiceLevel: item.spiceLevel, variants: item.selectedVariants, addons: item.selectedAddons },
+                      price_at_order: item.price
                     }));
                     
+                    localStorage.removeItem("billRequested_" + customerSession.sessionId);
                     const res = await customerApi.createOrder(customerSession.sessionId, {
                       items: itemsForApi,
                       special_instructions: ""
@@ -215,6 +219,7 @@ export default function Cart() {
                     setCartItems([]);
                     toast.success("Order placed successfully!");
                     navigate("/customer/order-success", { 
+                      replace: true,
                       state: { 
                         orderId: res.order_id,
                         itemCount: cartItems.reduce((acc, item) => acc + item.quantity, 0)
@@ -244,6 +249,8 @@ export default function Cart() {
         onClose={() => setEditingItem(null)} 
         food={editingItem} 
       />
+
+      <BottomNav active="cart" />
     </PageLayout>
   );
 }

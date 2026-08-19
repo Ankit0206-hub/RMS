@@ -21,6 +21,7 @@ export default function PopularDishes({ popularDishes = [] }) {
         rating: dish.avg_rating || 4.8,
         image: dish.image_url || "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80",
         hasPortions: dish.has_portions,
+        is_available: dish.is_available !== false,
         customizableSpice: dish.customizable_spice,
         variant_groups: dish.variant_groups,
         addon_groups: dish.addon_groups
@@ -54,7 +55,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                     <div
                         key={dish.id}
                         onClick={() => navigate("/customer/food-details", { state: { food: dish } })}
-                        className="cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow transition hover:shadow-lg"
+                        className={`cursor-pointer overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow transition hover:shadow-lg ${!dish.is_available ? "opacity-50 grayscale" : ""}`}
                     >
                         <div className="relative">
                             <img
@@ -63,8 +64,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                                 className="h-36 w-full object-cover"
                             />
 
-                            <button
-                                onClick={(e) => {
+                            <button disabled={false || dish?.is_available === false} onClick={(e) => {
                                     e.stopPropagation();
                                     toggleFavorite(dish.id);
                                 }}
@@ -93,7 +93,7 @@ export default function PopularDishes({ popularDishes = [] }) {
 
                         <div className="p-3">
                             <h3 className="truncate font-semibold">
-                                {dish.name}
+                                {dish.name}{!dish.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}
                             </h3>
 
                             <div className="mt-3 flex items-center justify-between">
@@ -109,8 +109,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                                         const lastItem = matchingItems[matchingItems.length - 1];
                                         return (
                                             <div className="flex items-center gap-1 sm:gap-3 rounded-full bg-orange-100 dark:bg-orange-900/30 px-1 sm:px-2 py-0.5 sm:py-1 text-orange-600 dark:text-orange-500 font-bold border border-orange-200 dark:border-orange-800">
-                                                <button
-                                                    onClick={(e) => {
+                                                <button disabled={false || dish?.is_available === false} onClick={(e) => {
                                                         e.stopPropagation();
                                                         if (matchingItems.length > 1) {
                                                             navigate('/customer/cart');
@@ -123,8 +122,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                                                     <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                                 </button>
                                                 <span className="text-xs sm:text-sm font-semibold">{totalQty}</span>
-                                                <button
-                                                    onClick={(e) => {
+                                                <button disabled={false || dish?.is_available === false} onClick={(e) => {
                                                         e.stopPropagation();
                                                         const hasCustomization = dish.hasPortions !== false || dish.customizableSpice !== false || (dish.variant_groups && dish.variant_groups.length > 0) || (dish.addon_groups && dish.addon_groups.length > 0);
                                                         if (hasCustomization) {
@@ -141,8 +139,7 @@ export default function PopularDishes({ popularDishes = [] }) {
                                         );
                                     }
                                     return (
-                                        <button
-                                            onClick={(e) => {
+                                        <button disabled={false || dish?.is_available === false} onClick={(e) => {
                                                 e.stopPropagation();
                                                 const hasCustomization = dish.hasPortions !== false || dish.customizableSpice !== false || (dish.variant_groups && dish.variant_groups.length > 0) || (dish.addon_groups && dish.addon_groups.length > 0);
                                                 if (hasCustomization) {

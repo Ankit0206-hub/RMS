@@ -272,10 +272,12 @@ const OperatorBilling = () => {
   const matchingBill =
     selectedItem?.matchingBill ||
     (selectedItem?.type === "bill" ? selectedItem.originalData : null);
-  const subtotal = matchingBill
+  const actualItemsSubtotal = currentOrderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const isBillOutdated = matchingBill && Math.abs(matchingBill.subtotal - actualItemsSubtotal) > 1;
+  const subtotal = matchingBill && !isBillOutdated
     ? matchingBill.subtotal
-    : currentOrderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const serviceCharge = matchingBill
+    : actualItemsSubtotal;
+  const serviceCharge = matchingBill && !isBillOutdated
     ? matchingBill.service_charge
     : subtotal * (serviceChargePercentage / 100);
   const cgst = matchingBill ? matchingBill.total_tax / 2 : subtotal * (cgstPercentage / 100);
@@ -925,7 +927,7 @@ const OperatorBilling = () => {
                       <Download className="w-4 h-4 mr-2" /> Download
                     </button>
                   </div>
-                ) : selectedItem?.status === "Pending Billing" ? (
+                ) : selectedItem?.status === "Pending Billing" && !isBillOutdated ? (
                   <button
                     onClick={handleProceedToBill}
                     disabled={recordPaymentMutation.isPending}

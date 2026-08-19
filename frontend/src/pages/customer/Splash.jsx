@@ -1,28 +1,65 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChefHat, Leaf, Timer, Heart } from "lucide-react";
+import toast from "react-hot-toast";
 
 import heroFood from "../../assets/images/banners/hero-food.png";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import { customerApi } from "../../services/customerApi";
 
 export default function Splash() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { customerSession } = useApp();
+  const checkFired = useRef(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (checkFired.current) return;
+    
+    const checkSession = async () => {
+      checkFired.current = true;
+      const scannedTable = searchParams.get("table_id") || searchParams.get("table");
       const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
-      if (customerSession && customerSession.sessionId) {
-        navigate(`/customer/home${queryString}`);
-      } else {
-        navigate(`/customer/landing${queryString}`);
-      }
-    }, 2000);
 
-    return () => clearTimeout(timer);
-  }, [navigate, customerSession]);
+      if (customerSession && customerSession.sessionId) {
+        try {
+          // Verify session on backend
+          const res = await customerApi.getSessionDetails(customerSession.sessionId);
+          if (res.status === 'Active') {
+            // User has an active session. Don't let them accidentally switch tables.
+            if (scannedTable && customerSession.tableId && String(customerSession.tableId) !== String(scannedTable)) {
+              toast(`You already have an active session at ${customerSession.tableId}. Please finish it before switching tables.`, { 
+                icon: '⚠️', 
+                duration: 4000,
+                id: 'session-warning-toast'
+              });
+            }
+            // Send them back to their active session
+            navigate(`/customer/home`);
+            return;
+          } else {
+            // Session is completed, wipe it.
+            throw new Error("Session no longer active");
+          }
+        } catch (error) {
+          // Session is invalid, expired, or completed. Wipe it.
+          localStorage.removeItem('customer_token');
+          localStorage.removeItem('customerSession');
+          localStorage.removeItem('cartItems');
+          window.location.href = `/customer/landing${queryString}`;
+          return;
+        }
+      }
+      
+      // No active session found in local storage
+      setTimeout(() => {
+        navigate(`/customer/landing${queryString}`);
+      }, 2000);
+    };
+    
+    checkSession();
+  }, [navigate, searchParams, customerSession]);
 
   return (
     <PageLayout className="relative bg-black overflow-hidden h-screen w-full">

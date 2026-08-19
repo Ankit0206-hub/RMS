@@ -287,7 +287,7 @@ export default function FoodDetails() {
             <div className="flex w-full items-center justify-between gap-4">
               {/* Quantity Selector */}
               <div className="flex h-14 items-center gap-4 rounded-2xl border border-gray-200 dark:border-slate-700 px-4 bg-white dark:bg-slate-900">
-                <button 
+                <button disabled={food.is_available === false} 
                   onClick={() => {
                     if (quantity === 1) {
                       setShowQuantity(false);
@@ -324,7 +324,7 @@ export default function FoodDetails() {
                   }, quantity);
                   navigate("/customer/cart");
                 }}
-                className="flex h-14 flex-1 items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98]"
+                className="flex h-14 flex-1 items-center justify-between rounded-2xl bg-orange-500 px-6 font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-orange-600 active:scale-[0.98] disabled:opacity-50 disabled:bg-gray-400 disabled:shadow-none" disabled={food.is_available === false}
               >
                 <span>Add Item</span>
                 <span>(₹{currentPrice * quantity})</span>

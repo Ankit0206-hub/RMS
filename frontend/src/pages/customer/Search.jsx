@@ -19,6 +19,12 @@ export default function SearchPage() {
   const [repeatFoodItem, setRepeatFoodItem] = useState(null);
 
   useEffect(() => {
+    fetchMenu();
+    window.addEventListener('menuUpdated', fetchMenu);
+    return () => window.removeEventListener('menuUpdated', fetchMenu);
+  }, []);
+
+  const fetchMenu = () => {
     customerApi.getMenu().then(data => {
         const items = [];
         data.forEach(cat => {
@@ -31,6 +37,7 @@ export default function SearchPage() {
                         rating: 4.8,
                         desc: dish.description,
                         isVeg: dish.is_veg,
+          is_available: dish.is_available !== false,
                         isSpicy: dish.customizable_spice,
                         hasPortions: dish.has_portions,
                         customizableSpice: dish.customizable_spice,
@@ -41,7 +48,7 @@ export default function SearchPage() {
         });
         setAllDishes(items);
     }).catch(console.error);
-  }, []);
+  };
 
   const filteredDishes = allDishes.filter(dish => 
     dish.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -97,7 +104,7 @@ export default function SearchPage() {
                       />
                       {/* Info */}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{food.name}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{food.name}{!food.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}</h3>
                         <div className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400">
                           <Star size={14} className="fill-yellow-400 text-yellow-400" />
                           {food.rating}
@@ -114,8 +121,7 @@ export default function SearchPage() {
                             const lastItem = matchingItems[matchingItems.length - 1];
                             return (
                               <div className="flex items-center gap-1 sm:gap-2 rounded-lg bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white shadow-sm">
-                                <button
-                                  onClick={(e) => {
+                                <button disabled={food?.is_available === false} onClick={(e) => {
                                     e.stopPropagation();
                                     if (matchingItems.length > 1) {
                                       navigate('/customer/cart');
@@ -128,8 +134,7 @@ export default function SearchPage() {
                                   <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                 </button>
                                 <span className="text-xs sm:text-sm font-bold text-center px-1">{totalQty}</span>
-                                <button
-                                  onClick={(e) => {
+                                <button disabled={food?.is_available === false} onClick={(e) => {
                                     e.stopPropagation();
                                     const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
                                     if (hasCustomization) {
@@ -146,8 +151,7 @@ export default function SearchPage() {
                             );
                           }
                           return (
-                            <button
-                              onClick={(e) => {
+                            <button disabled={food?.is_available === false} onClick={(e) => {
                                 e.stopPropagation();
                                 const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
                                 if (hasCustomization) {

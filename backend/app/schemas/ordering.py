@@ -6,6 +6,8 @@ class OrderItemBase(BaseModel):
     menu_item_id: int
     quantity: int
     notes: Optional[str] = None
+    customizations: Optional[dict] = None
+    price_at_order: Optional[float] = None
 
 class OrderItemCreate(OrderItemBase):
     pass
@@ -14,6 +16,7 @@ class OrderItemResponse(OrderItemBase):
     id: int
     order_id: int
     price_at_order: float
+    customizations: Optional[dict] = None
     menu_item_name: Optional[str] = None
     menu_item_category: Optional[str] = None
     menu_item_image: Optional[str] = None

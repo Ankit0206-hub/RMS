@@ -18,6 +18,12 @@ export default function PopularFoods() {
     const [repeatFoodItem, setRepeatFoodItem] = useState(null);
 
     useEffect(() => {
+        fetchMenu();
+        window.addEventListener('menuUpdated', fetchMenu);
+        return () => window.removeEventListener('menuUpdated', fetchMenu);
+    }, []);
+
+    const fetchMenu = () => {
         customerApi.getMenu().then(data => {
             const allItems = [];
             data.forEach(cat => {
@@ -31,6 +37,7 @@ export default function PopularFoods() {
                             rating_count: dish.rating_count || 0,
                             desc: dish.description,
                             isVeg: dish.is_veg,
+          is_available: dish.is_available !== false,
                             isSpicy: dish.customizable_spice,
                             hasPortions: dish.has_portions,
                             customizableSpice: dish.customizable_spice,
@@ -46,7 +53,7 @@ export default function PopularFoods() {
             });
             setFoods(allItems);
         }).catch(console.error);
-    }, []);
+    };
 
     const toggleFavorite = (id) => {
         setFavorites((prev) =>
@@ -102,8 +109,7 @@ export default function PopularFoods() {
                                     className="h-32 sm:h-40 w-full object-cover"
                                 />
 
-                                <button
-                                    onClick={(e) => {
+                                <button disabled={food?.is_available === false} onClick={(e) => {
                                         e.stopPropagation();
                                         toggleFavorite(food.id);
                                     }}
@@ -132,7 +138,7 @@ export default function PopularFoods() {
 
                             <div className="p-3 flex flex-col flex-1">
                                 <h3 className="font-bold text-gray-800 dark:text-white leading-tight line-clamp-2 min-h-[40px]">
-                                    {food.name}
+                                    {food.name}{!food.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}
                                 </h3>
 
                                 <div className="mt-auto pt-3 flex items-center justify-between">
@@ -147,8 +153,7 @@ export default function PopularFoods() {
                                             const lastItem = matchingItems[matchingItems.length - 1];
                                             return (
                                                 <div className="flex items-center gap-2 sm:gap-3 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-1 text-orange-600 dark:text-orange-500 font-bold border border-orange-200 dark:border-orange-800">
-                                                    <button
-                                                        onClick={(e) => {
+                                                    <button disabled={food?.is_available === false} onClick={(e) => {
                                                             e.stopPropagation();
                                                             if (matchingItems.length > 1) {
                                                                 navigate('/customer/cart');
@@ -161,8 +166,7 @@ export default function PopularFoods() {
                                                         <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                                                     </button>
                                                     <span className="text-xs sm:text-sm font-semibold">{totalQty}</span>
-                                                    <button
-                                                        onClick={(e) => {
+                                                    <button disabled={food?.is_available === false} onClick={(e) => {
                                                             e.stopPropagation();
                                                             const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
                                                             if (hasCustomization) {
@@ -179,8 +183,7 @@ export default function PopularFoods() {
                                             );
                                         }
                                         return (
-                                            <button
-                                                onClick={(e) => {
+                                            <button disabled={food?.is_available === false} onClick={(e) => {
                                                     e.stopPropagation();
                                                     const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions !== false || food.customizableSpice !== false;
                                                     if (hasCustomization) {

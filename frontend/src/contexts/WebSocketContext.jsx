@@ -47,11 +47,15 @@ export const WebSocketProvider = ({ children }) => {
                     queryClient.invalidateQueries({ queryKey: ['adminTables'] });
                     queryClient.invalidateQueries({ queryKey: ['adminReservations'] });
                     queryClient.invalidateQueries({ queryKey: ['kitchen_stats'] });
+                    queryClient.invalidateQueries({ queryKey: ['operator-sessions'] });
+                    queryClient.invalidateQueries({ queryKey: ['operator-pending-bills'] });
                 } else if (data.event === 'order.updated') {
-                    playNotificationSound();
-                    toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
-                        icon: 'ℹ️',
-                    });
+                    if (user.role !== 'kitchen') {
+                        playNotificationSound();
+                        toast(`Order #${data.payload.id} status updated to ${data.payload.status}`, {
+                            icon: 'ℹ️',
+                        });
+                    }
                     queryClient.invalidateQueries({ queryKey: ['orders'] });
                     queryClient.invalidateQueries({ queryKey: ['sessions'] });
                     queryClient.invalidateQueries({ queryKey: ['tables'] });

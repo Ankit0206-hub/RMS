@@ -36,7 +36,7 @@ const OperatorUsers = () => {
     const { data: employeesData, isLoading: employeesLoading } = useQuery({
         queryKey: ['adminEmployees'],
         queryFn: async () => {
-            const res = await api.get('/admin/employees', { params: { page: 1, page_size: 100 } });
+            const res = await api.get('/admin/employees/', { params: { page: 1, page_size: 100 } });
             return res.data.data || [];
         }
     });
@@ -64,7 +64,7 @@ const OperatorUsers = () => {
         },
         onSuccess: () => {
             toast.success('User added successfully');
-            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
             closeModals();
         },
         onError: (error) => {
@@ -80,7 +80,7 @@ const OperatorUsers = () => {
         },
         onSuccess: () => {
             toast.success('User updated successfully');
-            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
             closeModals();
         },
         onError: (error) => {
@@ -96,7 +96,7 @@ const OperatorUsers = () => {
         },
         onSuccess: () => {
             toast.success('User deleted successfully');
-            queryClient.invalidateQueries(['adminEmployees']);
+            queryClient.invalidateQueries({ queryKey: ['adminEmployees'] });
         },
         onError: (error) => {
             const message = error.response?.data?.message || 'Failed to delete user';

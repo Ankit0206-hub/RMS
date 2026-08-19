@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getWsUrl } from "../../services/api";
 import customerApi from "../../services/customerApi";
 import { useApp } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 import PageLayout from "../../components/customer/layout/PageLayout";
 import ThermalReceipt from "../../components/ThermalReceipt";
@@ -39,25 +40,12 @@ export default function OrderDetails() {
     
     fetchOrder();
 
-    const wsUrl = `${getWsUrl()}/ws/customer?session_id=${customerSession.sessionId}`;
-    const ws = new WebSocket(wsUrl);
+    const handleOrderUpdate = () => fetchOrder();
+    window.addEventListener('orderUpdatedLocally', handleOrderUpdate);
     
-    ws.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            if (data.event === "BILL_PAID") {
-                localStorage.removeItem('customer_token');
-                localStorage.removeItem('customerSession');
-                navigate("/customer/landing");
-                return;
-            }
-            if (data.event === "order.updated" || data.event === "order.created") {
-                fetchOrder();
-            }
-        } catch (err) {}
+    return () => {
+        window.removeEventListener('orderUpdatedLocally', handleOrderUpdate);
     };
-    
-    return () => ws.close();
   }, [customerSession]);
 
   if (!order) {
@@ -76,7 +64,9 @@ export default function OrderDetails() {
     );
   }
 
-  const canRequestBill = sessionData?.orders?.every(o => ["Served", "Completed", "Delivered", "Cancelled", "Paid"].includes(o.status));
+  const hasRequestedBill = localStorage.getItem("billRequested_" + customerSession?.sessionId) === "true";
+  const canRequestBill = !sessionData?.bill_data && !hasRequestedBill && sessionData?.orders?.every(o => ["Served", "Completed", "Delivered", "Cancelled", "Paid"].includes(o.status));
+
 
   const getStatusStep = () => {
     if (order.status === "Cancelled") return -1;
@@ -237,6 +227,30 @@ export default function OrderDetails() {
                 <span className="text-sm font-bold text-gray-700 dark:text-slate-300">Request Bill</span>
               </button>
             )}
+
+            {!sessionData?.bill_data && hasRequestedBill && sessionData?.orders?.every(o => ["Served", "Completed", "Delivered", "Cancelled", "Paid"].includes(o.status)) && (
+              <button
+                disabled
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-100 dark:bg-slate-800 p-4 shadow-sm border border-gray-200 dark:border-slate-700 opacity-60 cursor-not-allowed"
+              >
+                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400">
+                  <ReceiptText size={20} />
+                </div>
+                <span className="text-sm font-bold text-gray-500 dark:text-slate-400">Bill Requested</span>
+              </button>
+            )}
+
+            {!sessionData?.bill_data && sessionData?.orders?.some(o => !["Served", "Completed", "Delivered", "Cancelled", "Paid"].includes(o.status)) && (
+              <button
+                disabled
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-gray-100 dark:bg-slate-800 p-4 shadow-sm border border-gray-200 dark:border-slate-700 opacity-60 cursor-not-allowed"
+              >
+                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400">
+                  <ReceiptText size={20} />
+                </div>
+                <span className="text-sm font-bold text-gray-500 dark:text-slate-400">Awaiting Service</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -254,6 +268,7 @@ export default function OrderDetails() {
       <ThermalReceipt 
         isOpen={isReceiptOpen}
         onClose={() => setIsReceiptOpen(false)}
+        isA4Format={true}
         data={{
             table: customerSession?.tableId || "Unknown",
             bill_number: sessionData?.bill_data?.bill_number || "N/A",
@@ -262,9 +277,12 @@ export default function OrderDetails() {
             cgst: (sessionData?.bill_data?.total_tax || 0) / 2,
             sgst: (sessionData?.bill_data?.total_tax || 0) / 2,
             service_charge: sessionData?.bill_data?.service_charge || 0,
-            grand_total: sessionData?.bill_data?.grand_total || 0
+            grand_total: sessionData?.bill_data?.grand_total || 0,
+            customer_name: sessionData?.customer_name,
+            discount_percentage: sessionData?.bill_data?.discount_percentage,
+            discount_amount: sessionData?.bill_data?.discount_amount
         }}
-        items={sessionData?.orders?.flatMap(o => o.items.map(i => ({ name: i.name, qty: i.quantity, price: i.price }))) || []}
+        items={sessionData?.bill_data?.items || []}
       />
     </PageLayout>
   );

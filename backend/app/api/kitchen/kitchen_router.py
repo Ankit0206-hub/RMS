@@ -78,7 +78,7 @@ async def get_kitchen_stats(
         select(func.count(func.distinct(OrderItem.order_id)))
         .join(MenuItem, OrderItem.menu_item_id == MenuItem.id)
         .join(Order, OrderItem.order_id == Order.id)
-        .filter(Order.status.notin_(["Completed", "Cancelled", "Served"]))
+        .filter(Order.status.notin_(["Completed", "Cancelled", "Served", "Verification Pending"]))
     )
     if kitchen_id:
         from sqlalchemy import or_
@@ -115,7 +115,7 @@ async def get_kitchen_orders(
         .join(Order, OrderItem.order_id == Order.id)
         .filter(
             OrderItem.status.in_(["received", "preparing"]),
-            Order.status.notin_(["Completed", "Cancelled"])
+            Order.status.notin_(["Completed", "Cancelled", "Verification Pending"])
         )
     )
     

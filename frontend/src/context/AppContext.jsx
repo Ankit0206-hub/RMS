@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
+import { getWsUrl } from "../services/api";
 
 const AppContext = createContext();
 
@@ -26,9 +27,74 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : false;
   });
 
-  // Sync to localStorage
+  const wsRef = useRef(null);
+  const isRemoteSync = useRef(false);
+  const cartRef = useRef(cartItems);
+
+  // Keep cartRef in sync
+  useEffect(() => {
+    cartRef.current = cartItems;
+  }, [cartItems]);
+
+  // Manage Customer WebSocket centrally
+  useEffect(() => {
+    if (!customerSession?.sessionId) return;
+    
+    const ws = new WebSocket(`${getWsUrl()}/ws/customer?session_id=${customerSession.sessionId}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      // Request cart state from peers when joining
+      ws.send(JSON.stringify({ action: "REQUEST_CART_SYNC" }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === "CART_UPDATED") {
+          isRemoteSync.current = true;
+          setCartItems(data.payload);
+        } else if (data.event === "CART_SYNC_REQUESTED") {
+          // Another client joined and wants the cart state
+          ws.send(JSON.stringify({ action: "SYNC_CART", cartItems: cartRef.current }));
+        } else if (data.event === "TABLE_CLEARED") {
+          localStorage.removeItem('customerSession');
+          localStorage.removeItem('customer_token');
+          localStorage.removeItem('cartItems');
+          toast('Your session has been ended by the staff. Thank you!', { icon: '🙏' });
+          setTimeout(() => { window.location.href = '/customer'; }, 2500);
+        } else if (data.event === "BILL_PAID") {
+          localStorage.removeItem('customerSession');
+          localStorage.removeItem('customer_token');
+          localStorage.removeItem('cartItems');
+          window.location.href = '/customer/landing';
+        } else if (data.event === "order.updated" || data.event === "order.created") {
+            import('../utils/audio').then(({ playNotificationSound }) => {
+                playNotificationSound();
+            });
+            if (data.payload && data.payload.status) {
+              toast(`Your order is now: ${data.payload.status}`, { icon: '🔔' });
+            }
+            window.dispatchEvent(new Event('orderUpdatedLocally'));
+        }
+      } catch (err) {}
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
+  }, [customerSession?.sessionId]);
+
+  // Sync to localStorage and broadcast local changes
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    
+    if (!isRemoteSync.current && wsRef.current?.readyState === WebSocket.OPEN) {
+       wsRef.current.send(JSON.stringify({ action: "SYNC_CART", cartItems }));
+    }
+    isRemoteSync.current = false;
   }, [cartItems]);
 
   useEffect(() => {

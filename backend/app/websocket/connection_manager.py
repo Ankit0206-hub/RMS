@@ -45,10 +45,12 @@ class ConnectionManager:
                     except Exception:
                         self.disconnect(connection, role)
                         
-    async def notify_customer(self, session_id: int, event: str, payload: Any):
+    async def notify_customer(self, session_id: int, event: str, payload: Any, exclude: WebSocket = None):
         message = json.dumps({"event": event, "payload": payload})
         for connection, sid in list(self.customer_sessions.items()):
             if sid == session_id:
+                if exclude and connection == exclude:
+                    continue
                 try:
                     await connection.send_text(message)
                 except Exception:

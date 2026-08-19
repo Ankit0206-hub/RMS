@@ -22,6 +22,12 @@ export default function FoodList() {
   const title = category ? category.replace("-", " ") : "Main Course";
 
   useEffect(() => {
+    fetchMenu();
+    window.addEventListener('menuUpdated', fetchMenu);
+    return () => window.removeEventListener('menuUpdated', fetchMenu);
+  }, [category]);
+
+  const fetchMenu = () => {
     customerApi.getMenu().then(data => {
       const catData = data.find(c => c.name.toLowerCase().replace(/\s+/g, "-") === category);
       if (catData) {
@@ -37,6 +43,7 @@ export default function FoodList() {
           rating: dish.avg_rating || 4.8,
           desc: dish.description,
           isVeg: dish.is_veg,
+          is_available: dish.is_available !== false,
           isSpicy: dish.is_spicy_customizable ?? catData.is_spicy_customizable ?? false,
           hasPortions: dish.half_price != null,
           half_price: dish.half_price,
@@ -55,7 +62,7 @@ export default function FoodList() {
       console.error(err);
       setLoading(false);
     });
-  }, [category]);
+  };
 
   const toggleFilter = (filterName) => {
     setActiveFilter(activeFilter === filterName ? "all" : filterName);
@@ -148,7 +155,7 @@ export default function FoodList() {
                   state: { food },
                 })
               }
-              className="flex items-start gap-4 cursor-pointer"
+              className={`flex items-start gap-4 cursor-pointer ${!food.is_available ? "opacity-50 grayscale" : ""}`}
             >
               <img
                 src={food.image}
@@ -162,7 +169,7 @@ export default function FoodList() {
                     <span className={`h-1.5 w-1.5 rounded-full ${food.isVeg ? 'bg-green-500' : 'bg-red-500'}`}></span>
                   </span>
                   <h3 className="font-bold text-gray-900 dark:text-white leading-tight">
-                    {food.name}
+                    {food.name}{!food.is_available && <span className="ml-2 text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-md">Out of Stock</span>}
                   </h3>
                 </div>
 
@@ -190,8 +197,7 @@ export default function FoodList() {
                       const lastItem = matchingItems[matchingItems.length - 1];
                       return (
                         <div className="flex items-center gap-1 sm:gap-2 rounded-lg bg-orange-500 px-1 sm:px-2 py-0.5 sm:py-1 text-white shadow-sm">
-                          <button
-                            onClick={(e) => {
+                          <button disabled={food?.is_available === false} onClick={(e) => {
                               e.stopPropagation();
                               if (matchingItems.length > 1) {
                                 navigate('/customer/cart');
@@ -204,8 +210,7 @@ export default function FoodList() {
                             <Minus className="w-3 h-3 sm:w-[14px] sm:h-[14px]" />
                           </button>
                           <span className="text-xs sm:text-sm font-bold text-center px-1">{totalQty}</span>
-                          <button
-                            onClick={(e) => {
+                          <button disabled={food?.is_available === false} onClick={(e) => {
                               e.stopPropagation();
                               const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions || food.customizableSpice;
                               if (hasCustomization) {
@@ -222,8 +227,7 @@ export default function FoodList() {
                       );
                     }
                     return (
-                      <button
-                        onClick={(e) => {
+                      <button disabled={food?.is_available === false} onClick={(e) => {
                           e.stopPropagation();
                           const hasCustomization = food.half_price != null || food.is_spicy_customizable || food.category?.is_spicy_customizable || (food.variant_groups && food.variant_groups.length > 0) || (food.addon_groups && food.addon_groups.length > 0) || food.hasPortions || food.customizableSpice;
                           if (hasCustomization) {
@@ -232,7 +236,7 @@ export default function FoodList() {
                             addToCart(food);
                           }
                         }}
-                        className="rounded-lg bg-orange-500 px-5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-orange-600 active:scale-95"
+                        className="rounded-lg bg-orange-500 px-5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-orange-600 active:scale-95 disabled:opacity-50 disabled:bg-gray-400"
                       >
                         Add
                       </button>

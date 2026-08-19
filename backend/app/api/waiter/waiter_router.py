@@ -210,10 +210,14 @@ async def start_session(
     if existing_session:
         raise HTTPException(status_code=400, detail="An active session already exists for this table.")
         
+    import random
+    new_pin = f"{random.randint(1000, 9999)}"
+    
     session = CustomerSession(
         table_id=table.id,
         number_of_people=req.guests,
-        status="Active"
+        status="Active",
+        session_pin=new_pin
     )
     db.add(session)
     table.status = "Occupied"
