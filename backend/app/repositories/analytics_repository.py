@@ -53,7 +53,7 @@ class AnalyticsRepository:
         orders_stmt = select(func.count(Order.id)).where(Order.status != 'Cancelled', Order.created_at >= start_date)
         bills_stmt = select(func.count(Bill.id)).where(Bill.payment_status == 'Paid', Bill.generated_at >= start_date)
         discounts_stmt = select(func.sum(Bill.total_discount)).where(Bill.payment_status == 'Paid', Bill.generated_at >= start_date)
-        payments_stmt = select(func.sum(Payment.amount)).where(Payment.status == 'Success', Payment.created_at >= start_date)
+        payments_stmt = select(func.sum(Payment.amount)).where(Payment.status.in_(['Success', 'Completed']), Payment.created_at >= start_date)
 
         today_revenue = await db.scalar(revenue_stmt) or 0.0
         today_orders = await db.scalar(orders_stmt) or 0
@@ -83,7 +83,19 @@ class AnalyticsRepository:
         )
         
         result = await db.execute(stmt)
-        return [{"date": row.date, "revenue": float(row.revenue)} for row in result.all()]
+        db_data = {str(row.date): float(row.revenue) for row in result.all()}
+        
+        # Pad with zeros for all days
+        data = []
+        for i in range(days):
+            d = start_date + timedelta(days=i)
+            d_str = d.strftime("%Y-%m-%d")
+            data.append({
+                "date": d_str,
+                "revenue": db_data.get(d_str, 0.0)
+            })
+            
+        return data
 
     async def get_top_selling_items(self, db: AsyncSession, limit: int = 5) -> List[Dict[str, Any]]:
         stmt = (
@@ -202,7 +214,7 @@ class AnalyticsRepository:
 
     async def get_sales_by_payment_method(self, db: AsyncSession, start_date: datetime = None) -> List[Dict[str, Any]]:
         stmt = select(Payment.payment_method, func.sum(Payment.amount).label("value")) \
-               .where(Payment.status == 'Success')
+               .where(Payment.status.in_(['Success', 'Completed']))
                
         if start_date:
             stmt = stmt.where(Payment.created_at >= start_date)

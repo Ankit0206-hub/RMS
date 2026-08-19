@@ -28,6 +28,7 @@ import {
   Download,
 } from "lucide-react";
 import ThermalReceipt from "../../components/ThermalReceipt";
+import OperatorPOSModal from "../../components/operator/OperatorPOSModal";
 
 const OperatorBilling = () => {
   const queryClient = useQueryClient();
@@ -37,6 +38,7 @@ const OperatorBilling = () => {
   const [mainTab, setMainTab] = useState("Active"); // 'Active' or 'Recent'
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [posModalConfig, setPosModalConfig] = useState(null);
 
   // Fetch Active Sessions
   const { data: sessionsResponse, isLoading: sessionsLoading } = useQuery({
@@ -561,7 +563,9 @@ const OperatorBilling = () => {
             {mainTab === "Active" && (
               <button
                 onClick={() =>
-                  toast("Please start a new session from Floor Plan")
+                  setPosModalConfig({
+                    isDirectOrder: true
+                  })
                 }
                 className="w-full mt-4 py-3.5 bg-white dark:bg-slate-900/50 border border-dashed border-gray-300 dark:border-slate-600 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold text-xs flex items-center justify-center hover:bg-gray-50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 transition-colors"
               >
@@ -667,8 +671,10 @@ const OperatorBilling = () => {
                   {selectedItem.type === "session" && (
                     <button
                       onClick={() =>
-                        toast("Point of Sale (Add Item) coming soon", {
-                          icon: "🛒",
+                        setPosModalConfig({
+                          sessionId: selectedItem.id,
+                          tableId: selectedItem.table_id || null,
+                          isDirectOrder: false
                         })
                       }
                       className="flex items-center text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:text-indigo-800 dark:hover:text-indigo-300 transition-all duration-200 active:scale-95 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg shrink-0 ml-2"
@@ -973,6 +979,19 @@ const OperatorBilling = () => {
         }}
         items={currentOrderItems}
       />
+
+      {posModalConfig && (
+        <OperatorPOSModal
+          sessionId={posModalConfig.sessionId}
+          tableId={posModalConfig.tableId}
+          isDirectOrder={posModalConfig.isDirectOrder}
+          onClose={() => setPosModalConfig(null)}
+          onOrderPlaced={() => {
+            setPosModalConfig(null);
+            queryClient.invalidateQueries({ queryKey: ["operator-sessions"] });
+          }}
+        />
+      )}
     </div>
   );
 };

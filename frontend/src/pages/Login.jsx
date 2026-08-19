@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { 
     UtensilsCrossed, Activity, Users, ConciergeBell, 
     ShieldCheck, User, Lock, Eye, EyeOff, Utensils
@@ -12,6 +13,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -48,8 +50,14 @@ const Login = () => {
                     {/* Brand */}
                     <div className="flex items-center space-x-3 mb-4">
                         <img src="/favicon.png" alt="Logo" className="w-20 h-20 object-contain" />
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-wide">Dine<span className="text-[#6366f1]">Ops</span></h1>
+                        <div className="overflow-hidden flex-1 max-w-[260px]">
+                            {settings?.restaurant_name?.length > 12 ? (
+                                <marquee scrollamount="3" className="text-3xl font-bold tracking-wide block">
+                                    {settings?.restaurant_name || 'DineOps'}
+                                </marquee>
+                            ) : (
+                                <h1 className="text-3xl font-bold tracking-wide truncate">{settings?.restaurant_name || 'DineOps'}</h1>
+                            )}
                             <p className="text-xs text-gray-300 font-medium tracking-wider">Restaurant Management System</p>
                         </div>
                     </div>
@@ -60,7 +68,7 @@ const Login = () => {
                             Smart. Simple.<br/>Seamless <span className="text-[#a855f7]">Operations.</span>
                         </h2>
                         <p className="text-gray-300 text-sm leading-relaxed max-w-sm">
-                            DineOps helps you manage your restaurant operations, staff, orders, billing and more from one powerful dashboard.
+                            {settings?.restaurant_name || 'DineOps'} helps you manage your restaurant operations, staff, orders, billing and more from one powerful dashboard.
                         </p>
                     </div>
 
@@ -75,7 +83,7 @@ const Login = () => {
                     <div className="text-center mb-10">
                         <img src="/favicon.png" alt="Logo" className="w-28 h-28 object-contain mx-auto " />
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome <span className="text-[#6366f1]">Back!</span></h2>
-                        <p className="text-sm text-gray-500 font-medium">Login to your DineOps account</p>
+                        <p className="text-sm text-gray-500 font-medium">Login to your {settings?.restaurant_name || 'DineOps'} account</p>
                     </div>
 
                     {/* Form */}
@@ -150,12 +158,18 @@ const Login = () => {
                         <div>
                             <button
                                 type="submit"
-                                className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-[#6366f1] hover:bg-[#4f46e5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6366f1] transition-all"
+                                className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-[#6366f1] hover:bg-[#4f46e5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6366f1] transition-all overflow-hidden"
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                                 </svg>
-                                Login to DineOps
+                                {settings?.restaurant_name?.length > 25 ? (
+                                    <marquee scrollamount="3" className="whitespace-nowrap w-full">
+                                        Login to {settings?.restaurant_name || 'DineOps'}
+                                    </marquee>
+                                ) : (
+                                    <span className="truncate">Login to {settings?.restaurant_name || 'DineOps'}</span>
+                                )}
                             </button>
                         </div>
                     </form>

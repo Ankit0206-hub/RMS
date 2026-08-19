@@ -3,6 +3,7 @@ import AppRoutes from './routes/AppRoutes';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import Login from './pages/Login';
 import AdminLayout from './layouts/AdminLayout';
 import Employees from './pages/admin/Employees';
@@ -113,117 +114,122 @@ const OperatorPlaceholder = ({ title }) => (
 const App = () => {
     return (
         <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <WebSocketProvider>
-                    <BrowserRouter>
-                        <Toaster position="top-right" toastOptions={{
-                            style: { background: '#171717', color: '#fff', border: '1px solid #333' }
-                        }} />
-                        <Routes>
-                            <Route path="/" element={<Navigate to="/login" />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/customer/*" element={<AppRoutes />} />
+            <SettingsProvider>
+                <AuthProvider>
+                    <WebSocketProvider>
 
-                            <Route path="/customer-display" element={<ProtectedRoute allowedRoles={['admin', 'operator', 'kitchen']}><CustomerDisplay /></ProtectedRoute>} />
+                        <BrowserRouter>
+                            <Toaster position="top-right" toastOptions={{
+                                style: { background: '#171717', color: '#fff', border: '1px solid #333' }
+                            }} />
+                            <Routes>
+                                <Route path="/" element={<Navigate to="/login" />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/customer/*" element={<AppRoutes />} />
 
-                            {/* Admin Routes */}
-                            <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
-                                <Route index element={<Navigate to="/admin/dashboard" />} />
-                                <Route path="dashboard" element={<Dashboard />} />
-                                <Route path="employees" element={<Employees />} />
-                                <Route path="employees/add" element={<AddEmployee />} />
-                                <Route path="employees/edit/:id" element={<EditEmployee />} />
-                                <Route path="food-items" element={<FoodItems />} />
-                                <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
-                                <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
-                                <Route path="menu" element={<MenuItems />} />
-                                <Route path="menu/add" element={<AddCategoryWithItems />} />
-                                <Route path="menu/modifiers" element={<MenuModifiers />} />
-                                <Route path="menu/variants" element={<MenuVariants />} />
-                                <Route path="orders" element={<Orders />} />
-                                <Route path="orders/:id" element={<OrderDetails />} />
-                                <Route path="orders/returns" element={<OrderReturns />} />
-                                <Route path="billing" element={<Bills />} />
-                                <Route path="billing/invoices" element={<Invoices />} />
-                                <Route path="billing/payments" element={<Payments />} />
-                                <Route path="billing/refunds" element={<Refunds />} />
-                                <Route path="billing/methods" element={<PaymentMethods />} />
-                                <Route path="customers" element={<Customers />} />
-                                <Route path="ratings" element={<Ratings />} />
-                                <Route path="analytics" element={<AnalyticsOverview />} />
-                                <Route path="notifications" element={<Notifications />} />
-                                <Route path="kitchen" element={<KitchenOverview />} />
-                                <Route path="kitchens" element={<Kitchens />} />
+                                <Route path="/customer-display" element={<ProtectedRoute allowedRoles={['admin', 'operator', 'kitchen']}><CustomerDisplay /></ProtectedRoute>} />
 
-                                <Route path="settings" element={<Settings />} />
-                                <Route path="tables" element={<Tables />} />
-                                <Route path="tables/add" element={<AddTable />} />
-                                <Route path="tables/reservations" element={<TableReservations />} />
-                                <Route path="tables/floor-plan" element={<OperatorFloorPlan />} />
-                            </Route>
+                                {/* Admin Routes */}
+                                <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminLayout /></ProtectedRoute>}>
+                                    <Route index element={<Navigate to="/admin/dashboard" />} />
+                                    <Route path="dashboard" element={<Dashboard />} />
+                                    <Route path="employees" element={<Employees />} />
+                                    <Route path="employees/add" element={<AddEmployee />} />
+                                    <Route path="employees/edit/:id" element={<EditEmployee />} />
+                                    <Route path="food-items" element={<FoodItems />} />
+                                    <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
+                                    <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
+                                    <Route path="menu" element={<MenuItems />} />
+                                    <Route path="menu/add" element={<AddCategoryWithItems />} />
+                                    <Route path="menu/modifiers" element={<MenuModifiers />} />
+                                    <Route path="menu/variants" element={<MenuVariants />} />
+                                    <Route path="orders" element={<Orders />} />
+                                    <Route path="orders/:id" element={<OrderDetails />} />
+                                    <Route path="orders/returns" element={<OrderReturns />} />
+                                    <Route path="billing" element={<Bills />} />
+                                    <Route path="billing/invoices" element={<Invoices />} />
+                                    <Route path="billing/payments" element={<Payments />} />
+                                    <Route path="billing/refunds" element={<Refunds />} />
+                                    <Route path="billing/methods" element={<PaymentMethods />} />
+                                    <Route path="customers" element={<Customers />} />
+                                    <Route path="ratings" element={<Ratings />} />
+                                    <Route path="analytics" element={<AnalyticsOverview />} />
+                                    <Route path="notifications" element={<Notifications />} />
+                                    <Route path="kitchen" element={<KitchenOverview />} />
+                                    <Route path="kitchens" element={<Kitchens />} />
 
-                            {/* Operator Routes */}
-                            <Route path="/operator" element={<ProtectedRoute allowedRoles={['operator', 'admin']}><OperatorLayout /></ProtectedRoute>}>
-                                <Route index element={<Navigate to="/operator/dashboard" />} />
-                                <Route path="dashboard" element={<OperatorDashboard />} />
-                                <Route path="reservations" element={<OperatorReservations />} />
-                                <Route path="table-assignment" element={<TableAssignment />} />
-                                <Route path="tables" element={<OperatorTables />} />
-                                <Route path="orders" element={<OperatorOrders />} />
-                                <Route path="billing" element={<OperatorBilling />} />
-                                <Route path="food-items" element={<FoodItems />} />
-                                <Route path="kitchens" element={<Kitchens />} />
-                                <Route path="categories" element={<AddCategoryWithItems />} />
-                                <Route path="menu-items" element={<MenuItems />} />
-                                <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
-                                <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
-                                
-                                <Route path="waiters" element={<Waiters />} />
-                                <Route path="floor-plan" element={<OperatorFloorPlan />} />
-                                <Route path="orders/:id" element={<OperatorOrderDetails />} />
-                                <Route path="customers" element={<Customers />} />
-                                <Route path="invoices" element={<Invoices />} />
-                                <Route path="testimonials" element={<OperatorTestimonials />} />
-                                <Route path="users" element={<OperatorUsers />} />
-                                <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
-                                <Route path="settings" element={<OperatorSettings />} />
-                                <Route path="notifications" element={<Notifications />} />
-                            </Route>
+                                    <Route path="settings" element={<Settings />} />
+                                    <Route path="tables" element={<Tables />} />
+                                    <Route path="tables/add" element={<AddTable />} />
+                                    <Route path="tables/reservations" element={<TableReservations />} />
+                                    <Route path="tables/floor-plan" element={<OperatorFloorPlan />} />
+                                </Route>
 
-                            {/* Waiter Routes */}
-                            <Route path="/waiter" element={<ProtectedRoute allowedRoles={['waiter', 'admin']}><WaiterLayout /></ProtectedRoute>}>
-                                <Route index element={<Navigate to="/waiter/tables" />} />
-                                <Route path="dashboard" element={<Navigate to="/waiter/tables" />} />
-                                <Route path="tables" element={<WaiterMyTables />} />
-                                <Route path="tables/:tableId" element={<WaiterTableDetails />} />
-                                <Route path="tables/:tableId/start" element={<WaiterStartSession />} />
-                                <Route path="tables/:tableId/menu" element={<WaiterMenu />} />
-                                <Route path="tables/:tableId/cart" element={<WaiterCart />} />
-                                <Route path="tables/:tableId/history" element={<WaiterOrderHistory />} />
-                                <Route path="take-order" element={<WaiterMenu />} />
-                                <Route path="menu" element={<WaiterMenu />} />
-                                <Route path="cart" element={<WaiterCart />} />
-                                <Route path="orders" element={<WaiterOrders />} />
-                                <Route path="orders/:orderId" element={<WaiterOrderDetails />} />
-                                <Route path="ready" element={<WaiterReadyToServe />} />
-                                <Route path="requests" element={<WaiterRequests />} />
-                                <Route path="notifications" element={<WaiterNotifications />} />
-                                <Route path="profile" element={<WaiterProfile />} />
-                                <Route path="profile/edit" element={<WaiterEditProfile />} />
-                            </Route>
+                                {/* Operator Routes */}
+                                <Route path="/operator" element={<ProtectedRoute allowedRoles={['operator', 'admin']}><OperatorLayout /></ProtectedRoute>}>
+                                    <Route index element={<Navigate to="/operator/dashboard" />} />
+                                    <Route path="dashboard" element={<OperatorDashboard />} />
+                                    <Route path="reservations" element={<OperatorReservations />} />
+                                    <Route path="table-assignment" element={<TableAssignment />} />
+                                    <Route path="tables" element={<OperatorTables />} />
+                                    <Route path="orders" element={<OperatorOrders />} />
+                                    <Route path="billing" element={<OperatorBilling />} />
+                                    <Route path="food-items" element={<FoodItems />} />
+                                    <Route path="kitchens" element={<Kitchens />} />
+                                    <Route path="categories" element={<AddCategoryWithItems />} />
+                                    <Route path="menu-items" element={<MenuItems />} />
+                                    <Route path="food-items/:categoryId/menu" element={<CategoryMenu />} />
+                                    <Route path="food-items/:categoryId/menu/add" element={<AddItem />} />
+                                    <Route path="menu" element={<WaiterMenu />} />
+                                    <Route path="cart" element={<WaiterCart />} />
+                                    
+                                    <Route path="waiters" element={<Waiters />} />
+                                    <Route path="floor-plan" element={<OperatorFloorPlan />} />
+                                    <Route path="orders/:id" element={<OperatorOrderDetails />} />
+                                    <Route path="customers" element={<Customers />} />
+                                    <Route path="invoices" element={<Invoices />} />
+                                    <Route path="testimonials" element={<OperatorTestimonials />} />
+                                    <Route path="users" element={<OperatorUsers />} />
+                                    <Route path="reports" element={<OperatorPlaceholder title="Reports & Performance Metrics" />} />
+                                    <Route path="settings" element={<OperatorSettings />} />
+                                    <Route path="notifications" element={<Notifications />} />
+                                </Route>
 
-                            <Route path="/kitchen" element={<ProtectedRoute allowedRoles={['kitchen', 'admin']}><KitchenLayout /></ProtectedRoute>}>
-                                <Route index element={<Navigate to="/kitchen/orders" />} />
-                                <Route path="orders" element={<KitchenOrders />} />
-                                <Route path="prepared" element={<KitchenPrepared />} />
-                                <Route path="orders/:id" element={<KitchenOrderDetails />} />
-                                <Route path="notifications" element={<KitchenNotifications />} />
-                                <Route path="profile" element={<KitchenProfile />} />
-                            </Route>
-                        </Routes>
-                    </BrowserRouter>
-                </WebSocketProvider>
-            </AuthProvider>
+                                {/* Waiter Routes */}
+                                <Route path="/waiter" element={<ProtectedRoute allowedRoles={['waiter', 'admin']}><WaiterLayout /></ProtectedRoute>}>
+                                    <Route index element={<Navigate to="/waiter/tables" />} />
+                                    <Route path="dashboard" element={<Navigate to="/waiter/tables" />} />
+                                    <Route path="tables" element={<WaiterMyTables />} />
+                                    <Route path="tables/:tableId" element={<WaiterTableDetails />} />
+                                    <Route path="tables/:tableId/start" element={<WaiterStartSession />} />
+                                    <Route path="tables/:tableId/menu" element={<WaiterMenu />} />
+                                    <Route path="tables/:tableId/cart" element={<WaiterCart />} />
+                                    <Route path="tables/:tableId/history" element={<WaiterOrderHistory />} />
+                                    <Route path="take-order" element={<WaiterMenu />} />
+                                    <Route path="menu" element={<WaiterMenu />} />
+                                    <Route path="cart" element={<WaiterCart />} />
+                                    <Route path="orders" element={<WaiterOrders />} />
+                                    <Route path="orders/:orderId" element={<WaiterOrderDetails />} />
+                                    <Route path="ready" element={<WaiterReadyToServe />} />
+                                    <Route path="requests" element={<WaiterRequests />} />
+                                    <Route path="notifications" element={<WaiterNotifications />} />
+                                    <Route path="profile" element={<WaiterProfile />} />
+                                    <Route path="profile/edit" element={<WaiterEditProfile />} />
+                                </Route>
+
+                                <Route path="/kitchen" element={<ProtectedRoute allowedRoles={['kitchen', 'admin']}><KitchenLayout /></ProtectedRoute>}>
+                                    <Route index element={<Navigate to="/kitchen/orders" />} />
+                                    <Route path="orders" element={<KitchenOrders />} />
+                                    <Route path="prepared" element={<KitchenPrepared />} />
+                                    <Route path="orders/:id" element={<KitchenOrderDetails />} />
+                                    <Route path="notifications" element={<KitchenNotifications />} />
+                                    <Route path="profile" element={<KitchenProfile />} />
+                                </Route>
+                            </Routes>
+                        </BrowserRouter>
+                    </WebSocketProvider>
+                </AuthProvider>
+            </SettingsProvider>
         </QueryClientProvider>
     );
 };

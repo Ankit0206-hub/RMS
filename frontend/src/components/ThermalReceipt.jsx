@@ -1,8 +1,10 @@
 import React, { useRef } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 import { X, Printer } from 'lucide-react';
 
 const ThermalReceipt = ({ isOpen, onClose, data, items, isA4Format = false }) => {
     const printRef = useRef();
+    const { settings } = useSettings();
 
     if (!isOpen) return null;
 
@@ -11,9 +13,9 @@ const ThermalReceipt = ({ isOpen, onClose, data, items, isA4Format = false }) =>
     };
 
     const restaurantInfo = {
-        name: "DineOps Restaurant",
-        address: "123 Culinary Street, Food City",
-        phone: "+91 9876543210",
+        name: settings?.restaurant_name || "DineOps Restaurant",
+        address: settings?.address || "123 Culinary Street, Food City",
+        phone: settings?.contact_phone || "+91 9876543210",
         gst: "GSTIN29ABCDE1234F1Z5"
     };
 
@@ -121,7 +123,7 @@ const ThermalReceipt = ({ isOpen, onClose, data, items, isA4Format = false }) =>
                 <div className="text-center text-xs space-y-1">
                     <p className="font-bold">Thank you for dining with us!</p>
                     <p>Have a great day</p>
-                    <p className="mt-4 text-[10px] text-gray-500">Powered by DineOps</p>
+                    <p className="mt-4 text-[10px] text-gray-500">Powered by {settings?.restaurant_name || 'DineOps'}</p>
                 </div>
             </div>
 

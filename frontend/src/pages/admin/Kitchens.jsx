@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { ChefHat, Plus, Edit2, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const Kitchens = () => {
   const queryClient = useQueryClient();
@@ -10,6 +11,7 @@ const Kitchens = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedKitchen, setSelectedKitchen] = useState(null);
+  const { settings } = useSettings();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -111,7 +113,8 @@ const Kitchens = () => {
 
   const handleGenerateCredentials = () => {
     const baseName = formData.name ? formData.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'kitchen';
-    const email = `${baseName}@dineops.com`;
+    const domainName = settings?.restaurant_name ? settings.restaurant_name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'dineops';
+    const email = `${baseName}@${domainName}.com`;
     const password = Math.random().toString(36).slice(-8);
     setFormData(prev => ({ ...prev, email, password }));
     setShowPassword(true);
