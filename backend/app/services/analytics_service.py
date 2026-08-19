@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.repositories.analytics_repository import AnalyticsRepository
 
 class AnalyticsService:
