@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ReceiptText } from "lucide-react";
+import { ArrowLeft, ReceiptText, ChefHat } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PageLayout from "../../components/customer/layout/PageLayout";
 import { useApp } from "../../context/AppContext";
+import { useSettings } from "../../contexts/SettingsContext";
 import ThermalReceipt from "../../components/ThermalReceipt";
 
 export default function Invoice() {
   const navigate = useNavigate();
   const location = useLocation();
   const { cartItems, customerSession } = useApp();
+  const { settings } = useSettings();
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   // For UI mockup purposes, fallback to cartItems if no order is passed
@@ -63,10 +65,12 @@ export default function Invoice() {
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm p-6 border border-gray-100 dark:border-slate-800">
           
           <div className="flex flex-col items-center pb-6 border-b border-gray-100 dark:border-slate-800 border-dashed">
-            <div className="h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center mb-3">
-              <ReceiptText size={28} strokeWidth={2} className="text-orange-500" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="bg-[#6366f1] p-3 rounded-2xl text-white shadow-sm">
+                <ChefHat size={28} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{settings?.restaurant_name || 'DineOps'}</h2>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">DineOps</h2>
             <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mt-1">Food Invoice</p>
           </div>
 
@@ -136,11 +140,8 @@ export default function Invoice() {
           </div>
 
           {/* Thank You */}
-          <div className="mt-8 rounded-2xl bg-orange-50 p-5 text-center border border-orange-100">
-            <h3 className="font-bold text-orange-600">Thank You!</h3>
-            <p className="mt-1 text-sm font-medium text-gray-600 dark:text-slate-400 leading-relaxed">
-              Thank you for dining with DineOps. We hope to serve you again soon!
-            </p>
+          <div className="mt-8 text-center text-sm font-medium text-gray-500 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            Thank you for dining with {settings?.restaurant_name || 'DineOps'}. We hope to serve you again soon!
           </div>
 
         </div>

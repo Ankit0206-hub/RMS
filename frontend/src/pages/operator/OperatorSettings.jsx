@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Camera, User, Clock, Layout, Calendar, AlertTriangle, Plus, Trash2, CheckCircle2, Shield, Receipt } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -87,6 +88,7 @@ const CustomTimePicker = ({ label, value, onChange, name }) => {
 
 const OperatorSettings = () => {
     const { user, updateUser } = useAuth();
+    const { settings } = useSettings();
     const [activeTab, setActiveTab] = useState('profile');
     
     const [profileData, setProfileData] = useState({
@@ -403,7 +405,7 @@ const OperatorSettings = () => {
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Company name</label>
                                             <input 
-                                                type="text" value="DineOps Restaurant" disabled
+                                                type="text" value={settings?.restaurant_name || 'DineOps Restaurant'} disabled
                                                 className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-gray-500 dark:text-slate-400 cursor-not-allowed"
                                             />
                                         </div>
