@@ -1,8 +1,11 @@
 import React, { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Printer, Download } from 'lucide-react';
 import { Modal } from '../../components/ui';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const InvoiceModal = ({ isOpen, onClose, bill }) => {
+    const { settings } = useSettings();
     if (!bill) return null;
 
     const handlePrint = () => {
@@ -15,7 +18,7 @@ const InvoiceModal = ({ isOpen, onClose, bill }) => {
             <div className="p-6 bg-white no-print">
                 <div className="flex justify-between items-start mb-8">
                     <div>
-                        <h2 className="text-2xl font-black text-gray-900">DINE OPS</h2>
+                        <h2 className="text-2xl font-black text-gray-900">{settings?.restaurant_name?.toUpperCase() || 'DINE OPS'}</h2>
                         <p className="text-sm text-gray-500 mt-1">123 Culinary Avenue, Food City</p>
                         <p className="text-sm text-gray-500">Phone: +91 98765 43210</p>
                     </div>
@@ -120,71 +123,74 @@ const InvoiceModal = ({ isOpen, onClose, bill }) => {
             </div>
 
             {/* The Print Only View */}
-            <div className="print-only hidden">
-                <div className="text-center mb-6">
-                    <h2 className="text-2xl font-black">DINE OPS</h2>
-                    <p className="text-xs text-gray-600">123 Culinary Avenue, Food City</p>
-                    <p className="text-xs text-gray-600">Phone: +91 98765 43210</p>
-                </div>
-                
-                <div className="border-b pb-4 mb-4 flex justify-between items-end">
-                    <div>
-                        <p className="text-xs font-bold uppercase text-gray-500">Bill To:</p>
-                        <p className="text-sm font-bold">{bill.session?.customer_name || 'Walk-in Customer'}</p>
-                        <p className="text-xs">{bill.session?.customer_phone || ''}</p>
+            {createPortal(
+                <div className="print-only hidden">
+                    <div className="text-center mb-6">
+                        <h2 className="text-2xl font-black">{settings?.restaurant_name?.toUpperCase() || 'DINE OPS'}</h2>
+                        <p className="text-xs text-gray-600">123 Culinary Avenue, Food City</p>
+                        <p className="text-xs text-gray-600">Phone: +91 98765 43210</p>
                     </div>
-                    <div className="text-right">
-                        <p className="text-sm font-bold">{bill.bill_number}</p>
-                        <p className="text-xs text-gray-500">{new Date(bill.generated_at).toLocaleString()}</p>
+                    
+                    <div className="border-b pb-4 mb-4 flex justify-between items-end">
+                        <div>
+                            <p className="text-xs font-bold uppercase text-gray-500">Bill To:</p>
+                            <p className="text-sm font-bold">{bill.session?.customer_name || 'Walk-in Customer'}</p>
+                            <p className="text-xs">{bill.session?.customer_phone || ''}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm font-bold">{bill.bill_number}</p>
+                            <p className="text-xs text-gray-500">{new Date(bill.generated_at).toLocaleString()}</p>
+                        </div>
                     </div>
-                </div>
 
-                <table className="w-full text-left mb-6">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="py-2 text-xs uppercase text-gray-600">Item</th>
-                            <th className="py-2 text-xs uppercase text-gray-600 text-center">Qty</th>
-                            <th className="py-2 text-xs uppercase text-gray-600 text-right">Price</th>
-                            <th className="py-2 text-xs uppercase text-gray-600 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {bill.items?.map((item, idx) => (
-                            <tr key={idx}>
-                                <td className="py-2 text-sm font-medium">{item.item_name}</td>
-                                <td className="py-2 text-sm text-center">{item.quantity}</td>
-                                <td className="py-2 text-sm text-right">₹{item.price.toFixed(2)}</td>
-                                <td className="py-2 text-sm font-bold text-right">₹{item.total.toFixed(2)}</td>
+                    <table className="w-full text-left mb-6">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="py-2 text-xs uppercase text-gray-600">Item</th>
+                                <th className="py-2 text-xs uppercase text-gray-600 text-center">Qty</th>
+                                <th className="py-2 text-xs uppercase text-gray-600 text-right">Price</th>
+                                <th className="py-2 text-xs uppercase text-gray-600 text-right">Total</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {bill.items?.map((item, idx) => (
+                                <tr key={idx}>
+                                    <td className="py-2 text-sm font-medium">{item.item_name}</td>
+                                    <td className="py-2 text-sm text-center">{item.quantity}</td>
+                                    <td className="py-2 text-sm text-right">₹{item.price.toFixed(2)}</td>
+                                    <td className="py-2 text-sm font-bold text-right">₹{item.total.toFixed(2)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
 
-                <div className="flex justify-end mb-8">
-                    <div className="w-1/2">
-                        <div className="flex justify-between text-sm py-1">
-                            <span className="text-gray-600">Subtotal</span>
-                            <span>₹{bill.subtotal?.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm py-1">
-                            <span className="text-gray-600">Tax</span>
-                            <span>₹{bill.total_tax?.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm py-1 border-b pb-2">
-                            <span className="text-gray-600">Service Charge</span>
-                            <span>₹{bill.service_charge?.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-black py-2">
-                            <span>Total</span>
-                            <span>₹{bill.grand_total?.toFixed(2)}</span>
+                    <div className="flex justify-end mb-8">
+                        <div className="w-1/2">
+                            <div className="flex justify-between text-sm py-1">
+                                <span className="text-gray-600">Subtotal</span>
+                                <span>₹{bill.subtotal?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm py-1">
+                                <span className="text-gray-600">Tax</span>
+                                <span>₹{bill.total_tax?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm py-1 border-b pb-2">
+                                <span className="text-gray-600">Service Charge</span>
+                                <span>₹{bill.service_charge?.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-lg font-black py-2">
+                                <span>Total</span>
+                                <span>₹{bill.grand_total?.toFixed(2)}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="text-center text-xs text-gray-500 border-t pt-4">
-                    <p>Thank you for dining with us!</p>
-                </div>
-            </div>
+                    <div className="text-center text-xs text-gray-500 border-t pt-4">
+                        <p>Thank you for dining with us!</p>
+                    </div>
+                </div>,
+                document.body
+            )}
         </Modal>
     );
 };

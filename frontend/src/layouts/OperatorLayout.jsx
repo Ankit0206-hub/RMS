@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -31,6 +32,7 @@ import {
 
 const OperatorLayout = () => {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
@@ -154,12 +156,20 @@ const OperatorLayout = () => {
 
                 {/* Logo Area */}
                 <div className={`h-16 flex items-center justify-between ${isSidebarOpen ? 'px-6' : 'justify-center px-0'} border-b border-gray-50 dark:border-slate-800/50/50`}>
-                    <div className="flex items-center overflow-hidden">
+                    <div className="flex items-center overflow-hidden w-full">
                         <Utensils className={`h-6 w-6 shrink-0 text-cyan-600 ${isSidebarOpen ? 'mr-2' : ''}`} />
                         {isSidebarOpen && (
-                            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
-                                DineOps <span className="text-cyan-500">Operator</span>
-                            </span>
+                            <div className="overflow-hidden flex-1 max-w-[170px]">
+                                {(`${settings?.restaurant_name || 'DineOps'} Operator`).length > 17 ? (
+                                    <marquee scrollamount="3" className="text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap block">
+                                        {settings?.restaurant_name || 'DineOps'} <span className="text-cyan-500">Operator</span>
+                                    </marquee>
+                                ) : (
+                                    <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap block truncate">
+                                        {settings?.restaurant_name || 'DineOps'} <span className="text-cyan-500">Operator</span>
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                     {isSidebarOpen && (

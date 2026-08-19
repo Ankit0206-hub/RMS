@@ -18,13 +18,14 @@ import api from '../../services/api';
 const AnalyticsOverview = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Overview');
+    const [timeframe, setTimeframe] = useState('all');
 
     const tabs = ['Overview', 'Waiter / Operator Performance', 'Menu / Food Analytics', 'Sales Analytics', 'Customer Analytics'];
 
     const { data: dashboardData, isLoading } = useQuery({
-        queryKey: ['analytics_dashboard', 'today'],
+        queryKey: ['analytics_dashboard', timeframe],
         queryFn: async () => {
-            const res = await api.get('/admin/analytics/dashboard?timeframe=today');
+            const res = await api.get(`/admin/analytics/dashboard?timeframe=${timeframe}`);
             return res.data.data;
         }
     });
@@ -75,6 +76,18 @@ const AnalyticsOverview = () => {
                         </button>
                     ))}
                 </div>
+                {activeTab === 'Overview' && (
+                    <select 
+                        value={timeframe} 
+                        onChange={e => setTimeframe(e.target.value)}
+                        className="bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-lg px-3 py-1.5 outline-none cursor-pointer"
+                    >
+                        <option value="today">Today</option>
+                        <option value="weekly">This Week</option>
+                        <option value="monthly">This Month</option>
+                        <option value="all">All Time</option>
+                    </select>
+                )}
             </div>
 
             {/* Tab Content */}
@@ -112,10 +125,9 @@ const AnalyticsOverview = () => {
                         <div className="lg:col-span-7 bg-white border border-gray-100 shadow-sm rounded-xl p-5">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold text-gray-900 text-sm">Sales Overview</h3>
-                                <select className="bg-white border border-gray-200 text-gray-700 text-[10px] font-bold rounded-lg px-2 py-1 outline-none">
-                                    <option>Daily</option>
-                                    <option>Weekly</option>
-                                </select>
+                                <div className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-lg">
+                                    {timeframe === 'monthly' ? 'Last 30 Days' : 'Last 7 Days'}
+                                </div>
                             </div>
                             <div className="h-64 w-full text-xs font-semibold">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -152,18 +164,11 @@ const AnalyticsOverview = () => {
                                                 <span className="text-gray-900">₹ {(item.amount || 0).toLocaleString()} ({item.percent || '0%'})</span>
                                             </div>
                                             <div className="w-full h-2 bg-indigo-50 rounded-full overflow-hidden">
-                                                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${width}%` }}></div>
+                                                <div className="h-full bg-indigo-600 rounded-full transition-all duration-500 ease-out" style={{ width: `${width}%` }}></div>
                                             </div>
                                         </div>
                                     )
                                 })}
-                            </div>
-                            <div className="flex justify-between text-[10px] text-gray-400 font-bold mt-4 pt-2 border-t border-gray-50">
-                                <span>0</span>
-                                <span>20K</span>
-                                <span>40K</span>
-                                <span>60K</span>
-                                <span>80K</span>
                             </div>
                         </div>
                     </div>
@@ -209,7 +214,7 @@ const AnalyticsOverview = () => {
                                 </table>
                             </div>
                             <div className="p-4 border-t border-gray-100 flex justify-center">
-                                <button className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50">View All Operators</button>
+                                <button onClick={() => setActiveTab('Waiter / Operator Performance')} className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50 transition-all active:scale-95 w-full sm:w-auto">View All Operators</button>
                             </div>
                         </div>
 
@@ -244,7 +249,7 @@ const AnalyticsOverview = () => {
                                 </table>
                             </div>
                             <div className="p-4 border-t border-gray-100 flex justify-center">
-                                <button className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50">View All Categories</button>
+                                <button onClick={() => setActiveTab('Menu / Food Analytics')} className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50 transition-all active:scale-95 w-full sm:w-auto">View All Categories</button>
                             </div>
                         </div>
 
@@ -279,7 +284,7 @@ const AnalyticsOverview = () => {
                                 </table>
                             </div>
                             <div className="p-4 border-t border-gray-100 flex justify-center">
-                                <button className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50">View All Items</button>
+                                <button onClick={() => setActiveTab('Menu / Food Analytics')} className="text-[10px] font-bold text-indigo-600 border border-indigo-200 px-4 py-1.5 rounded hover:bg-indigo-50 transition-all active:scale-95 w-full sm:w-auto">View All Items</button>
                             </div>
                         </div>
 

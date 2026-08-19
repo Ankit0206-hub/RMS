@@ -1,10 +1,12 @@
 import { ChefHat, User, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../../context/AppContext";
+import { useSettings } from "../../../contexts/SettingsContext";
 
 export default function Header() {
   const navigate = useNavigate();
   const { customerSession } = useApp();
+  const { settings } = useSettings();
 
   return (
     <div className="flex items-center justify-between pb-2 gap-2">
@@ -14,7 +16,7 @@ export default function Header() {
           <ChefHat size={20} className="md:w-[24px] md:h-[24px]" />
         </div>
         <span className="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white shrink-0">
-          DineOps
+          {settings?.restaurant_name || "DineOps"}
         </span>
       </div>
 

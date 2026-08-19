@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import {
     LayoutDashboard, Users, Settings, LogOut,
     UtensilsCrossed, ClipboardList, Receipt,
@@ -11,6 +12,7 @@ import {
 
 const AdminLayout = () => {
     const { logout } = useAuth();
+    const { settings } = useSettings();
     const navigate = useNavigate();
     const location = useLocation();
     const queryClient = useQueryClient();
@@ -315,8 +317,14 @@ const AdminLayout = () => {
                             <img src="/favicon.png" alt="Logo" className="w-15 h-15 object-contain mx-auto " />
                         </div>
                         {isSidebarOpen && (
-                            <div>
-                                <h1 className="text-lg font-bold leading-tight">DineOps</h1>
+                            <div className="overflow-hidden max-w-[140px]">
+                                {settings?.restaurant_name?.length > 10 ? (
+                                    <marquee scrollamount="3" className="text-lg font-bold leading-tight block">
+                                        {settings?.restaurant_name || 'DineOps'}
+                                    </marquee>
+                                ) : (
+                                    <h1 className="text-lg font-bold leading-tight truncate">{settings?.restaurant_name || 'DineOps'}</h1>
+                                )}
                                 <p className="text-xs text-indigo-200">Admin Panel</p>
                             </div>
                         )}

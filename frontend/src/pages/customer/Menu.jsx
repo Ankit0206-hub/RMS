@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSettings } from "../../contexts/SettingsContext";
 import api from '../../services/api';
 import customerApi from '../../services/customerApi';
 import { getWsUrl } from "../../services/api";
@@ -12,6 +13,7 @@ import { toast, Toaster } from 'react-hot-toast';
 const CustomerMenu = () => {
     const [searchParams] = useSearchParams();
     const location = useLocation();
+    const { settings } = useSettings();
     const tableId = location.state?.tableId || searchParams.get('table_id') || searchParams.get('table') || 1;
     
     const [sessionId, setSessionId] = useState(location.state?.sessionId || null);
@@ -184,7 +186,7 @@ const CustomerMenu = () => {
             <header className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-700 p-4 sticky top-0 z-10 flex justify-between items-center">
                 <div className="flex items-center">
                     <Utensils className="h-6 w-6 text-cyan-600 mr-2" />
-                    <h1 className="text-xl font-bold">DineOps Menu</h1>
+                    <h1 className="text-xl font-bold">{settings?.restaurant_name || 'DineOps'} Menu</h1>
                 </div>
                 <div className="text-sm text-gray-500 dark:text-slate-400">Table {tableId}</div>
             </header>

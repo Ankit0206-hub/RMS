@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api, { getWsUrl } from '../../services/api';
+import { useSettings } from '../../contexts/SettingsContext';
 import { Utensils, CheckCircle2, Clock } from 'lucide-react';
 import { playNotificationSound } from '../../utils/audio';
 
 const CustomerDisplay = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const { settings } = useSettings();
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -84,7 +86,7 @@ const CustomerDisplay = () => {
                         <Utensils className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 leading-none">DineOps <span className="text-indigo-600">Display</span></h1>
+                        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 leading-none">{settings?.restaurant_name || 'DineOps'} <span className="text-indigo-600">Display</span></h1>
                         <p className="text-xs md:text-sm font-bold text-gray-500 uppercase tracking-widest mt-1">Order Status</p>
                     </div>
                 </div>

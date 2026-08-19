@@ -13,6 +13,11 @@ class AnalyticsService:
         
         if timeframe == "today":
             start_date = today_start
+        elif timeframe == "weekly":
+            start_date = today_start - timedelta(days=today_start.weekday())
+        elif timeframe == "monthly":
+            start_date = datetime(now.year, now.month, 1)
+        # timeframe "all" means start_date = None
             
         chart_days = 30 if timeframe == "monthly" else 7
             

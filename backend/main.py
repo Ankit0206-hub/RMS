@@ -92,6 +92,16 @@ app.include_router(customer_reviews.router, prefix="/api/v1/customer", tags=["Cu
 app.include_router(admin_reviews.router, prefix="/api/v1/admin", tags=["Admin Reviews"])
 app.include_router(websocket_router.router, prefix="/api/v1", tags=["WebSockets"])
 
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
+
+@app.get("/api/v1/public/settings", tags=["Public"])
+async def get_public_settings(db: AsyncSession = Depends(get_db)):
+    from app.services.admin.settings_service import settings_service
+    data = await settings_service.get_settings(db)
+    return {"status": "success", "data": data}
+
 import os
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
